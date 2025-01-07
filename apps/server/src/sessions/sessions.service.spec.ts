@@ -4,10 +4,19 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { CreateSessionDto } from './dto/create-session.dto';
 import { SessionsRepository } from './sessions.repository';
 import { SessionsService } from './sessions.service';
+import {
+  MOCK_BASE_DATE,
+  MOCK_CREATED_SESSION,
+  MOCK_SESSION,
+  MOCK_SESSION_AUTH_HOST,
+  MOCK_SESSION_AUTH_NON_HOST,
+  MOCK_SESSIONS,
+  MOCK_USER,
+} from './test-sessions-service.mock';
 
 import { SessionsAuthRepository } from '@sessions-auth/sessions-auth.repository';
 
-describe('SessionsService', () => {
+describe('세션 서비스 (SessionsService)', () => {
   let service: SessionsService;
   let sessionRepository: jest.Mocked<SessionsRepository>;
   let sessionsAuthRepository: jest.Mocked<SessionsAuthRepository>;
@@ -40,122 +49,82 @@ describe('SessionsService', () => {
     sessionsAuthRepository = module.get(SessionsAuthRepository);
   });
 
-  it('should be defined', () => {
+  it('서비스 인스턴스가 정의되어야 한다.', () => {
     expect(service).toBeDefined();
   });
 
-  describe('create', () => {
-    it('should create a session and generate a token', async () => {
-      const title = 'Test Session';
-      const userId = 1;
-      const sessionId = '123';
-      const data: CreateSessionDto = { title, sessionId };
-
-      const createdSession = {
-        sessionId,
-        title,
-        createdAt: new Date(),
-        expiredAt: new Date(),
-        createUserId: userId,
+  describe('create (세션 생성)', () => {
+    it('세션을 생성하고 토큰을 발급해야 한다.', async () => {
+      const data: CreateSessionDto = {
+        title: MOCK_SESSION.title,
+        sessionId: MOCK_SESSION.sessionId,
       };
-      sessionRepository.create.mockResolvedValue(createdSession);
-      sessionsAuthRepository.generateToken.mockResolvedValue('mockToken');
 
-      const result = await service.create(data, userId);
+      sessionRepository.create.mockResolvedValue(MOCK_CREATED_SESSION);
+      sessionsAuthRepository.generateToken.mockResolvedValue(MOCK_SESSION_AUTH_HOST.token);
+
+      const result = await service.create(data, MOCK_USER.userId);
 
       expect(sessionRepository.create).toHaveBeenCalledWith({
         ...data,
         expiredAt: expect.any(Date),
-        user: { connect: { userId } },
+        user: { connect: { userId: MOCK_USER.userId } },
       });
-      expect(sessionsAuthRepository.generateToken).toHaveBeenCalledWith(userId, sessionId, true);
-      expect(result).toEqual({ sessionId });
+      expect(sessionsAuthRepository.generateToken).toHaveBeenCalledWith(MOCK_USER.userId, MOCK_SESSION.sessionId, true);
+      expect(result).toEqual({ sessionId: MOCK_SESSION.sessionId });
     });
   });
 
-  describe('getSessionsById', () => {
-    it('should retrieve and transform session data', async () => {
-      const userId = 2;
-      const sessionData = [
-        {
-          sessionId: '123123',
-          title: 'Test Session',
-          createdAt: new Date('2024-01-01'),
-          expiredAt: new Date('2024-01-08'),
-        },
-        {
-          sessionId: '123',
-          title: 'Test Session',
-          createdAt: new Date('2024-01-01'),
-          expiredAt: new Date('2024-01-08'),
-        },
-      ];
+  describe('getSessionsById (세션 ID로 조회)', () => {
+    it('세션 데이터를 변환하여 가져와야 한다.', async () => {
+      sessionRepository.getSessionsById.mockResolvedValue(MOCK_SESSIONS);
 
-      sessionRepository.getSessionsById.mockResolvedValue(sessionData);
+      const result = await service.getSessionsById(MOCK_USER.userId);
 
-      const result = await service.getSessionsById(userId);
+      const formatDate = (date: Date) => ({
+        year: date.getFullYear(),
+        month: date.getMonth() + 1,
+        date: date.getDate(),
+      });
 
-      expect(sessionRepository.getSessionsById).toHaveBeenCalledWith(userId);
+      expect(sessionRepository.getSessionsById).toHaveBeenCalledWith(MOCK_USER.userId);
       expect(result).toEqual([
         {
           sessionId: '123123',
-          title: 'Test Session',
-          createdAt: { year: 2024, month: 1, date: 1 },
+          title: '테스트 세션',
+          createdAt: formatDate(MOCK_BASE_DATE),
           expired: true,
         },
         {
-          sessionId: '123',
-          title: 'Test Session',
-          createdAt: { year: 2024, month: 1, date: 1 },
+          sessionId: MOCK_SESSION.sessionId,
+          title: MOCK_SESSION.title,
+          createdAt: formatDate(MOCK_BASE_DATE),
           expired: true,
         },
       ]);
     });
   });
 
-  describe('terminateSession', () => {
-    it('should terminate a session if the user is authorized', async () => {
-      const sessionId = '123';
-      const token = 'mockToken';
-      const sessionData = {
-        createUserId: 1,
-        sessionId: '123',
-        createdAt: new Date(),
-        title: 'Test Session',
-        expiredAt: new Date(),
-      };
-      const tokenData = { userId: 1, isHost: true, token, sessionId };
+  describe('terminateSession (세션 종료)', () => {
+    it('호스트 사용자가 세션을 종료할 수 있어야 한다.', async () => {
+      sessionRepository.findById.mockResolvedValue(MOCK_SESSION);
+      sessionsAuthRepository.findByToken.mockResolvedValue(MOCK_SESSION_AUTH_HOST);
 
-      sessionRepository.findById.mockResolvedValue(sessionData);
-      sessionsAuthRepository.findByToken.mockResolvedValue(tokenData);
+      const result = await service.terminateSession(MOCK_SESSION.sessionId, MOCK_SESSION_AUTH_HOST.token);
 
-      const result = await service.terminateSession(sessionId, token);
-
-      expect(sessionRepository.findById).toHaveBeenCalledWith(sessionId);
-      expect(sessionsAuthRepository.findByToken).toHaveBeenCalledWith(token);
-      expect(sessionRepository.updateSessionExpiredAt).toHaveBeenCalledWith(sessionId, expect.any(Date));
+      expect(sessionRepository.findById).toHaveBeenCalledWith(MOCK_SESSION.sessionId);
+      expect(sessionsAuthRepository.findByToken).toHaveBeenCalledWith(MOCK_SESSION_AUTH_HOST.token);
+      expect(sessionRepository.updateSessionExpiredAt).toHaveBeenCalledWith(MOCK_SESSION.sessionId, expect.any(Date));
       expect(result).toEqual({ expired: true });
     });
 
-    it('should throw ForbiddenException if the user is not authorized', async () => {
-      const sessionId = '123';
-      const token = 'mockToken';
-      const sessionData = {
-        createUserId: 1,
-        sessionId: '123',
-        createdAt: new Date(),
-        title: 'Test Session',
-        expiredAt: new Date(),
-      };
-      sessionRepository.findById.mockResolvedValue(sessionData);
-      sessionsAuthRepository.findByToken.mockResolvedValue({
-        sessionId: 'test-session-id',
-        userId: 2,
-        token: 'test-token',
-        isHost: true,
-      });
+    it('호스트가 아닌 사용자가 세션을 종료하려고 하면 ForbiddenException이 발생해야 한다.', async () => {
+      sessionRepository.findById.mockResolvedValue(MOCK_SESSION);
+      sessionsAuthRepository.findByToken.mockResolvedValue(MOCK_SESSION_AUTH_NON_HOST);
 
-      await expect(service.terminateSession(sessionId, token)).rejects.toThrow(ForbiddenException);
+      await expect(service.terminateSession(MOCK_SESSION.sessionId, MOCK_SESSION_AUTH_NON_HOST.token)).rejects.toThrow(
+        ForbiddenException,
+      );
     });
   });
 });

@@ -2,6 +2,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { ChatsRepository } from './chats.repository';
 import { ChatSaveDto, ChatsService } from './chats.service';
+import {
+  MOCK_CHAT_DATA,
+  MOCK_CHAT_DATA_NO_NICKNAME,
+  MOCK_SAVED_CHAT,
+  MOCK_SAVED_CHAT_NO_NICKNAME,
+} from './test-chats.mock';
 
 describe('ChatsService', () => {
   let service: ChatsService;
@@ -25,33 +31,19 @@ describe('ChatsService', () => {
     chatsRepository = module.get(ChatsRepository);
   });
 
-  it('should be defined', () => {
+  it('서비스가 정의되어 있어야 한다', () => {
     expect(service).toBeDefined();
   });
+
   describe('saveChat', () => {
-    it('should save the chat and return the saved data', async () => {
-      const data: ChatSaveDto = { sessionId: '123', token: 'mockToken', body: 'Test message' };
-
-      const mockUser = {
-        userId: 1,
-        email: 'test@example.com',
-        password: 'hashedPassword',
-        nickname: 'TestUser',
-        createdAt: new Date('2024-01-01T00:00:00.000Z'),
+    it('채팅을 저장하고 저장된 데이터를 반환해야 한다', async () => {
+      const data: ChatSaveDto = {
+        sessionId: '123',
+        token: 'mockToken',
+        body: 'Test message',
       };
 
-      const savedChat = {
-        chattingId: 1,
-        sessionId: 'test-session',
-        createUserToken: 'mockToken',
-        body: 'Test chat message',
-        createdAt: new Date('2024-01-01T00:00:00.000Z'),
-        createUserTokenEntity: {
-          user: mockUser,
-        },
-      };
-
-      chatsRepository.save.mockResolvedValue(savedChat);
+      chatsRepository.save.mockResolvedValue(MOCK_SAVED_CHAT);
 
       const result = await service.saveChat(data);
       expect(chatsRepository.save).toHaveBeenCalledWith(data);
@@ -62,32 +54,18 @@ describe('ChatsService', () => {
       });
     });
 
-    it('should return "익명" if the user has no nickname', async () => {
-      const data: ChatSaveDto = { sessionId: '123', token: 'mockToken', body: 'Test message' };
-
-      const savedChatWithNoNickname = {
-        chattingId: 1,
-        createUserTokenEntity: {
-          user: {
-            createdAt: new Date(),
-            userId: 123,
-            email: 'user@example.com',
-            password: 'password',
-            nickname: null,
-          },
-        },
-        createUserToken: 'token123',
-        sessionId: 'session123',
+    it('사용자의 닉네임이 없는 경우 "익명"을 반환해야 한다', async () => {
+      const data: ChatSaveDto = {
+        sessionId: '123',
+        token: 'mockToken',
         body: 'Test message',
-        createdAt: new Date(),
       };
 
-      chatsRepository.save.mockResolvedValue(savedChatWithNoNickname);
+      chatsRepository.save.mockResolvedValue(MOCK_SAVED_CHAT_NO_NICKNAME);
 
       const result = await service.saveChat(data);
 
       expect(chatsRepository.save).toHaveBeenCalledWith(data);
-
       expect(result).toEqual({
         chattingId: 1,
         nickname: '익명',
@@ -97,55 +75,12 @@ describe('ChatsService', () => {
   });
 
   describe('getChatsForInfiniteScroll', () => {
-    it('should retrieve chats for infinite scroll', async () => {
+    it('무한 스크롤을 위한 채팅 목록을 조회해야 한다', async () => {
       const sessionId = '123';
       const count = 10;
       const chatId = 5;
 
-      const chatData = [
-        {
-          chattingId: 10,
-          createUserToken: 'token1',
-          body: 'Message 1',
-          createdAt: new Date(),
-          sessionId: '123',
-          createUserTokenEntity: {
-            user: {
-              userId: 1,
-              createdAt: new Date(),
-              email: 'user1@example.com',
-              password: 'password1',
-              nickname: 'User1',
-            },
-            token: 'token1',
-            userId: 1,
-            sessionId: '123',
-            isHost: true,
-          },
-        },
-        {
-          chattingId: 9,
-          createUserToken: 'token2',
-          body: 'Message 2',
-          createdAt: new Date(),
-          sessionId: '123',
-          createUserTokenEntity: {
-            user: {
-              userId: 2,
-              createdAt: new Date(),
-              email: 'user2@example.com',
-              password: 'password2',
-              nickname: 'User2',
-            },
-            token: 'token2',
-            userId: 2,
-            sessionId: '123',
-            isHost: false,
-          },
-        },
-      ];
-
-      chatsRepository.getChatsForInfiniteScroll.mockResolvedValue(chatData);
+      chatsRepository.getChatsForInfiniteScroll.mockResolvedValue(MOCK_CHAT_DATA);
 
       const result = await service.getChatsForInfiniteScroll(sessionId, count, chatId);
 
@@ -155,35 +90,12 @@ describe('ChatsService', () => {
       ]);
     });
 
-    it('should return "익명" if the user has no nickname', async () => {
+    it('무한 스크롤 조회 시 사용자의 닉네임이 없는 경우 "익명"을 반환해야 한다', async () => {
       const sessionId = '123';
       const count = 10;
       const chatId = 5;
 
-      const chatData = [
-        {
-          chattingId: 10,
-          body: 'Message 1',
-          createUserToken: 'token1',
-          createdAt: new Date(),
-          sessionId: '123',
-          createUserTokenEntity: {
-            user: {
-              userId: 1,
-              createdAt: new Date(),
-              email: 'test@example.com',
-              password: 'password',
-              nickname: null,
-            },
-            token: 'token1',
-            userId: 1,
-            sessionId: '123',
-            isHost: false,
-          },
-        },
-      ];
-
-      chatsRepository.getChatsForInfiniteScroll.mockResolvedValue(chatData);
+      chatsRepository.getChatsForInfiniteScroll.mockResolvedValue(MOCK_CHAT_DATA_NO_NICKNAME);
 
       const result = await service.getChatsForInfiniteScroll(sessionId, count, chatId);
 

@@ -3,6 +3,15 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { QuestionsRepository } from './questions.repository';
 import { QuestionsService } from './questions.service';
+import {
+  MOCK_CREATED_QUESTION,
+  MOCK_DATE,
+  MOCK_HOST_TOKENS,
+  MOCK_QUESTION,
+  MOCK_SESSION,
+  MOCK_SESSION_AUTH_HOST,
+  MOCK_SESSION_AUTH_NON_HOST,
+} from './test-questions-service.mock';
 
 import { RepliesRepository } from '@replies/replies.repository';
 import { SessionsRepository } from '@sessions/sessions.repository';
@@ -63,38 +72,18 @@ describe('QuestionsService', () => {
     repliesRepository = module.get(RepliesRepository);
   });
 
-  it('should be defined', () => {
+  it('서비스가 정의되어 있어야 한다', () => {
     expect(service).toBeDefined();
   });
 
   describe('createQuestion', () => {
-    it('should create a question and return formatted response', async () => {
+    it('질문을 생성하고 포맷된 결과를 반환해야 한다', async () => {
       const createQuestionDto = {
         sessionId: 'test-session',
         token: 'test-token',
         body: 'Test question',
       };
-
-      const mockCreatedQuestion = {
-        questionId: 1,
-        createUserToken: 'test-token',
-        sessionId: 'test-session',
-        body: 'Test question',
-        closed: false,
-        pinned: false,
-        createdAt: new Date(),
-        createUserTokenEntity: {
-          user: {
-            userId: 1,
-            nickname: 'TestUser',
-            email: 'test@example.com',
-            password: 'hashedPassword',
-            createdAt: new Date(),
-          },
-        },
-      };
-
-      questionsRepository.create.mockResolvedValue(mockCreatedQuestion);
+      questionsRepository.create.mockResolvedValue(MOCK_CREATED_QUESTION);
 
       const result = await service.createQuestion(createQuestionDto);
 
@@ -106,7 +95,7 @@ describe('QuestionsService', () => {
         body: 'Test question',
         closed: false,
         pinned: false,
-        createdAt: expect.any(Date),
+        createdAt: MOCK_DATE,
         isOwner: true,
         likesCount: 0,
         liked: false,
@@ -117,102 +106,31 @@ describe('QuestionsService', () => {
   });
 
   describe('getQuestionsBySession', () => {
-    it('should return questions with proper formatting', async () => {
+    it('질문 목록을 정상적으로 반환해야 한다', async () => {
       const mockData = {
         sessionId: 'test-session',
         token: 'test-token',
       };
 
-      const mockQuestions = [
-        {
-          questionId: 1,
-          sessionId: 'test-session',
-          body: 'Test question',
-          closed: false,
-          pinned: false,
-          createdAt: new Date('2024-12-02T09:40:17.170Z'),
-          createUserToken: 'test-token',
-          createUserTokenEntity: {
-            user: {
-              userId: 1,
-              createdAt: new Date('2024-12-02T09:39:17.170Z'),
-              email: 'test@example.com',
-              password: 'hashedPassword',
-              nickname: 'TestUser',
-            },
-          },
-          questionLikes: [
-            {
-              createUserToken: 'like-token',
-            },
-          ],
-          replies: [
-            {
-              replyId: 1,
-              body: 'Test reply',
-              createUserToken: 'reply-token',
-              questionId: 1,
-              sessionId: 'test-session',
-              createdAt: new Date('2024-12-02T09:41:17.170Z'),
-              deleted: false,
-              replyLikes: [
-                {
-                  createUserToken: 'reply-like-token',
-                },
-              ],
-              createUserTokenEntity: {
-                user: {
-                  userId: 1,
-                  createdAt: new Date('2024-12-02T09:40:17.170Z'),
-                  email: 'test@example.com',
-                  password: 'hashedPassword',
-                  nickname: 'ReplyUser',
-                },
-              },
-            },
-          ],
-        },
-      ];
-
-      const date = new Date('2024-12-02T09:40:17.170Z');
-      const mockSession = {
-        sessionId: 'test-session',
-        createdAt: new Date('2024-12-02T09:40:17.170Z'),
-        title: 'Test Session',
-        expiredAt: new Date(date.getTime() + 7 * 24 * 60 * 60 * 1000),
-        createUserId: 1,
-      };
-
-      const mockHostTokens = [
-        {
-          sessionId: 'test-session',
-          token: 'host-token',
-          userId: 1,
-          isHost: true,
-        },
-      ];
-
-      questionsRepository.findQuestionsWithDetails.mockResolvedValue(mockQuestions);
-      sessionsRepository.findById.mockResolvedValue(mockSession);
-      sessionsAuthRepository.findHostTokensInSession.mockResolvedValue(mockHostTokens);
+      questionsRepository.findQuestionsWithDetails.mockResolvedValue([MOCK_QUESTION]);
+      sessionsRepository.findById.mockResolvedValue(MOCK_SESSION);
+      sessionsAuthRepository.findHostTokensInSession.mockResolvedValue(MOCK_HOST_TOKENS);
 
       const [questions, isHost, expired, title] = await service.getQuestionsBySession(mockData);
 
       const question = questions[0];
-      expect(question.questionId).toBe(1);
-      expect(question.sessionId).toBe('test-session');
-      expect(question.body).toBe('Test question');
-      expect(question.closed).toBe(false);
-      expect(question.pinned).toBe(false);
-      expect(question.createdAt).toBeInstanceOf(Date);
+      expect(question.questionId).toBe(MOCK_QUESTION.questionId);
+      expect(question.sessionId).toBe(MOCK_QUESTION.sessionId);
+      expect(question.body).toBe(MOCK_QUESTION.body);
+      expect(question.createdAt).toBe(MOCK_DATE);
       expect(question.isOwner).toBe(true);
       expect(question.likesCount).toBe(1);
       expect(question.liked).toBe(false);
       expect(question.nickname).toBe('TestUser');
 
       const reply = question.replies[0];
-      expect(reply.replyId).toBe(1);
-      expect(reply.body).toBe('Test reply');
+      expect(reply.replyId).toBe(MOCK_QUESTION.replies[0].replyId);
+      expect(reply.body).toBe(MOCK_QUESTION.replies[0].body);
       expect(reply.isOwner).toBe(false);
       expect(reply.likesCount).toBe(1);
       expect(reply.liked).toBe(false);
@@ -226,16 +144,11 @@ describe('QuestionsService', () => {
 
   describe('updateQuestionBody', () => {
     const mockQuestion = {
-      questionId: 1,
-      createUserToken: 'test-token',
-      sessionId: 'test-session',
-      body: 'Test question',
-      createdAt: new Date(),
-      closed: false,
-      pinned: false,
+      ...MOCK_QUESTION,
+      replies: [],
     };
 
-    it('should update question body when conditions are met', async () => {
+    it('질문에 답변이 없을 때 본문을 수정할 수 있어야 한다', async () => {
       const updateDto = { body: 'Updated body', sessionId: 'test-session', token: 'test-token' };
 
       repliesRepository.findReplyByQuestionId.mockResolvedValue(null);
@@ -246,7 +159,7 @@ describe('QuestionsService', () => {
       expect(questionsRepository.updateBody).toHaveBeenCalledWith(1, updateDto.body);
     });
 
-    it('should throw ForbiddenException when question has replies', async () => {
+    it('질문에 답변이 존재하면 ForbiddenException을 발생시켜야 한다', async () => {
       const updateDto = { body: 'Updated body', sessionId: 'test-session', token: 'test-token' };
 
       repliesRepository.findReplyByQuestionId.mockResolvedValue(true);
@@ -254,7 +167,7 @@ describe('QuestionsService', () => {
       await expect(service.updateQuestionBody(1, updateDto, mockQuestion)).rejects.toThrow(ForbiddenException);
     });
 
-    it('should throw ForbiddenException when question is closed', async () => {
+    it('질문이 이미 닫혀 있으면 ForbiddenException을 발생시켜야 한다', async () => {
       const updateDto = { body: 'Updated body', sessionId: 'test-session', token: 'test-token' };
       const closedQuestion = { ...mockQuestion, closed: true };
 
@@ -263,37 +176,19 @@ describe('QuestionsService', () => {
   });
 
   describe('deleteQuestion', () => {
-    const mockQuestion = {
-      questionId: 1,
-      createUserToken: 'test-token',
-      closed: false,
-      body: 'test-question',
-      createdAt: new Date(),
-      sessionId: 'test-session',
-      pinned: false,
-    };
+    const mockQuestion = { ...MOCK_QUESTION };
 
-    it('should delete question when user is host', async () => {
-      sessionsAuthRepository.findByToken.mockResolvedValue({
-        isHost: true,
-        token: 'test-token',
-        userId: 1,
-        sessionId: 'test-session',
-      });
+    it('호스트 사용자가 질문을 삭제할 수 있어야 한다', async () => {
+      sessionsAuthRepository.findByToken.mockResolvedValue(MOCK_SESSION_AUTH_HOST);
       questionsRepository.deleteQuestion.mockResolvedValue(mockQuestion);
 
       await service.deleteQuestion(1, mockQuestion, { token: 'host-token', sessionId: 'test-session' });
-
+      expect(sessionsAuthRepository.findByToken).toHaveBeenCalledWith('host-token');
       expect(questionsRepository.deleteQuestion).toHaveBeenCalledWith(1);
     });
 
-    it('should throw ForbiddenException when non-owner tries to delete', async () => {
-      sessionsAuthRepository.findByToken.mockResolvedValue({
-        isHost: false,
-        token: 'test-token',
-        userId: 1,
-        sessionId: 'test-session',
-      });
+    it('호스트가 아닌 사용자가 질문을 삭제하려고 하면 ForbiddenException을 발생시켜야 한다', async () => {
+      sessionsAuthRepository.findByToken.mockResolvedValue(MOCK_SESSION_AUTH_NON_HOST);
 
       await expect(
         service.deleteQuestion(1, mockQuestion, { token: 'wrong-token', sessionId: 'test-session' }),
@@ -302,7 +197,7 @@ describe('QuestionsService', () => {
   });
 
   describe('toggleLike', () => {
-    it('should create like when it does not exist', async () => {
+    it('좋아요가 없을 경우 생성하고 liked: true를 반환해야 한다', async () => {
       questionsRepository.findLike.mockResolvedValue(null);
 
       const result = await service.toggleLike(1, 'test-token');
@@ -311,7 +206,7 @@ describe('QuestionsService', () => {
       expect(result).toEqual({ liked: true });
     });
 
-    it('should delete like when it exists', async () => {
+    it('이미 좋아요가 있을 경우 삭제하고 liked: false를 반환해야 한다', async () => {
       questionsRepository.findLike.mockResolvedValue({
         questionLikeId: 1,
         createUserToken: 'test-token',
@@ -326,15 +221,10 @@ describe('QuestionsService', () => {
   });
 
   describe('updateQuestionPinned', () => {
-    it('should update pinned status when user is host', async () => {
+    it('호스트 사용자가 질문을 고정할 수 있어야 한다', async () => {
       const updateDto = { token: 'host-token', sessionId: 'test-session', pinned: true };
 
-      sessionsAuthRepository.findByToken.mockResolvedValue({
-        isHost: true,
-        token: 'test-token',
-        userId: 1,
-        sessionId: 'test-session',
-      });
+      sessionsAuthRepository.findByToken.mockResolvedValue(MOCK_SESSION_AUTH_HOST);
       questionsRepository.updatePinned.mockResolvedValue({
         questionId: 1,
         pinned: true,
@@ -342,23 +232,19 @@ describe('QuestionsService', () => {
         sessionId: 'test-session',
         body: 'test-body',
         closed: false,
-        createdAt: new Date(),
+        createdAt: MOCK_DATE,
       });
 
       await service.updateQuestionPinned(1, updateDto);
 
+      expect(sessionsAuthRepository.findByToken).toHaveBeenCalledWith(updateDto.token);
       expect(questionsRepository.updatePinned).toHaveBeenCalledWith(1, true);
     });
 
-    it('should throw ForbiddenException when user is not host', async () => {
+    it('호스트가 아닌 사용자가 고정 상태를 변경하려 하면 ForbiddenException을 발생시켜야 한다', async () => {
       const updateDto = { token: 'non-host-token', sessionId: 'test-session', pinned: true };
 
-      sessionsAuthRepository.findByToken.mockResolvedValue({
-        isHost: false,
-        token: 'test-token',
-        userId: 1,
-        sessionId: 'test-session',
-      });
+      sessionsAuthRepository.findByToken.mockResolvedValue(MOCK_SESSION_AUTH_NON_HOST);
 
       await expect(service.updateQuestionPinned(1, updateDto)).rejects.toThrow(ForbiddenException);
     });
