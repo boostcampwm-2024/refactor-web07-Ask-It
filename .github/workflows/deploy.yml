@@ -64,8 +64,9 @@ jobs:
                       npm install -g pm2
 
                       # 프로젝트 디렉토리 이동 및 최신 코드 가져오기
-                      cd ~/web07-Ask-It
-                      git pull origin main
+                      rm -rf Ask-It
+                      git clone "${{ secrets.GIT_REPO_URL }}" ~/Ask-It
+                      cd ~/Ask-It
                       pnpm install
 
                       # 서버 디렉토리로 이동하여 환경 변수 설정
