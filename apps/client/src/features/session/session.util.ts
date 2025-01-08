@@ -1,4 +1,3 @@
-// features/session/loadSessionData.ts
 import { redirect } from '@tanstack/react-router';
 
 import { refresh, useAuthStore } from '@/features/auth';
