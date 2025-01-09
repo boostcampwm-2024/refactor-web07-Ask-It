@@ -4,8 +4,8 @@ export const PermissionId = {
   3: 'REVOKE_HOST',
   4: 'DELETE_QUESTION',
   5: 'DELETE_REPLY',
-  6: 'PIN_REPLY',
-  7: 'CLOSE_REPLY',
+  6: 'PIN_QUESTION',
+  7: 'CLOSE_QUESTION',
 } as const;
 
 type PermissionNumber = keyof typeof PermissionId;
