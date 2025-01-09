@@ -1,3 +1,5 @@
+import { Roles } from '@common/roles/roles';
+
 export const MOCK_DATE = new Date('2024-01-01T00:00:00.000Z');
 
 export const MOCK_USER = {
@@ -54,7 +56,7 @@ export const MOCK_CHAT_DATA = [
       token: 'token1',
       userId: 1,
       sessionId: '123',
-      isHost: true,
+      roleType: Roles.SUPER_HOST,
     },
   },
   {
@@ -74,7 +76,7 @@ export const MOCK_CHAT_DATA = [
       token: 'token2',
       userId: 2,
       sessionId: '123',
-      isHost: false,
+      roleType: Roles.PARTICIPANT,
     },
   },
 ];
@@ -97,7 +99,7 @@ export const MOCK_CHAT_DATA_NO_NICKNAME = [
       token: 'token1',
       userId: 1,
       sessionId: '123',
-      isHost: false,
+      roleType: Roles.PARTICIPANT,
     },
   },
 ];

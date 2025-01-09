@@ -4,6 +4,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { SessionsAuthRepository } from './sessions-auth.repository';
 import { SessionsAuthService } from './sessions-auth.service';
 import {
+  MOCK_DATE,
   MOCK_FIND_USERS_BY_SESSION_ID_DATA,
   MOCK_SESSION_AUTH_DTO_WITH_TOKEN,
   MOCK_SESSION_AUTH_DTO_WITHOUT_TOKEN,
@@ -13,6 +14,8 @@ import {
   MOCK_UPDATE_HOST_DTO_SUPER_HOST_TOKEN_NOT_FOUND,
 } from './test-sessions-auth-service.mock';
 
+import { Permissions } from '@common/roles/permissions';
+import { Roles } from '@common/roles/roles';
 import { SessionsRepository } from '@sessions/sessions.repository';
 
 describe('SessionsAuthService', () => {
@@ -32,8 +35,17 @@ describe('SessionsAuthService', () => {
             findTokenByUserIdAndToken: jest.fn(),
             findTokenByToken: jest.fn(),
             findUsersBySessionId: jest.fn(),
-            updateIsHost: jest.fn(),
+            /** 기존 코드에서 updateIsHost → 실제로는 updateRoleType 이므로 변경 */
+            updateRoleType: jest.fn(),
+
+            /** 서비스 코드에서 authorizeHost() 시 권한 확인에 사용 */
+            findByTokenWithPermissions: jest.fn(),
+
+            /** 아래 메서드는 테스트에서 직접 사용하지 않으면 mock 필요 X
+             *  필요하다면 추가: findByToken, findHostTokensInSession 등
+             */
             findByToken: jest.fn(),
+            findHostTokensInSession: jest.fn(),
           },
         },
         {
@@ -54,7 +66,10 @@ describe('SessionsAuthService', () => {
     expect(service).toBeDefined();
   });
 
-  describe('validateOrCreateToken (토큰 검증 혹은 생성)', () => {
+  // ------------------------------------------------------
+  // 1) validateOrCreateToken (토큰 검증 혹은 생성)
+  // ------------------------------------------------------
+  describe('validateOrCreateToken', () => {
     it('토큰이 제공되지 않으면 새 토큰을 생성해야 한다.', async () => {
       sessionsAuthRepository.generateToken.mockResolvedValue('newToken');
 
@@ -65,6 +80,7 @@ describe('SessionsAuthService', () => {
     });
 
     it('토큰이 제공되면 기존 토큰을 반환해야 한다.', async () => {
+      // 기존 토큰이 존재한다고 가정
       sessionsAuthRepository.findTokenByUserIdAndToken.mockResolvedValue('existingToken');
 
       const result = await service.validateOrCreateToken(MOCK_SESSION_AUTH_DTO_WITH_TOKEN, 1);
@@ -74,7 +90,10 @@ describe('SessionsAuthService', () => {
     });
   });
 
-  describe('findUsers (사용자 목록 조회)', () => {
+  // ------------------------------------------------------
+  // 2) findUsers (사용자 목록 조회)
+  // ------------------------------------------------------
+  describe('findUsers', () => {
     it('isHost 상태를 포함한 사용자 목록을 반환해야 한다.', async () => {
       sessionsAuthRepository.findUsersBySessionId.mockResolvedValue(MOCK_FIND_USERS_BY_SESSION_ID_DATA);
 
@@ -88,37 +107,85 @@ describe('SessionsAuthService', () => {
     });
   });
 
-  describe('authorizeHost (호스트 권한 부여)', () => {
+  // ------------------------------------------------------
+  // 3) authorizeHost (호스트 권한 부여)
+  // ------------------------------------------------------
+  describe('authorizeHost', () => {
     it('새 호스트 권한을 부여해야 한다.', async () => {
+      // 1) 권한 확인
+      sessionsAuthRepository.findByTokenWithPermissions.mockResolvedValue({
+        // 실제 코드에서 role.permissions.some(...) 확인
+        role: {
+          name: Roles.SUPER_HOST,
+          permissions: [{ roleName: Roles.SUPER_HOST, permissionId: Permissions.GRANT_HOST }],
+        },
+        token: 'test-token',
+        userId: 1,
+        sessionId: 'test-session',
+        roleType: Roles.SUPER_HOST,
+      });
+      // 2) 대상 userId → 토큰 조회
       sessionsAuthRepository.findTokenByUserId.mockResolvedValue('targetToken');
-      sessionsAuthRepository.updateIsHost.mockResolvedValue({
+      // 3) 실제 업데이트
+      sessionsAuthRepository.updateRoleType.mockResolvedValue({
         user: {
           userId: 2,
-          createdAt: new Date(),
-          email: 'user2@example.com',
-          password: 'securePassword123',
           nickname: 'User2',
+          createdAt: MOCK_DATE,
+          email: 'test@email.com',
+          password: 'pw',
         },
-        isHost: true,
+        roleType: Roles.SUB_HOST, // isHost === true 인 상황
       });
-      jest.spyOn(service, 'validateSuperHost').mockResolvedValue(true);
 
+      // authorizeHost 로직 실행
       const result = await service.authorizeHost(2, MOCK_UPDATE_HOST_DTO_SUPER_HOST);
 
-      expect(service.validateSuperHost).toHaveBeenCalledWith('123', 'superHostToken');
-      expect(sessionsAuthRepository.updateIsHost).toHaveBeenCalledWith('targetToken', true);
-      expect(result).toEqual({ userId: 2, nickname: 'User2', isHost: true });
+      // 권한 체크
+      expect(sessionsAuthRepository.findByTokenWithPermissions).toHaveBeenCalledWith('superHostToken');
+      // 대상 토큰 조회
+      expect(sessionsAuthRepository.findTokenByUserId).toHaveBeenCalledWith(2, '123');
+      // 토큰 업데이트
+      expect(sessionsAuthRepository.updateRoleType).toHaveBeenCalledWith('targetToken', Roles.SUB_HOST);
+
+      // 결과 검증
+      expect(result).toEqual({
+        userId: 2,
+        nickname: 'User2',
+        isHost: true, // SUB_HOST이므로 true
+      });
     });
 
     it('슈퍼 호스트가 아니라면 ForbiddenException을 발생시켜야 한다.', async () => {
-      jest.spyOn(service, 'validateSuperHost').mockResolvedValue(false);
+      // 권한 목록에 GRANT_HOST가 없음
+      sessionsAuthRepository.findByTokenWithPermissions.mockResolvedValue({
+        role: {
+          name: Roles.SUB_HOST,
+          permissions: [],
+        },
+        token: 'test-token',
+        userId: 1,
+        sessionId: 'test-session',
+        roleType: Roles.SUB_HOST,
+      });
 
       await expect(service.authorizeHost(2, MOCK_UPDATE_HOST_DTO_INVALID_TOKEN)).rejects.toThrow(ForbiddenException);
     });
 
     it('타겟 토큰이 존재하지 않으면 NotFoundException을 발생시켜야 한다.', async () => {
+      // 권한 있음
+      sessionsAuthRepository.findByTokenWithPermissions.mockResolvedValue({
+        role: {
+          name: Roles.SUPER_HOST,
+          permissions: [{ roleName: Roles.SUPER_HOST, permissionId: Permissions.GRANT_HOST }],
+        },
+        token: 'test-token',
+        userId: 1,
+        sessionId: 'test-session',
+        roleType: Roles.SUPER_HOST,
+      });
+      // 대상 userId 에 대한 토큰이 없는 경우
       sessionsAuthRepository.findTokenByUserId.mockResolvedValue(null);
-      jest.spyOn(service, 'validateSuperHost').mockResolvedValue(true);
 
       await expect(service.authorizeHost(2, MOCK_UPDATE_HOST_DTO_SUPER_HOST_TOKEN_NOT_FOUND)).rejects.toThrow(
         NotFoundException,
@@ -126,50 +193,21 @@ describe('SessionsAuthService', () => {
     });
 
     it('본인의 호스트 권한을 변경하려 하면 BadRequestException을 발생시켜야 한다.', async () => {
-      sessionsAuthRepository.findTokenByUserId.mockResolvedValue('targetToken');
-      jest.spyOn(service, 'validateSuperHost').mockResolvedValue(true);
-
-      await expect(service.authorizeHost(2, MOCK_UPDATE_HOST_DTO_SELF_CHANGE)).rejects.toThrow(BadRequestException);
-    });
-  });
-
-  describe('validateSuperHost (슈퍼 호스트 검증)', () => {
-    it('세션 생성자이면 true를 반환해야 한다.', async () => {
-      sessionsAuthRepository.findByToken.mockResolvedValue({
-        sessionId: '123',
-        token: 'token',
+      // 권한 있음
+      sessionsAuthRepository.findByTokenWithPermissions.mockResolvedValue({
+        role: {
+          name: Roles.SUPER_HOST,
+          permissions: [{ roleName: Roles.SUPER_HOST, permissionId: Permissions.GRANT_HOST }],
+        },
+        token: 'superHostToken',
         userId: 1,
-        isHost: true,
+        sessionId: 'test-session',
+        roleType: Roles.SUPER_HOST,
       });
-      sessionsRepository.findById.mockResolvedValue({
-        sessionId: '123',
-        createUserId: 1,
-        expiredAt: new Date(),
-        createdAt: new Date(),
-        title: 'asdasdsd',
-      });
+      // targetToken == 호출자의 token 인 상황 (자기 자신)
+      sessionsAuthRepository.findTokenByUserId.mockResolvedValue('superHostToken');
 
-      const result = await service.validateSuperHost('123', 'token');
-      expect(result).toBe(true);
-    });
-
-    it('세션 생성자가 아니면 false를 반환해야 한다.', async () => {
-      sessionsRepository.findById.mockResolvedValue({
-        sessionId: '123',
-        title: 'Test Session',
-        expiredAt: new Date(),
-        createdAt: new Date(),
-        createUserId: 1,
-      });
-      sessionsAuthRepository.findByToken.mockResolvedValue({
-        token: 'token',
-        userId: 2,
-        sessionId: '123',
-        isHost: false,
-      });
-
-      const result = await service.validateSuperHost('123', 'token');
-      expect(result).toBe(false);
+      await expect(service.authorizeHost(1, MOCK_UPDATE_HOST_DTO_SELF_CHANGE)).rejects.toThrow(BadRequestException);
     });
   });
 });

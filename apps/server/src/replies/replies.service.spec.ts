@@ -6,7 +6,17 @@ import { CreateReplyDto } from './dto/create-reply.dto';
 import { UpdateReplyBodyDto } from './dto/update-reply.dto';
 import { RepliesRepository } from './replies.repository';
 import { RepliesService } from './replies.service';
-import { MOCK_DATE, MOCK_REPLY, MOCK_REPLY_LIKE, MOCK_UPDATED_REPLY } from './test-replies-service.mock';
+import {
+  MOCK_CREATED_REPLY,
+  MOCK_DATE,
+  MOCK_REPLY_LIKE,
+  MOCK_REPLY_WITH_ENTITY,
+  MOCK_SESSION_AUTH_NO_PERM,
+  MOCK_SESSION_AUTH_OTHER,
+  MOCK_SESSION_AUTH_OWNER,
+  MOCK_SESSION_AUTH_WITH_DELETE,
+  MOCK_UPDATED_REPLY,
+} from './test-replies-service.mock';
 
 import { SessionsRepository } from '@sessions/sessions.repository';
 import { SessionsAuthRepository } from '@sessions-auth/sessions-auth.repository';
@@ -43,6 +53,7 @@ describe('RepliesService', () => {
           provide: SessionsAuthRepository,
           useValue: {
             findByToken: jest.fn(),
+            findByTokenWithPermissions: jest.fn(),
           },
         },
       ],
@@ -65,7 +76,8 @@ describe('RepliesService', () => {
         token: 'token',
         sessionId: '123',
       };
-      repliesRepository.createReply.mockResolvedValue(MOCK_REPLY);
+
+      repliesRepository.createReply.mockResolvedValue(MOCK_REPLY_WITH_ENTITY);
 
       const result = await service.createReply(createReplyDto);
 
@@ -104,59 +116,52 @@ describe('RepliesService', () => {
   });
 
   describe('deleteReply', () => {
-    it('사용자가 권한이 있는 경우 답글을 삭제해야 한다', async () => {
-      const replyId = 1;
-      const token = 'validToken';
-      const reply: Reply = {
-        replyId,
-        body: 'Test',
-        createUserToken: 'validToken',
-        createdAt: new Date(),
-        deleted: false,
-        questionId: 1,
-        sessionId: '123',
-      };
+    const replyId = 1;
+    const sampleReply: Reply = {
+      replyId,
+      body: 'Test Body',
+      createUserToken: 'ownerToken',
+      createdAt: new Date(),
+      deleted: false,
+      questionId: 1,
+      sessionId: '123',
+    };
 
-      sessionAuthRepository.findByToken.mockResolvedValue({
-        sessionId: '123',
-        token,
-        isHost: false,
-        userId: 1,
-      });
+    it('DELETE_REPLY 권한이 있으면 삭제 가능', async () => {
+      sessionAuthRepository.findByTokenWithPermissions.mockResolvedValue(MOCK_SESSION_AUTH_WITH_DELETE as any);
+      repliesRepository.deleteReply.mockResolvedValue(undefined);
 
-      const result = await service.deleteReply(replyId, token, reply);
+      await service.deleteReply(replyId, 'hasDeleteToken', sampleReply);
 
-      expect(sessionAuthRepository.findByToken).toHaveBeenCalledWith(token);
+      expect(sessionAuthRepository.findByTokenWithPermissions).toHaveBeenCalledWith('hasDeleteToken');
       expect(repliesRepository.deleteReply).toHaveBeenCalledWith(replyId);
-      expect(result).toBeUndefined();
     });
 
-    it('사용자가 권한이 없는 경우 ForbiddenException을 발생시켜야 한다', async () => {
-      const replyId = 1;
-      const token = 'invalidToken';
-      const reply: Reply = {
-        replyId,
-        body: 'Test',
-        createUserToken: 'validToken',
-        createdAt: new Date(),
-        deleted: false,
-        questionId: 1,
-        sessionId: '123',
-      };
+    it('권한 없어도 소유자 토큰이면 삭제 가능', async () => {
+      sessionAuthRepository.findByTokenWithPermissions.mockResolvedValue(MOCK_SESSION_AUTH_OWNER as any);
+      repliesRepository.deleteReply.mockResolvedValue(undefined);
 
-      sessionAuthRepository.findByToken.mockResolvedValue({
-        sessionId: '123',
-        token,
-        isHost: false,
-        userId: 1,
+      await service.deleteReply(replyId, 'token', {
+        ...sampleReply,
+        createUserToken: 'token',
       });
 
-      await expect(service.deleteReply(replyId, token, reply)).rejects.toThrow(ForbiddenException);
+      expect(sessionAuthRepository.findByTokenWithPermissions).toHaveBeenCalledWith('token');
+      expect(repliesRepository.deleteReply).toHaveBeenCalledWith(replyId);
+    });
+
+    it('권한도 없고 소유자도 아니면 ForbiddenException', async () => {
+      sessionAuthRepository.findByTokenWithPermissions.mockResolvedValue(MOCK_SESSION_AUTH_NO_PERM as any);
+
+      await expect(service.deleteReply(replyId, 'noPermToken', sampleReply)).rejects.toThrow(ForbiddenException);
+
+      expect(sessionAuthRepository.findByTokenWithPermissions).toHaveBeenCalledWith('noPermToken');
+      expect(repliesRepository.deleteReply).not.toHaveBeenCalled();
     });
   });
 
   describe('toggleLike', () => {
-    it('답글에 대한 좋아요 상태를 토글해야 한다 (좋아요가 없는 경우)', async () => {
+    it('좋아요가 없으면 새로 만들고 liked: true 반환', async () => {
       const replyId = 1;
       const createUserToken = 'token';
       repliesRepository.findLike.mockResolvedValue(null);
@@ -169,7 +174,7 @@ describe('RepliesService', () => {
       expect(result).toEqual({ liked: true, questionId: 1 });
     });
 
-    it('이미 좋아요가 존재하는 경우 좋아요를 제거해야 한다', async () => {
+    it('이미 좋아요가 있으면 제거하고 liked: false 반환', async () => {
       const replyId = 1;
       const createUserToken = 'token';
       repliesRepository.findLike.mockResolvedValue({
@@ -177,7 +182,6 @@ describe('RepliesService', () => {
         replyId,
         createUserToken,
       });
-
       repliesRepository.deleteLike.mockResolvedValue(MOCK_REPLY_LIKE);
 
       const result = await service.toggleLike(replyId, createUserToken);
@@ -189,7 +193,7 @@ describe('RepliesService', () => {
   });
 
   describe('getLikesCount', () => {
-    it('답글의 좋아요 수를 반환해야 한다', async () => {
+    it('답글 좋아요 수를 반환', async () => {
       const replyId = 1;
       repliesRepository.getLikesCount.mockResolvedValue(10);
 

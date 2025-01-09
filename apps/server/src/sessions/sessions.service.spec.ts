@@ -14,6 +14,7 @@ import {
   MOCK_USER,
 } from './test-sessions-service.mock';
 
+import { Roles } from '@common/roles/roles';
 import { SessionsAuthRepository } from '@sessions-auth/sessions-auth.repository';
 
 describe('세션 서비스 (SessionsService)', () => {
@@ -39,6 +40,7 @@ describe('세션 서비스 (SessionsService)', () => {
           useValue: {
             generateToken: jest.fn(),
             findByToken: jest.fn(),
+            findByTokenWithPermissions: jest.fn(),
           },
         },
       ],
@@ -70,7 +72,11 @@ describe('세션 서비스 (SessionsService)', () => {
         expiredAt: expect.any(Date),
         user: { connect: { userId: MOCK_USER.userId } },
       });
-      expect(sessionsAuthRepository.generateToken).toHaveBeenCalledWith(MOCK_USER.userId, MOCK_SESSION.sessionId, true);
+      expect(sessionsAuthRepository.generateToken).toHaveBeenCalledWith(
+        MOCK_USER.userId,
+        MOCK_SESSION.sessionId,
+        Roles.SUPER_HOST,
+      );
       expect(result).toEqual({ sessionId: MOCK_SESSION.sessionId });
     });
   });
@@ -107,20 +113,17 @@ describe('세션 서비스 (SessionsService)', () => {
 
   describe('terminateSession (세션 종료)', () => {
     it('호스트 사용자가 세션을 종료할 수 있어야 한다.', async () => {
-      sessionRepository.findById.mockResolvedValue(MOCK_SESSION);
-      sessionsAuthRepository.findByToken.mockResolvedValue(MOCK_SESSION_AUTH_HOST);
+      sessionsAuthRepository.findByTokenWithPermissions.mockResolvedValue(MOCK_SESSION_AUTH_HOST as any);
 
       const result = await service.terminateSession(MOCK_SESSION.sessionId, MOCK_SESSION_AUTH_HOST.token);
 
-      expect(sessionRepository.findById).toHaveBeenCalledWith(MOCK_SESSION.sessionId);
-      expect(sessionsAuthRepository.findByToken).toHaveBeenCalledWith(MOCK_SESSION_AUTH_HOST.token);
+      expect(sessionsAuthRepository.findByTokenWithPermissions).toHaveBeenCalledWith(MOCK_SESSION_AUTH_HOST.token);
       expect(sessionRepository.updateSessionExpiredAt).toHaveBeenCalledWith(MOCK_SESSION.sessionId, expect.any(Date));
       expect(result).toEqual({ expired: true });
     });
 
     it('호스트가 아닌 사용자가 세션을 종료하려고 하면 ForbiddenException이 발생해야 한다.', async () => {
-      sessionRepository.findById.mockResolvedValue(MOCK_SESSION);
-      sessionsAuthRepository.findByToken.mockResolvedValue(MOCK_SESSION_AUTH_NON_HOST);
+      sessionsAuthRepository.findByTokenWithPermissions.mockResolvedValue(MOCK_SESSION_AUTH_NON_HOST as any);
 
       await expect(service.terminateSession(MOCK_SESSION.sessionId, MOCK_SESSION_AUTH_NON_HOST.token)).rejects.toThrow(
         ForbiddenException,

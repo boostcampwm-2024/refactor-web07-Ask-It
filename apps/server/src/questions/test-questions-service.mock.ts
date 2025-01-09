@@ -1,3 +1,6 @@
+import { Permissions } from '@common/roles/permissions';
+import { Roles } from '@common/roles/roles';
+
 export const MOCK_DATE = new Date('2025-01-01T00:00:00.000Z');
 export const MOCK_DATE_ONE_HOUR_LATER = new Date(MOCK_DATE.getTime() + 60 * 60 * 1000);
 
@@ -80,20 +83,41 @@ export const MOCK_HOST_TOKENS = [
     sessionId: 'test-session',
     token: 'host-token',
     userId: 1,
-    isHost: true,
+    roleType: Roles.SUPER_HOST,
+    role: {
+      permissions: [],
+      name: Roles.SUPER_HOST,
+    },
   },
 ];
 
 export const MOCK_SESSION_AUTH_HOST = {
-  isHost: true,
+  roleType: Roles.SUPER_HOST,
   token: 'test-token',
   userId: 1,
   sessionId: 'test-session',
+  role: {
+    permissions: [
+      {
+        roleName: Roles.SUPER_HOST,
+        permissionId: Permissions.DELETE_QUESTION,
+      },
+      {
+        roleName: Roles.SUPER_HOST,
+        permissionId: Permissions.PIN_QUESTION,
+      },
+    ],
+    name: Roles.SUPER_HOST,
+  },
 };
 
 export const MOCK_SESSION_AUTH_NON_HOST = {
-  isHost: false,
+  roleType: Roles.PARTICIPANT,
   token: 'test-token',
   userId: 1,
   sessionId: 'test-session',
+  role: {
+    permissions: [],
+    name: Roles.PARTICIPANT,
+  },
 };
