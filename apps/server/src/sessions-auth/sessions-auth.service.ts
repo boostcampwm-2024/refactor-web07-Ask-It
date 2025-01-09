@@ -4,14 +4,12 @@ import { SessionAuthDto } from './dto/session-auth.dto';
 import { UpdateHostDto } from './dto/update-host.dto';
 import { SessionsAuthRepository } from './sessions-auth.repository';
 
-import { SessionsRepository } from '@sessions/sessions.repository';
+import { Permissions } from '@common/roles/permissions';
+import { Roles } from '@common/roles/roles';
 
 @Injectable()
 export class SessionsAuthService {
-  constructor(
-    private readonly sessionsAuthRepository: SessionsAuthRepository,
-    private readonly sessionsRepository: SessionsRepository,
-  ) {}
+  constructor(private readonly sessionsAuthRepository: SessionsAuthRepository) {}
 
   async validateOrCreateToken(data: SessionAuthDto, userId: number | null) {
     const { sessionId, token } = data;
@@ -32,12 +30,17 @@ export class SessionsAuthService {
 
   async findUsers(sessionId: string) {
     const users = await this.sessionsAuthRepository.findUsersBySessionId(sessionId);
-    return users.map(({ user, isHost }) => ({ ...user, isHost }));
+    return users.map(({ user, roleType }) => ({
+      ...user,
+      isHost: roleType === Roles.SUB_HOST || roleType === Roles.SUPER_HOST,
+    }));
   }
 
   async authorizeHost(userId: number, { sessionId, isHost, token }: UpdateHostDto) {
-    if (!(await this.validateSuperHost(sessionId, token)))
-      throw new ForbiddenException('세션 생성자만이 호스트 권한을 부여 할 수 있습니다.');
+    const { role } = await this.sessionsAuthRepository.findByTokenWithPermissions(token);
+    const granted = role.permissions.some(({ permissionId }) => permissionId === Permissions.GRANT_HOST);
+
+    if (!granted) throw new ForbiddenException('세션 생성자만이 호스트 권한을 부여 할 수 있습니다.');
     const targetToken = await this.sessionsAuthRepository.findTokenByUserId(userId, sessionId);
 
     if (!targetToken) {
@@ -48,15 +51,14 @@ export class SessionsAuthService {
       throw new BadRequestException('자신의 권한을 변경하려는 요청은 허용되지 않습니다.');
     }
 
-    const { user, isHost: updatedIsHost } = await this.sessionsAuthRepository.updateIsHost(targetToken, isHost);
-    return { userId: user.userId, nickname: user.nickname, isHost: updatedIsHost };
-  }
-
-  async validateSuperHost(sessionId: string, token: string) {
-    const [session, sessionAuth] = await Promise.all([
-      this.sessionsRepository.findById(sessionId),
-      this.sessionsAuthRepository.findByToken(token),
-    ]);
-    return session.createUserId === sessionAuth.userId;
+    const { user, roleType } = await this.sessionsAuthRepository.updateRoleType(
+      targetToken,
+      isHost ? Roles.SUB_HOST : Roles.PARTICIPANT,
+    );
+    return {
+      userId: user.userId,
+      nickname: user.nickname,
+      isHost: roleType === Roles.SUB_HOST || roleType === Roles.SUPER_HOST,
+    };
   }
 }

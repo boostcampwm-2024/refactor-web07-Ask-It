@@ -5,14 +5,14 @@ import { CreateReplyDto } from './dto/create-reply.dto';
 import { UpdateReplyBodyDto } from './dto/update-reply.dto';
 import { RepliesRepository } from './replies.repository';
 
-import { SessionsRepository } from '@sessions/sessions.repository';
+import { Permissions } from '@common/roles/permissions';
+import { Roles } from '@common/roles/roles';
 import { SessionsAuthRepository } from '@sessions-auth/sessions-auth.repository';
 
 @Injectable()
 export class RepliesService {
   constructor(
     private readonly repliesRepository: RepliesRepository,
-    private readonly sessionsRepository: SessionsRepository,
     private readonly sessionAuthRepository: SessionsAuthRepository,
   ) {}
 
@@ -39,15 +39,17 @@ export class RepliesService {
   }
 
   async deleteReply(replyId: number, token: string, reply: Reply) {
-    const { isHost } = await this.sessionAuthRepository.findByToken(token);
+    const { role } = await this.sessionAuthRepository.findByTokenWithPermissions(token);
+    const granted = role.permissions.some(({ permissionId }) => permissionId === Permissions.DELETE_REPLY);
 
-    if (!isHost && reply.createUserToken !== token) throw new ForbiddenException('권한이 없습니다.');
+    if (!granted && reply.createUserToken !== token) throw new ForbiddenException('권한이 없습니다.');
 
     return await this.repliesRepository.deleteReply(replyId);
   }
 
   async validateHost(token: string) {
-    return (await this.sessionAuthRepository.findByToken(token)).isHost;
+    const { roleType } = await this.sessionAuthRepository.findByToken(token);
+    return roleType === Roles.SUPER_HOST || roleType === Roles.SUB_HOST;
   }
 
   async toggleLike(replyId: number, createUserToken: string) {

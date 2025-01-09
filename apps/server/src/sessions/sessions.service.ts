@@ -4,6 +4,8 @@ import { CreateSessionDto } from './dto/create-session.dto';
 import { SessionCreateData } from './interface/session-create-data.interface';
 import { SessionsRepository } from './sessions.repository';
 
+import { Permissions } from '@common/roles/permissions';
+import { Roles } from '@common/roles/roles';
 import { SessionsAuthRepository } from '@sessions-auth/sessions-auth.repository';
 
 const SESSION_EXPIRATION_TIME = 7 * (24 * 60 * 60 * 1000); //일주일
@@ -28,7 +30,7 @@ export class SessionsService {
 
     const createdSession = await this.sessionRepository.create(sessionCreateData);
     const { sessionId } = createdSession;
-    await this.sessionsAuthRepository.generateToken(userId, sessionId, true);
+    await this.sessionsAuthRepository.generateToken(userId, sessionId, Roles.SUPER_HOST);
     return { sessionId };
   }
 
@@ -54,14 +56,11 @@ export class SessionsService {
   }
 
   async terminateSession(sessionId: string, token: string) {
-    const [{ createUserId }, { userId }] = await Promise.all([
-      this.sessionRepository.findById(sessionId),
-      this.sessionsAuthRepository.findByToken(token),
-    ]);
+    const { role } = await this.sessionsAuthRepository.findByTokenWithPermissions(token);
+    const granted = role.permissions.some(({ permissionId }) => permissionId === Permissions.TERMINATE_SESSION);
 
-    if (createUserId !== userId) {
-      throw new ForbiddenException('세션 생성자만이 이 작업을 수행할 수 있습니다.');
-    }
+    if (!granted) throw new ForbiddenException('세션 생성자만이 이 작업을 수행할 수 있습니다.');
+
     const expireTime = new Date();
     await this.sessionRepository.updateSessionExpiredAt(sessionId, expireTime);
     return { expired: true };

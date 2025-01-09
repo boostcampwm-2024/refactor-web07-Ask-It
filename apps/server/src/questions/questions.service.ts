@@ -6,6 +6,7 @@ import { GetQuestionDto } from './dto/get-question.dto';
 import { QuestionsRepository } from './questions.repository';
 
 import { BaseDto } from '@common/base.dto';
+import { Permissions } from '@common/roles/permissions';
 import {
   UpdateQuestionBodyDto,
   UpdateQuestionClosedDto,
@@ -132,9 +133,10 @@ export class QuestionsService {
   }
 
   async deleteQuestion(questionId: number, question: Question, { token }: BaseDto) {
-    const { isHost } = await this.sessionAuthRepository.findByToken(token);
+    const { role } = await this.sessionAuthRepository.findByTokenWithPermissions(token);
+    const granted = role.permissions.some(({ permissionId }) => permissionId === Permissions.DELETE_QUESTION);
 
-    if (!isHost) {
+    if (!granted) {
       if (question.createUserToken !== token) {
         throw new ForbiddenException('권한이 없습니다.');
       }
@@ -151,8 +153,9 @@ export class QuestionsService {
 
   async updateQuestionPinned(questionId: number, updateQuestionPinnedDto: UpdateQuestionPinnedDto) {
     const { token, pinned } = updateQuestionPinnedDto;
-    const { isHost } = await this.sessionAuthRepository.findByToken(token);
-    if (!isHost) throw new ForbiddenException('호스트만 이 작업을 수행할 수 있습니다.');
+    const { role } = await this.sessionAuthRepository.findByTokenWithPermissions(token);
+    const granted = role.permissions.some(({ permissionId }) => permissionId === Permissions.PIN_QUESTION);
+    if (!granted) throw new ForbiddenException('호스트만 이 작업을 수행할 수 있습니다.');
 
     return await this.questionRepository.updatePinned(questionId, pinned);
   }
@@ -161,8 +164,9 @@ export class QuestionsService {
     const { token, closed } = updateQuestionClosedDto;
     if (!closed) throw new ForbiddenException('이미 완료된 답변입니다.');
 
-    const { isHost } = await this.sessionAuthRepository.findByToken(token);
-    if (!isHost) throw new ForbiddenException('호스트만 이 작업을 수행할 수 있습니다.');
+    const { role } = await this.sessionAuthRepository.findByTokenWithPermissions(token);
+    const granted = role.permissions.some(({ permissionId }) => permissionId === Permissions.CLOSE_QUESTION);
+    if (!granted) throw new ForbiddenException('호스트만 이 작업을 수행할 수 있습니다.');
 
     return await this.questionRepository.updateClosed(questionId, closed);
   }
