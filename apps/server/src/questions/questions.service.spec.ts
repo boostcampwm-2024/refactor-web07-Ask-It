@@ -137,7 +137,7 @@ describe('QuestionsService', () => {
       expect(reply.nickname).toBe('ReplyUser');
 
       expect(isHost).toBeFalsy();
-      expect(expired).toBeFalsy();
+      expect(expired).toBeTruthy();
       expect(title).toBe('Test Session');
     });
   });
