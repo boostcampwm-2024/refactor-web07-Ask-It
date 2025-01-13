@@ -249,5 +249,6 @@ test('질문을 수정하면 리스트에 반영된다.', async ({ page }) => {
 
   const response = await responsePromise;
   expect(response.status()).toBe(200);
+  await page.waitForTimeout(150);
   await expect(page.locator('text=수정된 질문 내용')).toBeVisible();
 });

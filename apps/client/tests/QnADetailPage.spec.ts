@@ -208,6 +208,7 @@ test('답글 생성', async ({ page }) => {
   const response = await responsePromise;
   expect(response.status()).toBe(200);
 
+  await page.waitForTimeout(150);
   await expect(page.getByText('새로운 리플 내용')).toBeVisible();
 });
 
