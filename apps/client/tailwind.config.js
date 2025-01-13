@@ -31,10 +31,32 @@ export default {
             opacity: 0,
           },
         },
+        modalOpen: {
+          '0%': {
+            transform: 'scale(0.5)',
+            opacity: 0,
+          },
+          '100%': {
+            transform: 'scale(1)',
+            opacity: 1,
+          },
+        },
+        modalClose: {
+          '0%': {
+            transform: 'scale(1)',
+            opacity: 1,
+          },
+          '100%': {
+            transform: 'scale(0.5)',
+            opacity: 0,
+          },
+        },
       },
       animation: {
         fadeIn: 'fadeIn 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
         fadeOut: 'fadeOut 0.3s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+        modalOpen: 'modalOpen 0.15s ease-out',
+        modalClose: 'modalClose 0.15s ease-in',
       },
     },
   },
