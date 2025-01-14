@@ -1,7 +1,7 @@
 module.exports = {
   apps: [
     {
-      name: 'socket-server',
+      name: 'ws-server',
       script: 'pnpm',
       args: 'run start:prod:ws',
       interpreter: 'none',

@@ -94,8 +94,8 @@ jobs:
                       pnpm build
                       
                       # PM2 서버 관리
-                      pm2 stop server || true
-                      pm2 delete server || true
+                      pm2 stop http-server || true
+                      pm2 delete http-server || true
                       pm2 start ecosystem.config.js
 
             # 6. 소켓 서버 배포
@@ -134,6 +134,6 @@ jobs:
                       pnpm build
                       
                       # PM2 소켓 서버 관리
-                      pm2 stop socket-server || true
-                      pm2 delete socket-server
+                      pm2 stop ws-server || true
+                      pm2 delete ws-server
                       pm2 start ecosystem.config.js
