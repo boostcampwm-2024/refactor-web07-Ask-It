@@ -84,7 +84,7 @@ jobs:
                       export NVM_DIR="$HOME/.nvm"
                       [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
                       npm install -g pnpm pm2
-                      SERVER_DIR="~/Ask-It-server"
+                      SERVER_DIR="Ask-It-server"
                       if [ ! -d "$SERVER_DIR" ]; then
                         mkdir -p $SERVER_DIR
                       fi
@@ -120,7 +120,7 @@ jobs:
                       export NVM_DIR="$HOME/.nvm"
                       [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
                       npm install -g pnpm pm2
-                      SOCKET_DIR="~/Ask-It-socket"
+                      SOCKET_DIR="Ask-It-socket"
                       if [ ! -d "$SOCKET_DIR" ]; then
                         mkdir -p $SOCKET_DIR
                       fi
