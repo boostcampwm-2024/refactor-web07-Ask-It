@@ -32,6 +32,8 @@ jobs:
           cd apps/server
           pnpx prisma generate
           cd ../..
+          cd apps/socket-server
+          cd ../..
 
       - name: Run tests
         run: pnpm test

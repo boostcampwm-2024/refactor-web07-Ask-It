@@ -1,13 +1,13 @@
 module.exports = {
   apps: [
     {
-      name: 'http-server',
+      name: 'ws-server',
       script: 'pnpm',
-      args: 'run start:prod:http',
+      args: 'run start:prod:ws',
       interpreter: 'none',
       cwd: './',
       env: {
-        PORT: 3000,
+        PORT: 4000,
       },
     },
   ],
