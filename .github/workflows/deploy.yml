@@ -1,8 +1,9 @@
 name: Deploy Based on Labels
 
 on:
-    pull_request:
-        types: [labeled]
+    push:
+        branches:
+            - main # main 브랜치로 푸시될 때 실행
 
 jobs:
     deploy:
@@ -22,24 +23,25 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v2
 
-            # 3. 라벨 확인 및 분기 처리
-            - name: Determine Target Service Based on Labels
-              id: service
+            # 3. PR 라벨 가져오기
+            - name: Fetch Labels for the Related PR
+              id: fetch_labels
+              env:
+                  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
               run: |
-                  if [[ "${{ github.event.label.name }}" == "Deploy-Client" ]]; then
-                    echo "target=client" >> $GITHUB_ENV
-                  elif [[ "${{ github.event.label.name }}" == "Deploy-Server" ]]; then
-                    echo "target=server" >> $GITHUB_ENV
-                  elif [[ "${{ github.event.label.name }}" == "Deploy-Socket" ]]; then
-                    echo "target=socket" >> $GITHUB_ENV
-                  else
-                    echo "No valid deployment label found. Exiting..."
+                  PR_NUMBER=$(gh pr list --state open --base main --json number --jq '.[0].number')
+                  if [ -z "$PR_NUMBER" ]; then
+                    echo "No open PR found for the main branch. Exiting..."
                     exit 0
                   fi
+                  
+                  LABELS=$(gh pr view "$PR_NUMBER" --json labels --jq '.labels[].name')
+                  echo "Labels: $LABELS"
+                  echo "labels=$LABELS" >> $GITHUB_ENV
 
             # 4. 클라이언트 배포
             - name: Build and Deploy Client
-              if: env.target == 'client'
+              if: contains(env.labels, 'Deploy-Client')
               env:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -60,7 +62,7 @@ jobs:
 
             # 5. 서버 배포
             - name: Deploy Server
-              if: env.target == 'server'
+              if: contains(env.labels, 'Deploy-Server')
               uses: appleboy/ssh-action@v0.1.4
               with:
                   host: ${{ secrets.WEB_SERVER_IP }}
@@ -76,7 +78,6 @@ jobs:
                       if [ ! -d "$SERVER_DIR" ]; then
                         mkdir -p $SERVER_DIR
                       fi
-                      # 깃 리포지토리 가져오기
                       if [ ! -d "$SERVER_DIR/.git" ]; then
                         git clone "${{ secrets.GIT_REPO_URL }}" $SERVER_DIR
                       else
@@ -86,21 +87,19 @@ jobs:
                         pnpm install
                       fi
                       
-                      # 환경 변수 및 빌드
                       cd $SERVER_DIR/apps/server
                       echo "${{ secrets.SERVER_ENV }}" > .env
                       pnpx prisma generate
                       pnpx prisma migrate deploy
                       pnpm build
                       
-                      # PM2 서버 관리
                       pm2 stop http-server || true
                       pm2 delete http-server || true
                       pm2 start ecosystem.config.js
 
             # 6. 소켓 서버 배포
             - name: Deploy Socket Server
-              if: env.target == 'socket'
+              if: contains(env.labels, 'Deploy-Socket')
               uses: appleboy/ssh-action@v0.1.4
               with:
                   host: ${{ secrets.WEB_SERVER_IP }}
@@ -116,8 +115,6 @@ jobs:
                       if [ ! -d "$SOCKET_DIR" ]; then
                         mkdir -p $SOCKET_DIR
                       fi
-                      
-                      # 깃 리포지토리 가져오기
                       if [ ! -d "$SOCKET_DIR/.git" ]; then
                         git clone "${{ secrets.GIT_REPO_URL }}" $SOCKET_DIR
                       else
@@ -127,13 +124,11 @@ jobs:
                         pnpm install
                       fi
                       
-                      # 환경 변수 및 빌드
                       cd $SOCKET_DIR/apps/socket-server
                       echo "${{ secrets.SOCKET_ENV }}" > .env
                       pnpx prisma generate
                       pnpm build
                       
-                      # PM2 소켓 서버 관리
                       pm2 stop ws-server || true
                       pm2 delete ws-server
                       pm2 start ecosystem.config.js
