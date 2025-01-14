@@ -80,7 +80,7 @@ export async function loadSessionData(options: LoadSessionOptions) {
       // 질문 목록에 questionId가 없으면 리다이렉트
       const found = response.questions.some((q) => q.questionId === Number(questionId));
       if (!found) {
-        throw redirect({ to: `/session/${sessionId}` });
+        throw redirect({ to: `/session/$sessionId`, params: { sessionId } });
       }
 
       // fromDetailBehavior 옵션이 true면, 세부 로직 추가
