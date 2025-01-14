@@ -1,9 +1,9 @@
 import { createFileRoute, redirect } from '@tanstack/react-router';
-import { useEffect } from 'react';
+import React, { useEffect } from 'react';
 
 import { loadSessionData, useSessionStore } from '@/features/session';
 
-import { QuestionList } from '@/components';
+const LazyQuestionList = React.lazy(() => import('@/components').then((module) => ({ default: module.QuestionList })));
 
 function SessionComponent() {
   const { sessionTitle } = useSessionStore();
@@ -14,7 +14,7 @@ function SessionComponent() {
     }
   }, [sessionTitle]);
 
-  return <QuestionList />;
+  return <LazyQuestionList />;
 }
 
 export const Route = createFileRoute('/session/$sessionId/')({

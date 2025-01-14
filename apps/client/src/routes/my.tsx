@@ -1,11 +1,16 @@
 import { createFileRoute, redirect } from '@tanstack/react-router';
+import React from 'react';
 
 import { refresh, useAuthStore } from '@/features/auth';
 
-import { MyPage } from '@/pages';
+const LazyMyPage = React.lazy(() => import('@/pages').then((module) => ({ default: module.MyPage })));
 
 export const Route = createFileRoute('/my')({
-  component: MyPage,
+  component: () => (
+    <React.Suspense>
+      <LazyMyPage />
+    </React.Suspense>
+  ),
   beforeLoad: () => {
     const { isLogin, setAuthInformation } = useAuthStore.getState();
 
