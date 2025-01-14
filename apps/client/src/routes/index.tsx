@@ -16,5 +16,9 @@ export const Route = createFileRoute('/')({
         })
         .catch(console.error);
   },
-  component: LazyHomePage,
+  component: () => (
+    <React.Suspense>
+      <LazyHomePage />
+    </React.Suspense>
+  ),
 });
