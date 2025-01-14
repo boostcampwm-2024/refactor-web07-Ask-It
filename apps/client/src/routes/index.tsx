@@ -1,8 +1,9 @@
 import { createFileRoute } from '@tanstack/react-router';
+import React from 'react';
 
 import { refresh, useAuthStore } from '@/features/auth';
 
-import { HomePage } from '@/pages';
+const LazyHomePage = React.lazy(() => import('@/pages').then((module) => ({ default: module.HomePage })));
 
 export const Route = createFileRoute('/')({
   beforeLoad: () => {
@@ -15,5 +16,9 @@ export const Route = createFileRoute('/')({
         })
         .catch(console.error);
   },
-  component: HomePage,
+  component: () => (
+    <React.Suspense>
+      <LazyHomePage />
+    </React.Suspense>
+  ),
 });

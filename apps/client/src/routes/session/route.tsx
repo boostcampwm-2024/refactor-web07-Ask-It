@@ -1,8 +1,9 @@
 import { createFileRoute, Outlet, redirect, ScrollRestoration } from '@tanstack/react-router';
+import React from 'react';
 
 import { SocketProvider } from '@/features/socket';
 
-import { ChattingList } from '@/components';
+const LazyChattingList = React.lazy(() => import('@/components').then((module) => ({ default: module.ChattingList })));
 
 export const Route = createFileRoute('/session')({
   beforeLoad: ({ location }) => {
@@ -13,7 +14,7 @@ export const Route = createFileRoute('/session')({
       <SocketProvider>
         <ScrollRestoration />
         <Outlet />
-        <ChattingList />
+        <LazyChattingList />
       </SocketProvider>
     </div>
   ),
