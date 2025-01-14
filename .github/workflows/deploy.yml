@@ -24,27 +24,36 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v2
               with:
-                fetch-depth: 0 # 전체 히스토리 가져오기
+                  # 필요 시 전체 이력을 가져오도록 설정 (얕은 복사 방지)
+                  fetch-depth: 0
 
-            - name: Conditionally unshallow
+            - name: Ensure Repo is Non-Shallow
               run: |
-                  if git rev-parse --is-shallow-repository; then
-                  echo "Repository is shallow, unshallowing..."
-                  git fetch origin main --unshallow
+                  if git rev-parse --is-shallow-repository | grep -q "true"; then
+                    echo "Repository is shallow. Attempting unshallow..."
+                    git fetch --unshallow
                   else
-                  echo "Repository is not shallow. Skipping unshallow."
+                    echo "Repository is already non-shallow."
                   fi
 
-            - name: Determine changed files
+            - name: Compare HEAD with HEAD^
+              id: diff
               run: |
-                  echo "Before SHA: ${{ github.event.before }}"
-                  echo "Current SHA: ${{ github.sha }}"
-                  git diff --name-only ${{ github.event.before }} ${{ github.sha }} > changed_files.txt
-                  echo "CHANGED_FILES=$(cat changed_files.txt)" >> $GITHUB_ENV
-                  cat changed_files.txt
-          
+                  if git cat-file -e HEAD^; then
+                    echo "Comparing HEAD^ with HEAD"
+                    git diff --name-only HEAD^ HEAD > changed_files.txt
+                    # 줄바꿈을 공백으로 치환
+                    CHANGED_FILES=$(tr '\n' ' ' < changed_files.txt)
+                    # 한 줄로 된 문자열만 GITHUB_ENV에 저장 가능
+                    echo "CHANGED_FILES=$CHANGED_FILES" >> $GITHUB_ENV
+                    cat changed_files.txt
+                  else
+                    echo "HEAD^ does not exist (probably only one commit)."
+                    echo "CHANGED_FILES=" >> $GITHUB_ENV
+                  fi
+            
 
-          # 4. 클라이언트 배포
+            # 4. 클라이언트 배포
             - name: Deploy Client
               if: contains(env.CHANGED_FILES, 'apps/client/')
 
