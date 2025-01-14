@@ -101,6 +101,7 @@ jobs:
                       echo "${{ secrets.SERVER_ENV }}" > .env
                       pnpx prisma generate
                       pnpx prisma migrate deploy
+                      pnpm build
 
                       pm2 stop http-server || true
                       pm2 delete http-server || true
