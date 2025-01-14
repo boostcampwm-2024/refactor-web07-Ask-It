@@ -1,9 +1,8 @@
-name: Deploy to Development Server
+name: Deploy Based on Labels
 
 on:
-    push:
-        branches:
-            - main # main 브랜치에 변경 사항이 푸시될 때만 실행
+    pull_request:
+        types: [labeled]
 
 jobs:
     deploy:
@@ -14,7 +13,7 @@ jobs:
             - name: Set up Node.js
               uses: actions/setup-node@v2
               with:
-                  node-version: "18" # 원하는 Node.js 버전으로 설정
+                  node-version: "18"
 
             - name: Install pnpm
               run: npm install -g pnpm
@@ -23,62 +22,118 @@ jobs:
             - name: Checkout repository
               uses: actions/checkout@v2
 
-            # Create client .env file
-            - name: Create .env file
-              run: echo "${{ secrets.FRONT_END_ENV }}" > apps/client/.env
-
-            # 3. Build Project
-            - name: Install dependencies and build project
+            # 3. 라벨 확인 및 분기 처리
+            - name: Determine Target Service Based on Labels
+              id: service
               run: |
-                  pnpm install
-                  cd apps/client
-                  pnpm run build
+                  if [[ "${{ github.event.label.name }}" == "Deploy-Client" ]]; then
+                    echo "target=client" >> $GITHUB_ENV
+                  elif [[ "${{ github.event.label.name }}" == "Deploy-Server" ]]; then
+                    echo "target=server" >> $GITHUB_ENV
+                  elif [[ "${{ github.event.label.name }}" == "Deploy-Socket" ]]; then
+                    echo "target=socket" >> $GITHUB_ENV
+                  else
+                    echo "No valid deployment label found. Exiting..."
+                    exit 0
+                  fi
 
-            # 4. Upload static files to Object Storage
-            - name: Upload to Object Storage
+            # 4. 클라이언트 배포
+            - name: Build and Deploy Client
+              if: env.target == 'client'
               env:
                   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
                   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                  AWS_DEFAULT_REGION: "kr-standard" # 리전 설정
+                  AWS_DEFAULT_REGION: "kr-standard"
               run: |
-                  # AWS CLI 설치 확인 및 설정
+                  echo "${{ secrets.FRONT_END_ENV }}" > apps/client/.env
+                  cd apps/client
+                  pnpm install
+                  pnpm run build
+                  
+                  # AWS CLI 설치 및 설정
                   sudo apt-get update
                   sudo apt-get install -y python3-pip
                   pip3 install --upgrade awscli
+                  
+                  # 빌드된 정적 파일 업로드
+                  aws --endpoint-url=https://kr.object.ncloudstorage.com s3 sync ./dist s3://ask-it-static/dist --acl public-read
 
-                  # 빌드된 정적 파일을 오브젝트 스토리지로 업로드
-                  aws --endpoint-url=https://kr.object.ncloudstorage.com s3 sync ./apps/client/dist s3://ask-it-static/dist --acl public-read
-
-            # 5. Deploy Code and Start Server
-            - name: Deploy to Development Server
+            # 5. 서버 배포
+            - name: Deploy Server
+              if: env.target == 'server'
               uses: appleboy/ssh-action@v0.1.4
               with:
                   host: ${{ secrets.WEB_SERVER_IP }}
                   username: ${{ secrets.SERVER_USER }}
                   key: ${{ secrets.NCP_SERVER_RSA_PRIVATE_KEY }}
                   script: |
-                      # NVM 설정 로드
                       export NVM_DIR="$HOME/.nvm"
                       [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-
-                      # 전역 패키지 설치
-                      npm install -g pnpm
-                      npm install -g pm2
-
-                      # 프로젝트 디렉토리 이동 및 최신 코드 가져오기
-                      rm -rf Ask-It
-                      git clone "${{ secrets.GIT_REPO_URL }}" ~/Ask-It
-                      cd ~/Ask-It
-                      pnpm install
-
-                      # 서버 디렉토리로 이동하여 환경 변수 설정
-                      cd apps/server
+                      npm install -g pnpm pm2
+                      
+                      # 서버 디렉토리 설정
+                      SERVER_DIR="~/Ask-It-server"
+                      if [ ! -d "$SERVER_DIR" ]; then
+                        mkdir -p $SERVER_DIR
+                      fi
+                      # 깃 리포지토리 가져오기
+                      if [ ! -d "$SERVER_DIR/.git" ]; then
+                        git clone "${{ secrets.GIT_REPO_URL }}" $SERVER_DIR
+                      else
+                        cd $SERVER_DIR
+                        git reset --hard
+                        git pull origin main
+                        pnpm install
+                      fi
+                      
+                      # 환경 변수 및 빌드
+                      cd $SERVER_DIR/apps/server
                       echo "${{ secrets.SERVER_ENV }}" > .env
-
-                      # pm2로 기존 프로세스 종료 및 새 프로세스 시작
-                      pm2 stop all || true
-                      pm2 delete all || true
                       pnpx prisma generate
                       pnpx prisma migrate deploy
                       pnpm build
+                      
+                      # PM2 서버 관리
+                      pm2 stop server || true
+                      pm2 delete server || true
+                      pm2 start ecosystem.config.js
+
+            # 6. 소켓 서버 배포
+            - name: Deploy Socket Server
+              if: env.target == 'socket'
+              uses: appleboy/ssh-action@v0.1.4
+              with:
+                  host: ${{ secrets.WEB_SERVER_IP }}
+                  username: ${{ secrets.SERVER_USER }}
+                  key: ${{ secrets.NCP_SERVER_RSA_PRIVATE_KEY }}
+                  script: |
+                      export NVM_DIR="$HOME/.nvm"
+                      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
+                      npm install -g pnpm pm2
+                      
+                      # 소켓 서버 디렉토리 설정
+                      SOCKET_DIR="~/Ask-It-socket"
+                      if [ ! -d "$SOCKET_DIR" ]; then
+                        mkdir -p $SOCKET_DIR
+                      fi
+                      
+                      # 깃 리포지토리 가져오기
+                      if [ ! -d "$SOCKET_DIR/.git" ]; then
+                        git clone "${{ secrets.GIT_REPO_URL }}" $SOCKET_DIR
+                      else
+                        cd $SOCKET_DIR
+                        git reset --hard
+                        git pull origin main
+                        pnpm install
+                      fi
+                      
+                      # 환경 변수 및 빌드
+                      cd $SOCKET_DIR/apps/socket-server
+                      echo "${{ secrets.SOCKET_ENV }}" > .env
+                      pnpx prisma generate
+                      pnpm build
+                      
+                      # PM2 소켓 서버 관리
+                      pm2 stop socket-server || true
+                      pm2 delete socket-server
                       pm2 start ecosystem.config.js
