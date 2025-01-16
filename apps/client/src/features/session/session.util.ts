@@ -9,13 +9,9 @@ export interface LoadSessionOptions {
   sessionId: string;
   questionId?: string; // questionId가 필요한 경우만 사용
   skipRefresh?: boolean; // 이미 로그인/refresh 검증을 밖에서 했으면 생략
-  fromDetailBehavior?: boolean; // fromDetail 관련 로직 처리 여부
+  fromDetailBehavior?: boolean;
 }
 
-/**
- * 세션 & QnA & 채팅 정보를 한 번에 로드해 주는 유틸.
- * 에러가 발생하면 내부에서 redirect를 throw할 수 있음.
- */
 export async function loadSessionData(options: LoadSessionOptions) {
   const { sessionId, questionId, skipRefresh = false, fromDetailBehavior = false } = options;
 

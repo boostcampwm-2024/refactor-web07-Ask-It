@@ -7,6 +7,7 @@ import { GoCheck } from 'react-icons/go';
 import { GrClose, GrLike, GrLikeFill, GrPin } from 'react-icons/gr';
 import { RiQuestionAnswerLine } from 'react-icons/ri';
 import Markdown from 'react-markdown';
+import { useShallow } from 'zustand/react/shallow';
 
 import { useModal } from '@/features/modal';
 import { useSessionStore } from '@/features/session';
@@ -34,13 +35,17 @@ function QuestionItem({ question, onQuestionSelect }: QuestionItemProps) {
     <CreateQuestionModal question={question} />,
   );
 
-  const sessionToken = useSessionStore((state) => state.sessionToken);
-  const sessionId = useSessionStore((state) => state.sessionId);
-  const isHost = useSessionStore((state) => state.isHost);
-  const expired = useSessionStore((state) => state.expired);
-  const removeQuestion = useSessionStore((state) => state.removeQuestion);
-  const updateQuestion = useSessionStore((state) => state.updateQuestion);
-  const setFromDetail = useSessionStore((state) => state.setFromDetail);
+  const { sessionToken, sessionId, isHost, expired, removeQuestion, updateQuestion, setFromDetail } = useSessionStore(
+    useShallow((state) => ({
+      sessionToken: state.sessionToken,
+      sessionId: state.sessionId,
+      isHost: state.isHost,
+      expired: state.expired,
+      removeQuestion: state.removeQuestion,
+      updateQuestion: state.updateQuestion,
+      setFromDetail: state.setFromDetail,
+    })),
+  );
 
   const addToast = useToastStore((state) => state.addToast);
 

@@ -3,6 +3,7 @@ import { motion } from 'motion/react';
 import { useMemo, useRef, useState } from 'react';
 import { GrValidate } from 'react-icons/gr';
 import { IoClose, IoShareSocialOutline } from 'react-icons/io5';
+import { useShallow } from 'zustand/react/shallow';
 
 import { useModal } from '@/features/modal';
 import { postSessionTerminate, useSessionStore } from '@/features/session';
@@ -15,14 +16,19 @@ import QuestionSection from '@/components/qna/QuestionSection';
 import SessionSettingsDropdown from '@/components/qna/SessionSettingsDropdown';
 
 function QuestionList() {
-  const isHost = useSessionStore((state) => state.isHost);
-  const expired = useSessionStore((state) => state.expired);
-  const questions = useSessionStore((state) => state.questions);
-  const sessionId = useSessionStore((state) => state.sessionId);
-  const sessionTitle = useSessionStore((state) => state.sessionTitle);
-  const sessionToken = useSessionStore((state) => state.sessionToken);
-  const setExpired = useSessionStore((state) => state.setExpired);
-  const setSelectedQuestionId = useSessionStore((state) => state.setSelectedQuestionId);
+  const { isHost, expired, questions, sessionId, sessionTitle, sessionToken, setExpired, setSelectedQuestionId } =
+    useSessionStore(
+      useShallow((state) => ({
+        isHost: state.isHost,
+        expired: state.expired,
+        questions: state.questions,
+        sessionId: state.sessionId,
+        sessionTitle: state.sessionTitle,
+        sessionToken: state.sessionToken,
+        setExpired: state.setExpired,
+        setSelectedQuestionId: state.setSelectedQuestionId,
+      })),
+    );
 
   const addToast = useToastStore((state) => state.addToast);
 

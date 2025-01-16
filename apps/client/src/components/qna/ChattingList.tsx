@@ -1,5 +1,6 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 
 import { useSessionStore } from '@/features/session';
 import { getChattingList } from '@/features/session/chatting';
@@ -8,7 +9,16 @@ import { useSocket } from '@/features/socket';
 import ChattingMessage from '@/components/qna/ChattingMessage';
 
 function ChattingList() {
-  const { expired, chatting, participantCount, sessionId, sessionToken, addChattingToFront } = useSessionStore();
+  const { expired, chatting, participantCount, sessionId, sessionToken, addChattingToFront } = useSessionStore(
+    useShallow((state) => ({
+      expired: state.expired,
+      chatting: state.chatting,
+      participantCount: state.participantCount,
+      sessionId: state.sessionId,
+      sessionToken: state.sessionToken,
+      addChattingToFront: state.addChattingToFront,
+    })),
+  );
 
   const [message, setMessage] = useState('');
   const [isBottom, setIsBottom] = useState(true);

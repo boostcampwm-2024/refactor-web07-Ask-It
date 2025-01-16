@@ -7,7 +7,7 @@ import { useModal } from '@/features/modal';
 import { Button, CreateSessionModal, FeatureCard } from '@/components';
 
 function HomePage() {
-  const { isLogin } = useAuthStore();
+  const isLogin = useAuthStore((state) => state.isLogin);
 
   const { Modal: CreateSession, openModal: openCreateSessionModal } = useModal(<CreateSessionModal />);
 

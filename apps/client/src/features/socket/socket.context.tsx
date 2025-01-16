@@ -1,5 +1,6 @@
 /* eslint-disable import/prefer-default-export */
 import { createContext, ReactNode, useEffect, useMemo, useState } from 'react';
+import { useShallow } from 'zustand/react/shallow';
 
 import { useSessionStore } from '@/features/session';
 import { SocketService } from '@/features/socket/socket.service';
@@ -15,9 +16,13 @@ interface SocketProviderProps {
 }
 
 export function SocketProvider({ children }: SocketProviderProps) {
-  const expired = useSessionStore((state) => state.expired);
-  const sessionId = useSessionStore((state) => state.sessionId);
-  const sessionToken = useSessionStore((state) => state.sessionToken);
+  const { expired, sessionId, sessionToken } = useSessionStore(
+    useShallow((state) => ({
+      expired: state.expired,
+      sessionId: state.sessionId,
+      sessionToken: state.sessionToken,
+    })),
+  );
 
   const [socket, setSocket] = useState<SocketService>();
 

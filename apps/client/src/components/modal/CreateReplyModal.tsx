@@ -1,6 +1,7 @@
 import { useMutation } from '@tanstack/react-query';
 import { useEffect, useState } from 'react';
 import Markdown from 'react-markdown';
+import { useShallow } from 'zustand/react/shallow';
 
 import { useModalContext } from '@/features/modal';
 import { useSessionStore } from '@/features/session';
@@ -17,9 +18,17 @@ interface CreateReplyModalProps {
 function CreateReplyModal({ question, reply }: CreateReplyModalProps) {
   const { closeModal } = useModalContext();
 
-  const { addToast } = useToastStore();
+  const addToast = useToastStore((state) => state.addToast);
 
-  const { sessionToken, sessionId, expired, addReply, updateReply } = useSessionStore();
+  const { sessionToken, sessionId, expired, addReply, updateReply } = useSessionStore(
+    useShallow((state) => ({
+      sessionToken: state.sessionToken,
+      sessionId: state.sessionId,
+      expired: state.expired,
+      addReply: state.addReply,
+      updateReply: state.updateReply,
+    })),
+  );
 
   const [body, setBody] = useState('');
 
