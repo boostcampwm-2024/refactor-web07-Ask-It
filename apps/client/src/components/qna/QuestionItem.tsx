@@ -30,13 +30,19 @@ interface QuestionItemProps {
 function QuestionItem({ question, onQuestionSelect }: QuestionItemProps) {
   const navigate = useNavigate();
 
-  const { addToast } = useToastStore();
-
   const { Modal: CreateQuestion, openModal: openCreateQuestionModal } = useModal(
     <CreateQuestionModal question={question} />,
   );
 
-  const { sessionToken, sessionId, isHost, expired, removeQuestion, updateQuestion, setFromDetail } = useSessionStore();
+  const sessionToken = useSessionStore((state) => state.sessionToken);
+  const sessionId = useSessionStore((state) => state.sessionId);
+  const isHost = useSessionStore((state) => state.isHost);
+  const expired = useSessionStore((state) => state.expired);
+  const removeQuestion = useSessionStore((state) => state.removeQuestion);
+  const updateQuestion = useSessionStore((state) => state.updateQuestion);
+  const setFromDetail = useSessionStore((state) => state.setFromDetail);
+
+  const addToast = useToastStore((state) => state.addToast);
 
   const handleSelectQuestionId = () => {
     if (!sessionId) return;

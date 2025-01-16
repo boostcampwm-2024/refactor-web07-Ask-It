@@ -6,7 +6,7 @@ import { loadSessionData, useSessionStore } from '@/features/session';
 const LazyQuestionList = React.lazy(() => import('@/components').then((module) => ({ default: module.QuestionList })));
 
 function SessionComponent() {
-  const { sessionTitle } = useSessionStore();
+  const sessionTitle = useSessionStore((state) => state.sessionTitle);
 
   useEffect(() => {
     if (sessionTitle) {

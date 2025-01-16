@@ -1,6 +1,6 @@
 import { isAxiosError } from 'axios';
 import { motion } from 'motion/react';
-import { useRef, useState } from 'react';
+import { useMemo, useRef, useState } from 'react';
 import { GrValidate } from 'react-icons/gr';
 import { IoClose, IoShareSocialOutline } from 'react-icons/io5';
 
@@ -15,12 +15,18 @@ import QuestionSection from '@/components/qna/QuestionSection';
 import SessionSettingsDropdown from '@/components/qna/SessionSettingsDropdown';
 
 function QuestionList() {
-  const { isHost, expired, questions, sessionId, sessionTitle, sessionToken, setExpired, setSelectedQuestionId } =
-    useSessionStore();
+  const isHost = useSessionStore((state) => state.isHost);
+  const expired = useSessionStore((state) => state.expired);
+  const questions = useSessionStore((state) => state.questions);
+  const sessionId = useSessionStore((state) => state.sessionId);
+  const sessionTitle = useSessionStore((state) => state.sessionTitle);
+  const sessionToken = useSessionStore((state) => state.sessionToken);
+  const setExpired = useSessionStore((state) => state.setExpired);
+  const setSelectedQuestionId = useSessionStore((state) => state.setSelectedQuestionId);
+
+  const addToast = useToastStore((state) => state.addToast);
 
   const socket = useSocket();
-
-  const { addToast } = useToastStore();
 
   const { Modal: CreateQuestion, openModal: openCreateQuestionModal } = useModal(<CreateQuestionModal />);
 
@@ -62,83 +68,89 @@ function QuestionList() {
 
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  const sections = [
-    {
-      title: '고정된 질문',
-      initialOpen: true,
-      questions: questions
-        .filter((question) => question.pinned && !question.closed)
-        .sort((a, b) => b.likesCount - a.likesCount),
-    },
-    {
-      title: '질문',
-      initialOpen: true,
-      questions: questions
-        .filter((question) => !question.pinned && !question.closed)
-        .sort((a, b) => b.likesCount - a.likesCount),
-    },
-    {
-      title: '답변 완료된 질문',
-      initialOpen: false,
-      questions: questions
-        .filter((question) => question.closed)
-        .sort((a, b) => {
-          if (a.pinned && !b.pinned) return -1;
-          if (!a.pinned && b.pinned) return 1;
-          return b.likesCount - a.likesCount;
-        }),
-    },
-  ];
-
-  const sessionButtons = [
-    {
-      key: '공유',
-      button: (
-        <div className='flex w-full cursor-pointer flex-row items-center gap-2'>
-          <IoShareSocialOutline />
-          <p>공유</p>
-        </div>
-      ),
-      onClick: async () => {
-        const shareUrl = `${window.location.origin}/session/${sessionId}`;
-
-        try {
-          await navigator.clipboard.writeText(shareUrl);
-          addToast({
-            type: 'SUCCESS',
-            message: '세션 링크가 클립보드에 복사되었습니다',
-            duration: 3000,
-          });
-        } catch (err) {
-          addToast({
-            type: 'ERROR',
-            message: '링크 복사에 실패했습니다',
-            duration: 3000,
-          });
-        }
+  const sections = useMemo(
+    () => [
+      {
+        title: '고정된 질문',
+        initialOpen: true,
+        questions: questions
+          .filter((question) => question.pinned && !question.closed)
+          .sort((a, b) => b.likesCount - a.likesCount),
       },
-    },
-    {
-      key: '호스트 설정',
-      button: (
-        <div className='flex w-full cursor-pointer flex-row items-center gap-2'>
-          <GrValidate />
-          <p>호스트 설정</p>
-        </div>
-      ),
-      onClick: () => openSessionParticipantsModal(),
-    },
-    {
-      key: '세션 종료',
-      button: (
-        <div className='flex w-full cursor-pointer flex-row items-center gap-2 text-red-600'>
-          <IoClose />
-          <p>세션 종료</p>
-        </div>
-      ),
-      onClick: () => openSessionTerminateModal(),
-    },
-  ];
+      {
+        title: '질문',
+        initialOpen: true,
+        questions: questions
+          .filter((question) => !question.pinned && !question.closed)
+          .sort((a, b) => b.likesCount - a.likesCount),
+      },
+      {
+        title: '답변 완료된 질문',
+        initialOpen: false,
+        questions: questions
+          .filter((question) => question.closed)
+          .sort((a, b) => {
+            if (a.pinned && !b.pinned) return -1;
+            if (!a.pinned && b.pinned) return 1;
+            return b.likesCount - a.likesCount;
+          }),
+      },
+    ],
+    [questions],
+  );
+
+  const sessionButtons = useMemo(
+    () => [
+      {
+        key: '공유',
+        button: (
+          <div className='flex w-full cursor-pointer flex-row items-center gap-2'>
+            <IoShareSocialOutline />
+            <p>공유</p>
+          </div>
+        ),
+        onClick: async () => {
+          const shareUrl = `${window.location.origin}/session/${sessionId}`;
+
+          try {
+            await navigator.clipboard.writeText(shareUrl);
+            addToast({
+              type: 'SUCCESS',
+              message: '세션 링크가 클립보드에 복사되었습니다',
+              duration: 3000,
+            });
+          } catch (err) {
+            addToast({
+              type: 'ERROR',
+              message: '링크 복사에 실패했습니다',
+              duration: 3000,
+            });
+          }
+        },
+      },
+      {
+        key: '호스트 설정',
+        button: (
+          <div className='flex w-full cursor-pointer flex-row items-center gap-2'>
+            <GrValidate />
+            <p>호스트 설정</p>
+          </div>
+        ),
+        onClick: () => openSessionParticipantsModal(),
+      },
+      {
+        key: '세션 종료',
+        button: (
+          <div className='flex w-full cursor-pointer flex-row items-center gap-2 text-red-600'>
+            <IoClose />
+            <p>세션 종료</p>
+          </div>
+        ),
+        onClick: () => openSessionTerminateModal(),
+      },
+    ],
+    [sessionId, addToast, openSessionParticipantsModal, openSessionTerminateModal],
+  );
 
   return (
     <>

@@ -1,4 +1,4 @@
-import { ReactNode, useContext, useMemo, useState } from 'react';
+import { ReactNode, useCallback, useContext, useMemo, useState } from 'react';
 import { createPortal } from 'react-dom';
 
 import Background from '@/features/modal/Background';
@@ -8,35 +8,36 @@ export const useModal = (children: ReactNode) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
 
-  const openModal = () => {
+  const openModal = useCallback(() => {
     setIsOpen(true);
     setIsClosing(false);
-  };
+  }, []);
 
-  const closeModal = () => {
+  const closeModal = useCallback(() => {
     setIsClosing(true);
     setTimeout(() => setIsOpen(false), 150);
-  };
-
-  const contextValue = useMemo(() => ({ openModal, closeModal }), []);
+  }, []);
 
   const Modal = useMemo(() => {
     if (!isOpen) return null;
     return createPortal(
-      <ModalContext.Provider value={contextValue}>
+      <ModalContext.Provider value={{ openModal, closeModal }}>
         <Background>
           <div className={`modal-content ${isClosing ? 'animate-modalClose' : 'animate-modalOpen'}`}>{children}</div>
         </Background>
       </ModalContext.Provider>,
       document.body,
     );
-  }, [isOpen, isClosing, children, contextValue]);
+  }, [isOpen, openModal, closeModal, isClosing, children]);
 
-  return {
-    Modal,
-    openModal,
-    closeModal,
-  };
+  return useMemo(
+    () => ({
+      Modal,
+      openModal,
+      closeModal,
+    }),
+    [Modal, openModal, closeModal],
+  );
 };
 
 export const useModalContext = () => {

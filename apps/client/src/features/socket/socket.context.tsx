@@ -15,7 +15,9 @@ interface SocketProviderProps {
 }
 
 export function SocketProvider({ children }: SocketProviderProps) {
-  const { expired, sessionId, sessionToken } = useSessionStore();
+  const expired = useSessionStore((state) => state.expired);
+  const sessionId = useSessionStore((state) => state.sessionId);
+  const sessionToken = useSessionStore((state) => state.sessionToken);
 
   const [socket, setSocket] = useState<SocketService>();
 
