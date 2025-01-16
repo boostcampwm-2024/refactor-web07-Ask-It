@@ -2,6 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
 import { useEffect, useState } from 'react';
 import { IoClose } from 'react-icons/io5';
+import { useShallow } from 'zustand/react/shallow';
 
 import { useModalContext } from '@/features/modal';
 import { getSessionUsers, patchSessionHost, useSessionStore } from '@/features/session';
@@ -13,10 +14,19 @@ import Participant from '@/components/modal/Participant';
 function SessionParticipantsModal() {
   const { closeModal } = useModalContext();
 
-  const { addToast } = useToastStore();
-
   const { sessionUsers, sessionId, sessionToken, setSessionUsers, updateSessionUser, updateReplyIsHost } =
-    useSessionStore();
+    useSessionStore(
+      useShallow((state) => ({
+        sessionUsers: state.sessionUsers,
+        sessionId: state.sessionId,
+        sessionToken: state.sessionToken,
+        setSessionUsers: state.setSessionUsers,
+        updateSessionUser: state.updateSessionUser,
+        updateReplyIsHost: state.updateReplyIsHost,
+      })),
+    );
+
+  const addToast = useToastStore((state) => state.addToast);
 
   const [selectedUserId, setSelectedUserId] = useState<number>();
 

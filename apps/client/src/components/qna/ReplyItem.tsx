@@ -4,6 +4,7 @@ import { useCallback } from 'react';
 import { FiEdit2 } from 'react-icons/fi';
 import { GrClose, GrLike, GrLikeFill, GrValidate } from 'react-icons/gr';
 import Markdown from 'react-markdown';
+import { useShallow } from 'zustand/react/shallow';
 
 import { useModal } from '@/features/modal';
 import { useSessionStore } from '@/features/session';
@@ -19,9 +20,17 @@ interface ReplyItemProps {
 }
 
 function ReplyItem({ question, reply }: ReplyItemProps) {
-  const { addToast } = useToastStore();
+  const addToast = useToastStore((state) => state.addToast);
 
-  const { sessionId, sessionToken, isHost, expired, updateReply } = useSessionStore();
+  const { sessionId, sessionToken, isHost, expired, updateReply } = useSessionStore(
+    useShallow((state) => ({
+      sessionId: state.sessionId,
+      sessionToken: state.sessionToken,
+      isHost: state.isHost,
+      expired: state.expired,
+      updateReply: state.updateReply,
+    })),
+  );
 
   const { Modal: CreateReply, openModal: openCreateReplyModal } = useModal(
     <CreateReplyModal question={question} reply={reply} />,

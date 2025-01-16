@@ -13,9 +13,9 @@ import { ValidationStatusWithMessage } from '@/shared';
 export function useSignInForm() {
   const router = useRouterState();
 
-  const { setAuthInformation } = useAuthStore();
+  const setAuthInformation = useAuthStore((state) => state.setAuthInformation);
 
-  const { addToast } = useToastStore();
+  const addToast = useToastStore((state) => state.addToast);
 
   const [email, setEmail] = useState('');
 

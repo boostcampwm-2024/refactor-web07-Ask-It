@@ -1,6 +1,7 @@
 import { useNavigate } from '@tanstack/react-router';
 import { GoArrowLeft } from 'react-icons/go';
 import Markdown from 'react-markdown';
+import { useShallow } from 'zustand/react/shallow';
 
 import { useModal } from '@/features/modal';
 import { useSessionStore } from '@/features/session';
@@ -11,9 +12,14 @@ import ReplyItem from '@/components/qna/ReplyItem';
 function QuestionDetail() {
   const navigate = useNavigate();
 
-  const { questions, expired } = useSessionStore();
-
-  const { selectedQuestionId, setSelectedQuestionId } = useSessionStore();
+  const { questions, expired, selectedQuestionId, setSelectedQuestionId } = useSessionStore(
+    useShallow((state) => ({
+      questions: state.questions,
+      expired: state.expired,
+      selectedQuestionId: state.selectedQuestionId,
+      setSelectedQuestionId: state.setSelectedQuestionId,
+    })),
+  );
 
   const question = questions.find((q) => q.questionId === selectedQuestionId);
 

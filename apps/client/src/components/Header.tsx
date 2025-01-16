@@ -1,4 +1,5 @@
 import { Link, useNavigate } from '@tanstack/react-router';
+import { useShallow } from 'zustand/react/shallow';
 
 import { logout, useAuthStore } from '@/features/auth';
 import { useModal } from '@/features/modal';
@@ -7,7 +8,12 @@ import { useToastStore } from '@/features/toast';
 import { Button, SignInModal, SignUpModal } from '@/components';
 
 function Header() {
-  const { isLogin, clearAuthInformation: clearAccessToken } = useAuthStore();
+  const { isLogin, clearAuthInformation: clearAccessToken } = useAuthStore(
+    useShallow((state) => ({
+      isLogin: state.isLogin,
+      clearAuthInformation: state.clearAuthInformation,
+    })),
+  );
 
   const addToast = useToastStore((state) => state.addToast);
 
