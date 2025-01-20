@@ -7,10 +7,7 @@ COPY package*.json ./
 RUN pnpm install
 
 COPY . .
-RUN pnpx prisma generate
-
-RUN pnpm run build
 
 EXPOSE 4000
 
-CMD ["pnpm", "run", "start:prod:ws"]
+CMD ["sh", "-c", "pnpx prisma generate && pnpm run build && pnpm run start:prod:ws"]
