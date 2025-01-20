@@ -31,7 +31,7 @@ export async function loadSessionData(options: LoadSessionOptions) {
   } = sessionStore;
 
   // 1) [옵션] 로그인/refresh
-  if (!skipRefresh && !authStore.isLogin()) {
+  if (!skipRefresh && !authStore.accessToken) {
     try {
       const res = await refresh();
       authStore.setAuthInformation(res);

@@ -12,9 +12,9 @@ export const Route = createFileRoute('/my')({
     </React.Suspense>
   ),
   beforeLoad: () => {
-    const { isLogin, setAuthInformation } = useAuthStore.getState();
+    const { accessToken, setAuthInformation } = useAuthStore.getState();
 
-    if (!isLogin()) {
+    if (!accessToken) {
       return refresh()
         .then((res) => {
           setAuthInformation(res);

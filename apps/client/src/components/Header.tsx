@@ -10,7 +10,7 @@ import { Button, SignInModal, SignUpModal } from '@/components';
 function Header() {
   const { isLogin, clearAuthInformation: clearAccessToken } = useAuthStore(
     useShallow((state) => ({
-      isLogin: state.isLogin,
+      isLogin: state.accessToken != null,
       clearAuthInformation: state.clearAuthInformation,
     })),
   );
@@ -47,12 +47,12 @@ function Header() {
           <div className='flex items-center justify-center gap-2.5'>
             <Button
               className='hover:bg-gray-200 hover:text-white hover:transition-all'
-              onClick={isLogin() ? handleLogout : openSignInModal}
+              onClick={isLogin ? handleLogout : openSignInModal}
             >
-              <p className='text-base font-bold text-black'>{isLogin() ? '로그아웃' : '로그인'}</p>
+              <p className='text-base font-bold text-black'>{isLogin ? '로그아웃' : '로그인'}</p>
             </Button>
-            <Button className='bg-indigo-600' onClick={isLogin() ? () => navigate({ to: '/my' }) : openSignUpModal}>
-              <p className='text-base font-bold text-white'>{isLogin() ? '세션 기록' : '회원가입'}</p>
+            <Button className='bg-indigo-600' onClick={isLogin ? () => navigate({ to: '/my' }) : openSignUpModal}>
+              <p className='text-base font-bold text-white'>{isLogin ? '세션 기록' : '회원가입'}</p>
             </Button>
           </div>
         </div>

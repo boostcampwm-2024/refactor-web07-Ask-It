@@ -7,7 +7,7 @@ import { useModal } from '@/features/modal';
 import { Button, CreateSessionModal, FeatureCard } from '@/components';
 
 function HomePage() {
-  const isLogin = useAuthStore((state) => state.isLogin);
+  const isLogin = useAuthStore((state) => state.accessToken != null);
 
   const { Modal: CreateSession, openModal: openCreateSessionModal } = useModal(<CreateSessionModal />);
 
@@ -25,12 +25,12 @@ function HomePage() {
           </div>
           <div className='group relative flex'>
             <Button
-              className={`${isLogin() ? 'bg-indigo-600' : 'cursor-not-allowed bg-indigo-300'}`}
-              onClick={isLogin() ? openCreateSessionModal : undefined}
+              className={`${isLogin ? 'bg-indigo-600' : 'cursor-not-allowed bg-indigo-300'}`}
+              onClick={isLogin ? openCreateSessionModal : undefined}
             >
               <div className='text-base font-bold text-white'>새로운 세션 만들기</div>
             </Button>
-            {isLogin() ? undefined : (
+            {isLogin ? undefined : (
               <span className='absolute top-1/2 flex w-full translate-y-full items-center justify-center rounded-md bg-indigo-600 p-1 text-sm font-bold text-white opacity-0 transition-opacity group-hover:opacity-100'>
                 로그인 후 이용 가능
               </span>

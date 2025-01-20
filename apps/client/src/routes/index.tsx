@@ -7,9 +7,9 @@ const LazyHomePage = React.lazy(() => import('@/pages').then((module) => ({ defa
 
 export const Route = createFileRoute('/')({
   beforeLoad: () => {
-    const { isLogin, setAuthInformation } = useAuthStore.getState();
+    const { accessToken, setAuthInformation } = useAuthStore.getState();
 
-    if (!isLogin())
+    if (!accessToken)
       refresh()
         .then((res) => {
           setAuthInformation(res);
