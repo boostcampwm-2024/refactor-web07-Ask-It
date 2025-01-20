@@ -1,144 +1,131 @@
 name: Deploy on Merge
 
 on:
-    push:
-        branches:
-            - main # main 브랜치로 푸시될 때 실행
-
+  push:
+    branches:
+      - main # main 브랜치로 푸시될 때 실행
 
 jobs:
-    deploy:
-        runs-on: ubuntu-latest
+  deploy:
+    runs-on: ubuntu-latest
 
-        steps:
-            # 1. Node.js 및 pnpm 설치
-            - name: Set up Node.js
-              uses: actions/setup-node@v2
-              with:
-                  node-version: "18"
+    steps:
+      # 1. Node.js 및 pnpm 설치
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
+        with:
+          node-version: '18'
 
-            - name: Install pnpm
-              run: npm install -g pnpm
+      - name: Install pnpm
+        run: npm install -g pnpm
 
-            # 2. Repository Checkout
-            - name: Checkout repository
-              uses: actions/checkout@v2
-              with:
-                  # 필요 시 전체 이력을 가져오도록 설정 (얕은 복사 방지)
-                  fetch-depth: 0
+      # 2. Repository Checkout
+      - name: Checkout repository
+        uses: actions/checkout@v2
+        with:
+          # 필요 시 전체 이력을 가져오도록 설정 (얕은 복사 방지)
+          fetch-depth: 0
 
-            - name: Ensure Repo is Non-Shallow
-              run: |
-                  if git rev-parse --is-shallow-repository | grep -q "true"; then
-                    echo "Repository is shallow. Attempting unshallow..."
-                    git fetch --unshallow
-                  else
-                    echo "Repository is already non-shallow."
-                  fi
+      - name: Ensure Repo is Non-Shallow
+        run: |
+          if git rev-parse --is-shallow-repository | grep -q "true"; then
+            echo "Repository is shallow. Attempting unshallow..."
+            git fetch --unshallow
+          else
+            echo "Repository is already non-shallow."
+          fi
 
-            - name: Compare HEAD with HEAD^
-              id: diff
-              run: |
-                  if git cat-file -e HEAD^; then
-                    echo "Comparing HEAD^ with HEAD"
-                    git diff --name-only HEAD^ HEAD > changed_files.txt
-                    # 줄바꿈을 공백으로 치환
-                    CHANGED_FILES=$(tr '\n' ' ' < changed_files.txt)
-                    # 한 줄로 된 문자열만 GITHUB_ENV에 저장 가능
-                    echo "CHANGED_FILES=$CHANGED_FILES" >> $GITHUB_ENV
-                    cat changed_files.txt
-                  else
-                    echo "HEAD^ does not exist (probably only one commit)."
-                    echo "CHANGED_FILES=" >> $GITHUB_ENV
-                  fi
-            
+      - name: Compare HEAD with HEAD^
+        id: diff
+        run: |
+          if git cat-file -e HEAD^; then
+            echo "Comparing HEAD^ with HEAD"
+            git diff --name-only HEAD^ HEAD > changed_files.txt
+            # 줄바꿈을 공백으로 치환
+            CHANGED_FILES=$(tr '\n' ' ' < changed_files.txt)
+            # 한 줄로 된 문자열만 GITHUB_ENV에 저장 가능
+            echo "CHANGED_FILES=$CHANGED_FILES" >> $GITHUB_ENV
+            cat changed_files.txt
+          else
+            echo "HEAD^ does not exist (probably only one commit)."
+            echo "CHANGED_FILES=" >> $GITHUB_ENV
+          fi
 
-            # 4. 클라이언트 배포
-            - name: Deploy Client
-              if: contains(env.CHANGED_FILES, 'apps/client/')
+      # 4. 클라이언트 배포
+      - name: Deploy Client
+        if: contains(env.CHANGED_FILES, 'apps/client/')
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          AWS_DEFAULT_REGION: ${{ secrets.AWS_REGION }}
+        run: |
+          echo "${{ secrets.FRONT_END_ENV }}" > apps/client/.env
+          cd apps/client
+          pnpm install
+          pnpm run build
+          sudo apt-get update
+          sudo apt-get install -y python3-pip
+          pip3 install --upgrade awscli
+          aws s3 cp ./dist s3://amzn-s3-ask-it-bucket/dist --recursive
 
+      # 5. 서버 배포
+      - name: Deploy Server
+        if: contains(env.CHANGED_FILES, 'apps/server/')
+        uses: appleboy/ssh-action@v0.1.4
+        with:
+          host: ${{ secrets.WEB_SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.NCP_SERVER_RSA_PRIVATE_KEY }}
+          script: |
+            SERVER_DIR="/home/${{ secrets.SERVER_USER }}/Ask-It-server"
+            if [ ! -d "$SERVER_DIR" ]; then
+              mkdir -p $SERVER_DIR
+            fi
+            if [ ! -d "$SERVER_DIR/.git" ]; then
+              git clone "${{ secrets.GIT_REPO_URL }}" $SERVER_DIR
+            else
+              cd $SERVER_DIR
+              git reset --hard
+              git pull origin main
+            fi
 
-              env:
-                  AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-                  AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-                  AWS_DEFAULT_REGION: "kr-standard"
-              run: |
-                  echo "${{ secrets.FRONT_END_ENV }}" > apps/client/.env
-                  cd apps/client
-                  pnpm install
-                  pnpm run build
-                  sudo apt-get update
-                  sudo apt-get install -y python3-pip
-                  pip3 install --upgrade awscli
-                  aws --endpoint-url=https://kr.object.ncloudstorage.com s3 sync ./dist s3://ask-it-static/dist --acl public-read
+            cd $SERVER_DIR/apps/server
+            echo "${{ secrets.SERVER_ENV }}" > .env
+            sudo docker build -t ask-it-api .
+            if [ $(sudo docker ps -q -f name=ask-it-api) ]; then
+              sudo docker stop ask-it-api
+              sudo docker rm ask-it-api
+            fi
+            sudo docker run -d -p 4000:4000 --network ask-it --name ask-it-api ask-it-api
 
-            # 5. 서버 배포
-            - name: Deploy Server
-              if: contains(env.CHANGED_FILES, 'apps/server/')
-              uses: appleboy/ssh-action@v0.1.4
-              with:
-                  host: ${{ secrets.WEB_SERVER_IP }}
-                  username: ${{ secrets.SERVER_USER }}
-                  key: ${{ secrets.NCP_SERVER_RSA_PRIVATE_KEY }}
-                  script: |
-                      export NVM_DIR="$HOME/.nvm"
-                      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-                      npm install -g pnpm pm2
-                      SERVER_DIR="/home/${{ secrets.SERVER_USER }}/Ask-It-server"
-                      if [ ! -d "$SERVER_DIR" ]; then
-                        mkdir -p $SERVER_DIR
-                      fi
-                      if [ ! -d "$SERVER_DIR/.git" ]; then
-                        git clone "${{ secrets.GIT_REPO_URL }}" $SERVER_DIR
-                      else
-                        cd $SERVER_DIR
-                        git reset --hard
-                        git pull origin main
-                        pnpm install
-                      fi
-                      
-                      cd $SERVER_DIR/apps/server
-                      echo "${{ secrets.SERVER_ENV }}" > .env
-                      pnpx prisma generate
-                      pnpx prisma migrate deploy
-                      pnpm build
+      # 6. 소켓 서버 배포
+      - name: Deploy Socket Server
 
-                      pm2 stop http-server || true
-                      pm2 delete http-server || true
-                      pm2 start ecosystem.config.js
+        if: contains(env.CHANGED_FILES, 'apps/socket-server/')
 
-            # 6. 소켓 서버 배포
-            - name: Deploy Socket Server
+        uses: appleboy/ssh-action@v0.1.4
+        with:
+          host: ${{ secrets.WEB_SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.NCP_SERVER_RSA_PRIVATE_KEY }}
+          script: |
+            SOCKET_DIR="/home/${{ secrets.SERVER_USER }}/Ask-It-socket"
+            if [ ! -d "$SOCKET_DIR" ]; then
+              mkdir -p $SOCKET_DIR
+            fi
+            if [ ! -d "$SOCKET_DIR/.git" ]; then
+              git clone "${{ secrets.GIT_REPO_URL }}" $SOCKET_DIR
+            else
+              cd $SOCKET_DIR
+              git reset --hard
+              git pull origin main
+            fi
 
-              if: contains(env.CHANGED_FILES, 'apps/socket-server/')
-
-              uses: appleboy/ssh-action@v0.1.4
-              with:
-                  host: ${{ secrets.WEB_SERVER_IP }}
-                  username: ${{ secrets.SERVER_USER }}
-                  key: ${{ secrets.NCP_SERVER_RSA_PRIVATE_KEY }}
-                  script: |
-                      export NVM_DIR="$HOME/.nvm"
-                      [ -s "$NVM_DIR/nvm.sh" ] && \. "$NVM_DIR/nvm.sh"
-                      npm install -g pnpm pm2
-                      SOCKET_DIR="/home/${{ secrets.SERVER_USER }}/Ask-It-socket"
-                      if [ ! -d "$SOCKET_DIR" ]; then
-                        mkdir -p $SOCKET_DIR
-                      fi
-                      if [ ! -d "$SOCKET_DIR/.git" ]; then
-                        git clone "${{ secrets.GIT_REPO_URL }}" $SOCKET_DIR
-                      else
-                        cd $SOCKET_DIR
-                        git reset --hard
-                        git pull origin main
-                        pnpm install
-                      fi
-                      
-                      cd $SOCKET_DIR/apps/socket-server
-                      echo "${{ secrets.SOCKET_ENV }}" > .env
-                      pnpx prisma generate
-                      pnpm build
-
-                      pm2 stop ws-server || true
-                      pm2 delete ws-server || true
-                      pm2 start ecosystem.config.js
+            cd $SOCKET_DIR/apps/socket-server
+            echo "${{ secrets.SOCKET_ENV }}" > .env
+            sudo docker build -t ask-it-socket .
+            if [ $(sudo docker ps -q -f name=ask-it-socket) ]; then
+              sudo docker stop ask-it-socket
+              sudo docker rm ask-it-socket
+            fi
+            sudo docker run -d -p 4000:4000 --network ask-it --name ask-it-socket ask-it-socket
