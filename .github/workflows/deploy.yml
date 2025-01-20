@@ -96,7 +96,7 @@ jobs:
               sudo docker stop ask-it-api
               sudo docker rm ask-it-api
             fi
-            sudo docker run -d -p 4000:4000 --network ask-it --name ask-it-api ask-it-api
+            sudo docker run -d -p 3000:3000 --network ask-it --name ask-it-api ask-it-api
 
       # 6. 소켓 서버 배포
       - name: Deploy Socket Server
