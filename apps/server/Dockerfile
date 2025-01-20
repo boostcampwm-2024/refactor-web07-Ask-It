@@ -7,11 +7,7 @@ COPY package*.json ./
 RUN pnpm install
 
 COPY . .
-RUN pnpx prisma generate
-RUN pnpx prisma migrate deploy
-
-RUN pnpm run build
 
 EXPOSE 3000
 
-CMD ["pnpm", "run", "start:prod:http"]
+CMD ["sh", "-c", "pnpx prisma generate && pnpx prisma migrate deploy && pnpm run build && pnpm run start:prod:http"]
