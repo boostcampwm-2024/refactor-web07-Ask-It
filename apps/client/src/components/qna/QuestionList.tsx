@@ -115,23 +115,25 @@ function QuestionList() {
             <p>공유</p>
           </div>
         ),
-        onClick: async () => {
+        onClick: () => {
           const shareUrl = `${window.location.origin}/session/${sessionId}`;
 
-          try {
-            await navigator.clipboard.writeText(shareUrl);
-            addToast({
-              type: 'SUCCESS',
-              message: '세션 링크가 클립보드에 복사되었습니다',
-              duration: 3000,
+          navigator.clipboard
+            .writeText(shareUrl)
+            .then(() => {
+              addToast({
+                type: 'SUCCESS',
+                message: '세션 링크가 클립보드에 복사되었습니다',
+                duration: 3000,
+              });
+            })
+            .catch(() => {
+              addToast({
+                type: 'ERROR',
+                message: '링크 복사에 실패했습니다',
+                duration: 3000,
+              });
             });
-          } catch (err) {
-            addToast({
-              type: 'ERROR',
-              message: '링크 복사에 실패했습니다',
-              duration: 3000,
-            });
-          }
         },
       },
       {

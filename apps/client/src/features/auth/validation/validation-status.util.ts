@@ -9,9 +9,8 @@ export const validateEmail = (email: string): ValidationStatusWithMessage => {
       status: 'INVALID',
       message: '이메일에 공백이 포함될 수 없습니다.',
     };
-  try {
-    z.string().email().parse(email);
-  } catch (error) {
+  const result = z.string().email().safeParse(email);
+  if (!result.success) {
     return {
       status: 'INVALID',
       message: '올바른 이메일 형식이 아닙니다.',

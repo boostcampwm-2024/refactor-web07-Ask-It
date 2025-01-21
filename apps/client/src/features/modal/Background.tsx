@@ -18,7 +18,6 @@ function Background({ children }: PropsWithChildren) {
   }, [closeModal]);
 
   return (
-    // eslint-disable-next-line jsx-a11y/no-static-element-interactions
     <div
       onClick={(e) => {
         e.stopPropagation();
