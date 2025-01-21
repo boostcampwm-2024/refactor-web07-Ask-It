@@ -2,6 +2,7 @@ import pluginJs from '@eslint/js';
 import prettier from 'eslint-config-prettier';
 import pluginImport from 'eslint-plugin-import';
 import pluginReact from 'eslint-plugin-react';
+import pluginReactHooks from 'eslint-plugin-react-hooks'; // 추가
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
@@ -31,21 +32,23 @@ export default [
   {
     plugins: {
       import: pluginImport,
+      'react-hooks': pluginReactHooks,
     },
     rules: {
       'react/react-in-jsx-scope': 'off',
       'react/jsx-boolean-value': ['error', 'always'],
       'react/jsx-no-duplicate-props': ['error'],
       'react/jsx-no-undef': ['error'],
-
       'react/jsx-max-depth': ['error', { max: 4 }],
+
+      'react-hooks/rules-of-hooks': 'error',
+      'react-hooks/exhaustive-deps': 'warn',
 
       complexity: ['error', { max: 10 }],
       'max-depth': ['error', 3],
       'max-lines-per-function': ['error', { max: 30, skipBlankLines: true, skipComments: true }],
 
       'import/extensions': 'off',
-
       'import/order': [
         'error',
         {
@@ -70,7 +73,6 @@ export default [
           'newlines-between': 'always',
         },
       ],
-
       'sort-imports': [
         'error',
         {
