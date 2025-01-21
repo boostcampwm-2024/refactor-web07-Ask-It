@@ -1,4 +1,5 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
+import { ForbiddenException, Inject, Injectable } from '@nestjs/common';
+import Redis from 'ioredis';
 
 import { CreateSessionDto } from './dto/create-session.dto';
 import { SessionCreateData } from './interface/session-create-data.interface';
@@ -15,6 +16,7 @@ export class SessionsService {
   constructor(
     private readonly sessionRepository: SessionsRepository,
     private readonly sessionsAuthRepository: SessionsAuthRepository,
+    @Inject('REDIS_SESSION') private readonly sessionRedisClient: Redis,
   ) {}
 
   async create(data: CreateSessionDto, userId: number) {
@@ -63,6 +65,7 @@ export class SessionsService {
 
     const expireTime = new Date();
     await this.sessionRepository.updateSessionExpiredAt(sessionId, expireTime);
+    await this.sessionRedisClient.del(sessionId);
     return { expired: true };
   }
 }
