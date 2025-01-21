@@ -75,7 +75,7 @@ function QuestionSection({ title, questions, initialOpen, onQuestionSelect }: Qu
             variants={sectionVariants}
           >
             {questions.map((question) => (
-              <motion.div key={question.questionId} variants={itemVariants} layout>
+              <motion.div key={question.questionId} variants={itemVariants} layout={true}>
                 <QuestionItem question={question} onQuestionSelect={() => onQuestionSelect(question.questionId)} />
               </motion.div>
             ))}

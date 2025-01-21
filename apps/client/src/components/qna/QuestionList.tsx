@@ -161,68 +161,66 @@ function QuestionList() {
   );
 
   return (
-    <>
-      <div className='inline-flex h-full w-4/5 flex-grow flex-col items-center justify-start rounded-lg bg-white shadow'>
-        <div className='inline-flex h-[54px] w-full items-center justify-between border-b border-gray-200 px-8 py-2'>
-          <div className='inline-flex h-full w-fit gap-4'>
-            <div className='self-center text-lg font-medium text-black'>{sessionTitle}</div>
-            <div className={`self-center rounded ${expired ? 'bg-red-100' : 'bg-green-100'} px-2 py-1`}>
-              <p className={`text-xs font-medium ${expired ? 'text-red-600' : 'text-green-800'}`}>
-                {expired ? '만료된 세션' : '진행 중인 세션'}
-              </p>
-            </div>
+    <div className='inline-flex h-full w-4/5 flex-grow flex-col items-center justify-start rounded-lg bg-white shadow'>
+      <div className='inline-flex h-[54px] w-full items-center justify-between border-b border-gray-200 px-8 py-2'>
+        <div className='inline-flex h-full w-fit gap-4'>
+          <div className='self-center text-lg font-medium text-black'>{sessionTitle}</div>
+          <div className={`self-center rounded ${expired ? 'bg-red-100' : 'bg-green-100'} px-2 py-1`}>
+            <p className={`text-xs font-medium ${expired ? 'text-red-600' : 'text-green-800'}`}>
+              {expired ? '만료된 세션' : '진행 중인 세션'}
+            </p>
           </div>
-          {!expired && (
-            <div className='flex flex-row gap-2'>
-              <div className='relative'>
-                {isHost && (
-                  <Button
-                    ref={buttonRef}
-                    className='hover:bg-gray-200 hover:transition-all'
-                    onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-                  >
-                    <p className='text-sm font-bold text-black'>설정</p>
-                  </Button>
-                )}
-                {isHost && isDropdownOpen && (
-                  <SessionSettingsDropdown
-                    buttons={sessionButtons}
-                    onClose={() => setIsDropdownOpen(false)}
-                    triggerRef={buttonRef}
-                  />
-                )}
-              </div>
-              <Button className='bg-indigo-600' onClick={openCreateQuestionModal}>
-                <div className='text-sm font-bold text-white'>질문하기</div>
-              </Button>
-            </div>
-          )}
         </div>
-        {questions.length === 0 ? (
-          <div className='inline-flex h-full w-full select-none items-center justify-center'>
-            <div className='font-header text-5xl opacity-30'>
-              <span className='text-indigo-600'>A</span>
-              <span className='text-black'>sk-It</span>
+        {!expired && (
+          <div className='flex flex-row gap-2'>
+            <div className='relative'>
+              {isHost && (
+                <Button
+                  ref={buttonRef}
+                  className='hover:bg-gray-200 hover:transition-all'
+                  onClick={() => setIsDropdownOpen(!isDropdownOpen)}
+                >
+                  <p className='text-sm font-bold text-black'>설정</p>
+                </Button>
+              )}
+              {isHost && isDropdownOpen && (
+                <SessionSettingsDropdown
+                  buttons={sessionButtons}
+                  onClose={() => setIsDropdownOpen(false)}
+                  triggerRef={buttonRef}
+                />
+              )}
             </div>
+            <Button className='bg-indigo-600' onClick={openCreateQuestionModal}>
+              <div className='text-sm font-bold text-white'>질문하기</div>
+            </Button>
           </div>
-        ) : (
-          <motion.div className='inline-flex h-full w-full flex-col items-start justify-start gap-4 overflow-y-auto px-8 py-4'>
-            {sections.map((section) => (
-              <QuestionSection
-                key={section.title}
-                title={section.title}
-                initialOpen={section.initialOpen}
-                questions={section.questions}
-                onQuestionSelect={setSelectedQuestionId}
-              />
-            ))}
-          </motion.div>
         )}
       </div>
+      {questions.length === 0 ? (
+        <div className='inline-flex h-full w-full select-none items-center justify-center'>
+          <div className='font-header text-5xl opacity-30'>
+            <span className='text-indigo-600'>A</span>
+            <span className='text-black'>sk-It</span>
+          </div>
+        </div>
+      ) : (
+        <motion.div className='inline-flex h-full w-full flex-col items-start justify-start gap-4 overflow-y-auto px-8 py-4'>
+          {sections.map((section) => (
+            <QuestionSection
+              key={section.title}
+              title={section.title}
+              initialOpen={section.initialOpen}
+              questions={section.questions}
+              onQuestionSelect={setSelectedQuestionId}
+            />
+          ))}
+        </motion.div>
+      )}
       {CreateQuestion}
       {SessionParticipants}
       {SessionTerminate}
-    </>
+    </div>
   );
 }
 
