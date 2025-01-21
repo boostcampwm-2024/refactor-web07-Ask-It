@@ -34,6 +34,15 @@ export default [
     },
     rules: {
       'react/react-in-jsx-scope': 'off',
+      'react/jsx-boolean-value': ['error', 'always'],
+      'react/jsx-no-duplicate-props': ['error'],
+      'react/jsx-no-undef': ['error'],
+
+      'react/jsx-max-depth': ['error', { max: 4 }],
+
+      complexity: ['error', { max: 10 }],
+      'max-depth': ['error', 3],
+      'max-lines-per-function': ['error', { max: 30, skipBlankLines: true, skipComments: true }],
 
       'import/extensions': 'off',
 
@@ -72,6 +81,12 @@ export default [
           allowSeparatedGroups: true,
         },
       ],
+    },
+  },
+  {
+    ignores: ['**.spec.ts'],
+    rules: {
+      'max-lines-per-function': 'off',
     },
   },
   pluginJs.configs.recommended,
