@@ -1,19 +1,125 @@
 import { useMutation } from '@tanstack/react-query';
 import { isAxiosError } from 'axios';
 import { useEffect, useState } from 'react';
+import { GrValidate } from 'react-icons/gr';
 import { IoClose } from 'react-icons/io5';
 import { useShallow } from 'zustand/react/shallow';
 
 import { useModalContext } from '@/features/modal';
 import { getSessionUsers, patchSessionHost, useSessionStore } from '@/features/session';
+import { User } from '@/features/session/session.type';
 import { useToastStore } from '@/features/toast';
 
+import Modal from './Modal';
+
 import { Button } from '@/components';
-import Participant from '@/components/modal/Participant';
 
-function SessionParticipantsModal() {
+interface ParticipantProps {
+  user: User;
+  onSelect: () => void;
+}
+
+function Participant({ user: { nickname, isHost }, onSelect }: ParticipantProps) {
+  return (
+    <div onClick={onSelect} className='w-full cursor-pointer rounded hover:bg-gray-200'>
+      <div className='flex w-full flex-row items-center gap-2 p-2'>
+        <GrValidate className={`flex-shrink-0 ${isHost ? 'text-indigo-600' : 'text-black-200'}`} />
+        <span className='font-medium'>{nickname}</span>
+      </div>
+    </div>
+  );
+}
+
+interface SearchBarProps {
+  value: string;
+  onChange: (value: string) => void;
+}
+
+function SearchBar({ value, onChange }: SearchBarProps) {
+  return (
+    <div className='relative w-full'>
+      <input
+        type='text'
+        value={value}
+        placeholder='유저 이름을 검색하세요'
+        className='w-full rounded border-gray-500 p-2 pr-8 text-sm font-medium text-gray-500 focus:outline-none'
+        onChange={(e) => onChange(e.target.value)}
+      />
+      {value && (
+        <IoClose
+          size={20}
+          className='absolute right-2 top-2 cursor-pointer text-gray-500 transition-all duration-100 hover:scale-110 hover:text-gray-700'
+          onClick={() => onChange('')}
+        />
+      )}
+    </div>
+  );
+}
+
+interface ConfirmHostChangeProps {
+  user: User;
+  onCancel: () => void;
+  onConfirm: () => void;
+}
+
+function ConfirmHostChange({ user, onCancel, onConfirm }: ConfirmHostChangeProps) {
+  return (
+    <Modal className='h-[10dvh] w-[30dvw] min-w-[30dvw]'>
+      <Modal.Body className='justify-center'>
+        <div className='w-full text-center font-bold'>
+          <span>
+            <span className='text-indigo-600'>{user.nickname}</span>
+            <span>님을</span>
+          </span>
+          <br />
+          <span>{user.isHost ? '호스트를 해제하겠습니까?' : '호스트로 지정하겠습니까?'}</span>
+        </div>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button className='w-full bg-gray-500' onClick={onCancel}>
+          <div className='flex-grow text-sm font-medium text-white'>취소하기</div>
+        </Button>
+        <Button className='w-full bg-indigo-600 transition-colors duration-200' onClick={onConfirm}>
+          <div className='flex-grow text-sm font-medium text-white'>{user.isHost ? '해제하기' : '지정하기'}</div>
+        </Button>
+      </Modal.Footer>
+    </Modal>
+  );
+}
+
+interface UserListProps {
+  users: User[];
+  searchQuery: string;
+  onSearch: (value: string) => void;
+  onSelectUser: (userId: number) => void;
+  onClose: () => void;
+}
+
+function UserList({ users, searchQuery, onSearch, onSelectUser, onClose }: UserListProps) {
+  return (
+    <Modal>
+      <Modal.Header className='flex-row items-center justify-between border-b border-gray-200 pb-2'>
+        <span className='text-lg font-bold'>세션 참여자 정보</span>
+        <IoClose
+          size={24}
+          className='cursor-pointer text-rose-600 transition-transform duration-100 hover:scale-110'
+          onClick={onClose}
+        />
+      </Modal.Header>
+      <Modal.Body className='h-[25dvh] gap-2'>
+        <SearchBar value={searchQuery} onChange={onSearch} />
+        <ol className='flex w-full flex-col gap-2 overflow-y-auto overflow-x-hidden'>
+          {users.map((user) => (
+            <Participant key={user.userId} user={user} onSelect={() => onSelectUser(user.userId)} />
+          ))}
+        </ol>
+      </Modal.Body>
+    </Modal>
+  );
+}
+
+function useSessionParticipants() {
   const { closeModal } = useModalContext();
-
   const { sessionUsers, sessionId, sessionToken, setSessionUsers, updateSessionUser, updateReplyIsHost } =
     useSessionStore(
       useShallow((state) => ({
@@ -27,12 +133,11 @@ function SessionParticipantsModal() {
     );
 
   const addToast = useToastStore((state) => state.addToast);
-
   const [selectedUserId, setSelectedUserId] = useState<number>();
+  const [searchQuery, setSearchQuery] = useState('');
 
   const selectedUser = sessionUsers.find(({ userId }) => userId === selectedUserId);
-
-  const [searchQuery, setSearchQuery] = useState('');
+  const filteredUsers = sessionUsers.filter(({ nickname }) => nickname.includes(searchQuery));
 
   const { mutate: toggleHost, isPending: isToggleInProgress } = useMutation({
     mutationFn: (params: { userId: number; sessionId: string; token: string; isHost: boolean }) =>
@@ -91,65 +196,31 @@ function SessionParticipantsModal() {
         .catch(console.error);
   }, [sessionId, sessionToken, setSessionUsers]);
 
-  const users = sessionUsers.filter(({ nickname }) => nickname.includes(searchQuery));
+  return {
+    selectedUser,
+    filteredUsers,
+    searchQuery,
+    setSearchQuery,
+    setSelectedUserId,
+    handleToggleHost,
+    closeModal,
+  };
+}
 
-  return (
-    <div className='inline-flex flex-col items-center justify-center gap-2.5 rounded-lg bg-gray-50 p-8 shadow'>
-      {selectedUser ? (
-        <div className='flex h-[15dvh] min-w-[17.5dvw] flex-col justify-center gap-2'>
-          <div className='w-full text-center font-bold'>
-            <span>
-              <span className='text-indigo-600'>{selectedUser.nickname}</span>
-              <span>님을</span>
-            </span>
-            <br />
-            <span>{selectedUser.isHost ? '호스트를 해제하겠습니까?' : '호스트로 지정하겠습니까?'}</span>
-          </div>
-          <div className='mx-auto mt-4 inline-flex w-full items-start justify-center gap-2.5'>
-            <Button className='w-full bg-gray-500' onClick={() => setSelectedUserId(undefined)}>
-              <div className='flex-grow text-sm font-medium text-white'>취소하기</div>
-            </Button>
-            <Button className='w-full bg-indigo-600 transition-colors duration-200' onClick={handleToggleHost}>
-              <div className='flex-grow text-sm font-medium text-white'>
-                {selectedUser.isHost ? '해제하기' : '지정하기'}
-              </div>
-            </Button>
-          </div>
-        </div>
-      ) : (
-        <div className='flex h-[25dvh] w-full min-w-[25dvw] flex-col gap-2'>
-          <div className='flex flex-row items-center justify-between border-b border-gray-200 pb-2'>
-            <span className='text-lg font-bold'>세션 참여자 정보</span>
-            <IoClose
-              size={24}
-              className='cursor-pointer text-rose-600 transition-transform duration-100 hover:scale-110'
-              onClick={closeModal}
-            />
-          </div>
-          <div className='relative w-full'>
-            <input
-              type='text'
-              value={searchQuery}
-              placeholder='유저 이름을 검색하세요'
-              className='w-full rounded border-gray-500 p-2 pr-8 text-sm font-medium text-gray-500 focus:outline-none'
-              onChange={(e) => setSearchQuery(e.target.value)}
-            />
-            {searchQuery && (
-              <IoClose
-                size={20}
-                className='absolute right-2 top-2 cursor-pointer text-gray-500 transition-all duration-100 hover:scale-110 hover:text-gray-700'
-                onClick={() => setSearchQuery('')}
-              />
-            )}
-          </div>
-          <ol className='flex w-full flex-col gap-2 overflow-y-auto overflow-x-hidden'>
-            {users.map((user) => (
-              <Participant key={user.userId} user={user} onSelect={() => setSelectedUserId(user.userId)} />
-            ))}
-          </ol>
-        </div>
-      )}
-    </div>
+function SessionParticipantsModal() {
+  const { selectedUser, filteredUsers, searchQuery, setSearchQuery, setSelectedUserId, handleToggleHost, closeModal } =
+    useSessionParticipants();
+
+  return selectedUser ? (
+    <ConfirmHostChange user={selectedUser} onCancel={() => setSelectedUserId(undefined)} onConfirm={handleToggleHost} />
+  ) : (
+    <UserList
+      users={filteredUsers}
+      searchQuery={searchQuery}
+      onSearch={setSearchQuery}
+      onSelectUser={setSelectedUserId}
+      onClose={closeModal}
+    />
   );
 }
 

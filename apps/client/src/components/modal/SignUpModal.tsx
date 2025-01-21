@@ -56,11 +56,13 @@ function SignUpModal() {
 
   return (
     <Modal>
-      <div className='flex flex-col items-center justify-center gap-4 p-4'>
+      <Modal.Header className='justify-center'>
         <div className='font-header text-2xl'>
           <span className='text-indigo-600'>A</span>
           <span className='text-black'>sk-It</span>
         </div>
+      </Modal.Header>
+      <Modal.Body className='w-[20dvw]'>
         <InputField
           label='이메일'
           type='email'
@@ -85,19 +87,19 @@ function SignUpModal() {
           placeholder='비밀번호를 입력해주세요'
           validationStatus={passwordValidationStatus}
         />
-        <div className='mt-4 inline-flex items-start justify-start gap-2.5'>
-          <Button className='bg-gray-500' onClick={closeModal}>
-            <div className='w-[150px] text-sm font-medium text-white'>취소하기</div>
-          </Button>
-          <Button
-            disabled={!isSignUpButtonEnabled}
-            className={`transition-colors duration-200 ${isSignUpButtonEnabled ? 'bg-indigo-600' : 'cursor-not-allowed bg-indigo-300'}`}
-            onClick={handleSignUp}
-          >
-            <div className='w-[150px] text-sm font-medium text-white'>회원 가입</div>
-          </Button>
-        </div>
-      </div>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button className='bg-gray-500' onClick={closeModal}>
+          <div className='w-[150px] text-sm font-medium text-white'>취소하기</div>
+        </Button>
+        <Button
+          disabled={!isSignUpButtonEnabled}
+          className={`transition-colors duration-200 ${isSignUpButtonEnabled ? 'bg-indigo-600' : 'cursor-not-allowed bg-indigo-300'}`}
+          onClick={handleSignUp}
+        >
+          <div className='w-[150px] text-sm font-medium text-white'>회원 가입</div>
+        </Button>
+      </Modal.Footer>
     </Modal>
   );
 }
