@@ -43,6 +43,12 @@ describe('세션 서비스 (SessionsService)', () => {
             findByTokenWithPermissions: jest.fn(),
           },
         },
+        {
+          provide: 'REDIS_SESSION',
+          useValue: {
+            del: jest.fn().mockResolvedValue(1),
+          },
+        },
       ],
     }).compile();
 

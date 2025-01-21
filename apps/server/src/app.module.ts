@@ -9,6 +9,7 @@ import { ChatsModule } from '@chats/chats.module';
 import { GlobalExceptionFilter } from '@common/filters/global-exception.filter';
 import { HttpExceptionFilter } from '@common/filters/http-exception.filter';
 import { HttpLoggerMiddleware } from '@common/middlewares/http-logger.middleware';
+import { RedisModule } from '@common/redis.module';
 import { PrismaModule } from '@prisma-alias/prisma.module';
 import { QuestionsModule } from '@questions/questions.module';
 import { RepliesModule } from '@replies/replies.module';
@@ -20,6 +21,7 @@ import { UsersModule } from '@users/users.module';
 
 @Module({
   imports: [
+    RedisModule,
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: '.env',
