@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite --host",
     "build": "tsc -b && vite build",
-    "lint": "eslint . --fix --ignore-pattern 'dist' ",
+    "lint": "eslint . --fix --ignore-pattern 'dist' --quiet",
     "format": "prettier --write .",
     "preview": "vite preview",
     "test": "pnpm exec playwright test",
