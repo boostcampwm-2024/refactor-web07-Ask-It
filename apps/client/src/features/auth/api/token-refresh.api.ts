@@ -1,18 +1,16 @@
 import axios from 'axios';
 import { z } from 'zod';
 
-// TODO: refresh -> tokenRefresh
-
-export const PostRefreshResponseSchema = z.object({
+export const PostTokenRefreshResponseSchema = z.object({
   accessToken: z.string(),
   userId: z.number(),
 });
 
-export type PostRefreshResponseDTO = z.infer<typeof PostRefreshResponseSchema>;
+export type PostTokenRefreshResponseDTO = z.infer<typeof PostTokenRefreshResponseSchema>;
 
-export const refresh = () =>
+export const tokenRefresh = () =>
   axios
-    .post<PostRefreshResponseDTO>(`/api/auth/token`, undefined, {
+    .post<PostTokenRefreshResponseDTO>(`/api/auth/token`, undefined, {
       withCredentials: true,
     })
-    .then((res) => PostRefreshResponseSchema.parse(res.data));
+    .then((res) => PostTokenRefreshResponseSchema.parse(res.data));

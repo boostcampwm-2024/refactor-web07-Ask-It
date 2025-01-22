@@ -1,6 +1,6 @@
 import axios from 'axios';
 
-import { PostRefreshResponseDTO, useAuthStore } from '@/features/auth';
+import { PostTokenRefreshResponseDTO, useAuthStore } from '@/features/auth';
 
 axios.interceptors.request.use(
   (config) => {
@@ -28,7 +28,7 @@ axios.interceptors.response.use(
         credentials: 'include',
       });
 
-      const { accessToken, userId } = (await response.json()) as PostRefreshResponseDTO;
+      const { accessToken, userId } = (await response.json()) as PostTokenRefreshResponseDTO;
 
       const { setAuthInformation, clearAuthInformation } = useAuthStore.getState();
 

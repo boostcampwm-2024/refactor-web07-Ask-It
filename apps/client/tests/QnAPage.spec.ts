@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-import { PostRefreshResponseDTO } from '@/features/auth';
+import { PostTokenRefreshResponseDTO } from '@/features/auth';
 import { PostQuestionResponseDTO } from '@/features/create-update-question/api/create-question.api';
 import { PatchQuestionBodyResponseDTO } from '@/features/create-update-question/api/update-question.api';
 import { GetQuestionsResponseDTO } from '@/features/get-questions';
@@ -15,7 +15,7 @@ test.beforeEach(async ({ page }) => {
       body: JSON.stringify({
         accessToken: 'new-access-token',
         userId: 1,
-      } as PostRefreshResponseDTO),
+      } as PostTokenRefreshResponseDTO),
     });
   });
 

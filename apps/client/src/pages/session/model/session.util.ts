@@ -1,6 +1,6 @@
 import { redirect } from '@tanstack/react-router';
 
-import { refresh, useAuthStore } from '@/features/auth';
+import { tokenRefresh, useAuthStore } from '@/features/auth';
 import { getChattingList } from '@/features/get-chatting-list';
 import { getQuestions } from '@/features/get-questions';
 import { getSessionToken } from '@/features/get-session-token';
@@ -35,7 +35,7 @@ export async function loadSessionData(options: LoadSessionOptions) {
   // 1) [옵션] 로그인/refresh
   if (!skipRefresh && !authStore.accessToken) {
     try {
-      const res = await refresh();
+      const res = await tokenRefresh();
       authStore.setAuthInformation(res);
     } catch (error) {
       console.error(error);
