@@ -1,5 +1,6 @@
 import { ForbiddenException, Injectable, NotFoundException } from '@nestjs/common';
 import { Question } from '@prisma/client';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 import { CreateQuestionDto } from './dto/create-question.dto';
 import { GetQuestionDto } from './dto/get-question.dto';
@@ -15,6 +16,7 @@ import {
 import { RepliesRepository } from '@replies/replies.repository';
 import { SessionsRepository } from '@sessions/sessions.repository';
 import { SessionsAuthRepository } from '@sessions-auth/sessions-auth.repository';
+import { PRISMA_ERROR_CODE } from '@src/prisma/prisma.error';
 
 @Injectable()
 export class QuestionsService {
@@ -172,10 +174,19 @@ export class QuestionsService {
   }
 
   async toggleLike(questionId: number, createUserToken: string) {
-    const exist = await this.questionRepository.findLike(questionId, createUserToken);
-    if (exist) await this.questionRepository.deleteLike(exist.questionLikeId);
-    else await this.questionRepository.createLike(questionId, createUserToken);
-    return { liked: !exist };
+    try {
+      await this.questionRepository.createLike(questionId, createUserToken);
+      return { liked: true };
+    } catch (error) {
+      if (
+        error instanceof PrismaClientKnownRequestError &&
+        error.code === PRISMA_ERROR_CODE.UNIQUE_CONSTRAINT_VIOLATION
+      ) {
+        await this.questionRepository.deleteLike(questionId, createUserToken);
+        return { liked: false };
+      }
+      throw error;
+    }
   }
 
   async getLikesCount(questionId: number) {
