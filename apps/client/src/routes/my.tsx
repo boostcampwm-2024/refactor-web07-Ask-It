@@ -3,7 +3,7 @@ import React from 'react';
 
 import { refresh, useAuthStore } from '@/features/auth';
 
-const LazyMyPage = React.lazy(() => import('@/pages').then((module) => ({ default: module.MyPage })));
+const LazyMyPage = React.lazy(() => import('@/pages/my').then((module) => ({ default: module.MyPage })));
 
 export const Route = createFileRoute('/my')({
   component: () => (

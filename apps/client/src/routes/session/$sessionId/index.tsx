@@ -1,24 +1,10 @@
 import { createFileRoute, redirect } from '@tanstack/react-router';
-import React, { useEffect } from 'react';
 
-import { loadSessionData, useSessionStore } from '@/features/session';
-
-const LazyQuestionList = React.lazy(() => import('@/components').then((module) => ({ default: module.QuestionList })));
-
-function SessionComponent() {
-  const sessionTitle = useSessionStore((state) => state.sessionTitle);
-
-  useEffect(() => {
-    if (sessionTitle) {
-      document.title = `Ask-It - ${sessionTitle}`;
-    }
-  }, [sessionTitle]);
-
-  return <LazyQuestionList />;
-}
+import { useSessionStore } from '@/entities/session';
+import { loadSessionData, SessionPage } from '@/pages/session';
 
 export const Route = createFileRoute('/session/$sessionId/')({
-  component: SessionComponent,
+  component: SessionPage,
   beforeLoad: async ({ params: { sessionId } }) => {
     const { fromDetail, setFromDetail } = useSessionStore.getState();
 

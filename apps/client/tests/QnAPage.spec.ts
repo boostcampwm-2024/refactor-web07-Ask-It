@@ -1,13 +1,11 @@
 import { expect, test } from '@playwright/test';
 
-import { PostRefreshResponseDTO } from '@/features/auth/auth.dto';
-import {
-  GetQuestionsResponseDTO,
-  PatchQuestionBodyResponseDTO,
-  PatchQuestionPinnedResponseDTO,
-  PostQuestionLikeResponseDTO,
-  PostQuestionResponseDTO,
-} from '@/features/session/qna';
+import { PostRefreshResponseDTO } from '@/features/auth';
+import { PostQuestionResponseDTO } from '@/features/create-update-question/api/create-question.api';
+import { PatchQuestionBodyResponseDTO } from '@/features/create-update-question/api/update-question.api';
+import { GetQuestionsResponseDTO } from '@/features/get-questions';
+import { PostQuestionLikeResponseDTO } from '@/features/like-question';
+import { PatchQuestionPinnedResponseDTO } from '@/features/pin-question';
 
 test.beforeEach(async ({ page }) => {
   page.route('**/api/auth/token', async (route) => {

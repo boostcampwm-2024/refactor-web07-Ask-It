@@ -1,6 +1,6 @@
 import { expect, test } from '@playwright/test';
 
-import { PostRefreshResponseDTO } from '@/features/auth/auth.dto';
+import { PostRefreshResponseDTO } from '@/features/auth';
 
 test.beforeEach(async ({ page }) => {
   page.route('**/api/auth/token', async (route) => {

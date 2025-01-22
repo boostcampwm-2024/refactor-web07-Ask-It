@@ -1,8 +1,7 @@
 import { createRootRoute, Outlet } from '@tanstack/react-router';
 
-import { ToastContainer } from '@/features/toast';
-
-import { Header } from '@/components';
+import { ToastContainer } from '@/shared/ui/toast';
+import { Header } from '@/widgets/header';
 
 export const Route = createRootRoute({
   component: () => (
