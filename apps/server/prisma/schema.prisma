@@ -93,6 +93,8 @@ model QuestionLike {
 
   question              Question         @relation("QuestionLikes", fields: [questionId], references: [questionId], onDelete: Cascade)
   createUserTokenEntity UserSessionToken @relation("TokenQuestionLikes", fields: [createUserToken], references: [token])
+
+  @@unique([questionId, createUserToken])
 }
 
 model Reply {
@@ -117,6 +119,8 @@ model ReplyLike {
 
   reply                 Reply            @relation("ReplyLikes", fields: [replyId], references: [replyId], onDelete: Cascade)
   createUserTokenEntity UserSessionToken @relation("TokenReplyLikes", fields: [createUserToken], references: [token])
+
+  @@unique([replyId, createUserToken])
 }
 
 model Chatting {
