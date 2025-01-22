@@ -124,9 +124,12 @@ export class QuestionsRepository {
     });
   }
 
-  async deleteLike(questionLikeId: number) {
-    await this.prisma.questionLike.delete({
-      where: { questionLikeId },
+  async deleteLike(questionId: number, createUserToken: string) {
+    await this.prisma.questionLike.deleteMany({
+      where: {
+        questionId,
+        createUserToken,
+      },
     });
   }
 
