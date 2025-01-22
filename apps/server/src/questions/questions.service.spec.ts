@@ -1,5 +1,6 @@
 import { ForbiddenException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
+import { PrismaClientKnownRequestError } from '@prisma/client/runtime/library';
 
 import { QuestionsRepository } from './questions.repository';
 import { QuestionsService } from './questions.service';
@@ -198,8 +199,6 @@ describe('QuestionsService', () => {
 
   describe('toggleLike', () => {
     it('좋아요가 없을 경우 생성하고 liked: true를 반환해야 한다', async () => {
-      questionsRepository.findLike.mockResolvedValue(null);
-
       const result = await service.toggleLike(1, 'test-token');
 
       expect(questionsRepository.createLike).toHaveBeenCalledWith(1, 'test-token');
@@ -207,15 +206,17 @@ describe('QuestionsService', () => {
     });
 
     it('이미 좋아요가 있을 경우 삭제하고 liked: false를 반환해야 한다', async () => {
-      questionsRepository.findLike.mockResolvedValue({
-        questionLikeId: 1,
-        createUserToken: 'test-token',
-        questionId: 1,
-      });
+      questionsRepository.createLike.mockRejectedValueOnce(
+        new PrismaClientKnownRequestError('Unique constraint violation', {
+          code: 'P2002',
+          clientVersion: '2.x.x',
+        }),
+      );
 
       const result = await service.toggleLike(1, 'test-token');
 
-      expect(questionsRepository.deleteLike).toHaveBeenCalledWith(1);
+      expect(questionsRepository.createLike).toHaveBeenCalledWith(1, 'test-token');
+      expect(questionsRepository.deleteLike).toHaveBeenCalledWith(1, 'test-token');
       expect(result).toEqual({ liked: false });
     });
   });
