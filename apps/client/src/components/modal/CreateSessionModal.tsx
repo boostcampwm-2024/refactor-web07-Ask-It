@@ -45,11 +45,13 @@ function CreateSessionModal() {
 
   return (
     <Modal>
-      <div className='flex h-fit flex-col items-center justify-start gap-4 self-stretch rounded p-4'>
+      <Modal.Header className='justify-center'>
         <div className='font-header text-2xl'>
           <span className='text-indigo-600'>A</span>
           <span className='text-black'>sk-It</span>
         </div>
+      </Modal.Header>
+      <Modal.Body>
         <InputField
           label='세션 이름'
           type='text'
@@ -61,8 +63,8 @@ function CreateSessionModal() {
           }}
           placeholder='세션 이름을 입력해주세요'
         />
-      </div>
-      <div className='mt-4 inline-flex items-start justify-start gap-2.5'>
+      </Modal.Body>
+      <Modal.Footer>
         <Button className='bg-gray-500' onClick={closeModal}>
           <div className='w-[150px] text-sm font-medium text-white'>취소하기</div>
         </Button>
@@ -72,7 +74,7 @@ function CreateSessionModal() {
         >
           <div className='w-[150px] text-sm font-medium text-white'>세션 생성하기</div>
         </Button>
-      </div>
+      </Modal.Footer>
     </Modal>
   );
 }

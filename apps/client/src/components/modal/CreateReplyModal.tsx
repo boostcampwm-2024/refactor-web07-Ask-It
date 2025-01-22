@@ -15,9 +15,8 @@ interface CreateReplyModalProps {
   reply?: Reply;
 }
 
-function CreateReplyModal({ question, reply }: CreateReplyModalProps) {
+const useReplyMutation = (question?: Question, reply?: Reply) => {
   const { closeModal } = useModalContext();
-
   const addToast = useToastStore((state) => state.addToast);
 
   const { sessionToken, sessionId, expired, addReply, updateReply } = useSessionStore(
@@ -100,46 +99,79 @@ function CreateReplyModal({ question, reply }: CreateReplyModalProps) {
     if (reply) setBody(reply.body);
   }, [reply]);
 
+  return { body, setBody, handleSubmit, submitDisabled };
+};
+
+const ModalHeader = () => (
+  <header>
+    <h2 className='text-lg font-semibold text-black'>답변하기</h2>
+  </header>
+);
+
+const QuestionPreview = ({ question }: { question?: Question }) => {
+  if (!question) return null;
+
   return (
-    <div className='inline-flex h-[50dvh] w-[50dvw] flex-col items-center justify-center gap-2.5 rounded-lg bg-gray-50 p-8 shadow'>
-      <div className='inline-flex h-full w-full flex-grow flex-col items-center justify-center gap-4'>
-        <div className='inline-flex items-center justify-start gap-2.5 self-stretch border-b border-gray-200 pb-1'>
-          <div className='text-lg font-semibold text-black'>답변하기</div>
-        </div>
-        <div className='max-h-[20dvh] self-stretch overflow-y-auto border-b border-gray-200 py-4 text-left font-medium text-gray-700'>
-          {question && (
-            <Markdown className='prose prose-stone flex w-full flex-col gap-3 prose-img:rounded-md'>
-              {question.body}
-            </Markdown>
-          )}
-        </div>
-        <div className='inline-flex h-full max-h-[25dvh] shrink grow basis-0 items-center justify-center gap-2.5 self-stretch'>
-          <textarea
-            className='h-full shrink grow basis-0 resize-none flex-col items-start justify-start gap-2 self-stretch whitespace-pre-wrap rounded border border-gray-200 bg-white p-4 focus:outline-none'
-            value={body}
-            onChange={(e) => setBody(e.target.value)}
-            placeholder={`**답변을 남겨주세요**\n**(마크다운 지원)**`}
-          />
-          <div className='inline-flex h-full shrink grow basis-0 flex-col items-start justify-start gap-2 self-stretch overflow-y-auto rounded border border-gray-200 bg-white p-4'>
-            <Markdown className='prose prose-stone flex w-full flex-col gap-3 prose-img:rounded-md'>
-              {body.length === 0 ? `**답변을 남겨주세요**\n\n**(마크다운 지원)**` : body}
-            </Markdown>
-          </div>
-        </div>
-        <div className='flex h-fit flex-col items-end justify-center gap-2.5 self-stretch'>
-          <div className='inline-flex items-center justify-center gap-2.5'>
-            <Button className='bg-gray-500' onClick={closeModal}>
-              <div className='text-sm font-bold text-white'>취소하기</div>
-            </Button>
-            <Button
-              className={`${!submitDisabled ? 'bg-indigo-600' : 'cursor-not-allowed bg-indigo-300'}`}
-              onClick={handleSubmit}
-            >
-              <div className='text-sm font-bold text-white'>{reply ? '수정하기' : '생성하기'}</div>
-            </Button>
-          </div>
-        </div>
-      </div>
+    <div className='max-h-[20dvh] overflow-y-auto border-gray-200 py-2'>
+      <Markdown className='prose prose-stone'>{question.body}</Markdown>
+    </div>
+  );
+};
+
+const ContentEditor = ({ body, setBody }: { body: string; setBody: (value: string) => void }) => (
+  <div className='flex h-full gap-2.5'>
+    <textarea
+      className='h-full flex-1 resize-none rounded border p-4 focus:outline-none'
+      value={body}
+      onChange={(e) => setBody(e.target.value)}
+      placeholder={`**답변을 남겨주세요**\n**(마크다운 지원)**`}
+    />
+    <div className='flex-1 overflow-y-auto rounded border p-4'>
+      <Markdown className='prose prose-stone'>
+        {body.length === 0 ? `**답변을 남겨주세요**\n\n**(마크다운 지원)**` : body}
+      </Markdown>
+    </div>
+  </div>
+);
+
+const ModalFooter = ({
+  onClose,
+  onSubmit,
+  submitDisabled,
+  submitText,
+}: {
+  onClose: () => void;
+  onSubmit: () => void;
+  submitDisabled: boolean;
+  submitText: string;
+}) => (
+  <footer className='flex justify-end gap-2.5'>
+    <Button className='bg-gray-500' onClick={onClose}>
+      <div className='text-sm font-bold text-white'>취소하기</div>
+    </Button>
+    <Button className={`${!submitDisabled ? 'bg-indigo-600' : 'cursor-not-allowed bg-indigo-300'}`} onClick={onSubmit}>
+      <div className='text-sm font-bold text-white'>{submitText}</div>
+    </Button>
+  </footer>
+);
+
+function CreateReplyModal({ question, reply }: CreateReplyModalProps) {
+  const { closeModal } = useModalContext();
+  const { body, setBody, handleSubmit, submitDisabled } = useReplyMutation(question, reply);
+
+  return (
+    <div className='flex h-[50dvh] w-[50dvw] flex-col gap-2 rounded-lg bg-gray-50 p-8'>
+      <ModalHeader />
+      <hr className='my-1 border-gray-200' />
+      <QuestionPreview question={question} />
+      <hr className='my-1 border-gray-200' />
+      <ContentEditor body={body} setBody={setBody} />
+      <ModalFooter
+        onClose={closeModal}
+        onSubmit={handleSubmit}
+        submitDisabled={submitDisabled}
+        submitText={reply ? '수정하기' : '생성하기'}
+      />
     </div>
   );
 }

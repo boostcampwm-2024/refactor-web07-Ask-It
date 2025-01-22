@@ -1,6 +1,7 @@
 import { useModalContext } from '@/features/modal';
 
 import { Button } from '@/components';
+import Modal from '@/components/modal/Modal';
 
 interface SessionTerminateModalProps {
   onCancel?: () => void;
@@ -11,33 +12,33 @@ function SessionTerminateModal({ onCancel, onConfirm }: SessionTerminateModalPro
   const { closeModal } = useModalContext();
 
   return (
-    <div className='inline-flex flex-col items-center justify-center gap-2.5 rounded-lg bg-gray-50 p-8 shadow'>
-      <div className='flex h-[8dvh] min-w-[20dvw] flex-col justify-center gap-2'>
+    <Modal className='h-[10dvh] w-[30dvw] min-w-[30dvw]'>
+      <Modal.Body>
         <div className='w-full text-center font-bold'>
           <span>정말 세션을 종료하시겠습니까?</span>
         </div>
-        <div className='mx-auto mt-4 inline-flex w-full items-start justify-center gap-2.5'>
-          <Button
-            className='w-full bg-gray-500'
-            onClick={() => {
-              onCancel?.();
-              closeModal();
-            }}
-          >
-            <span className='flex-grow text-sm font-medium text-white'>취소하기</span>
-          </Button>
-          <Button
-            className='w-full bg-indigo-600 transition-colors duration-200'
-            onClick={() => {
-              onConfirm?.();
-              closeModal();
-            }}
-          >
-            <span className='flex-grow text-sm font-medium text-white'>종료하기</span>
-          </Button>
-        </div>
-      </div>
-    </div>
+      </Modal.Body>
+      <Modal.Footer>
+        <Button
+          className='w-full bg-gray-500'
+          onClick={() => {
+            onCancel?.();
+            closeModal();
+          }}
+        >
+          <span className='flex-grow text-sm font-medium text-white'>취소하기</span>
+        </Button>
+        <Button
+          className='w-full bg-indigo-600 transition-colors duration-200'
+          onClick={() => {
+            onConfirm?.();
+            closeModal();
+          }}
+        >
+          <span className='flex-grow text-sm font-medium text-white'>종료하기</span>
+        </Button>
+      </Modal.Footer>
+    </Modal>
   );
 }
 
