@@ -34,4 +34,6 @@ if (args.includes('http')) {
   bootstrap(Number(process.env.API_SERVER_PORT ?? '3000'));
 } else if (args.includes('ws')) {
   bootstrap(Number(process.env.SOCKET_SERVER_PORT ?? '4000'));
+} else {
+  bootstrap(Number(process.env.API_SERVER_PORT ?? '3000'));
 }

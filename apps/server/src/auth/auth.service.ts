@@ -1,7 +1,8 @@
-import { Injectable, OnModuleInit } from '@nestjs/common';
+import { Inject, Injectable, OnModuleInit } from '@nestjs/common';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
 import { v4 as uuid4 } from 'uuid';
+import Redis from 'ioredis';
 
 import { LoginDto } from './dto/login.dto';
 import { InvalidCredentialsException, RefreshTokenException } from './exceptions/auth.exception';
@@ -11,48 +12,25 @@ import { UsersRepository } from '@users/users.repository';
 interface RefreshTokenData {
   userId: number;
   nickname: string;
-  expiredAt: Date;
 }
 
 @Injectable()
-export class AuthService implements OnModuleInit {
-  private refreshTokens: Record<string, RefreshTokenData> = {};
-  private readonly REFRESH_TOKEN_CONFIG = {
-    EXPIRE_INTERVAL: 7 * 24 * 60 * 60 * 1000, // 7일
-    CLEANUP_INTERVAL: 60 * 60 * 1000, // 1시간
-  } as const;
+export class AuthService {
+  private readonly REFRESH_TOKEN_TTL = 7 * 24 * 60 * 60;
 
   constructor(
     private readonly jwtService: JwtService,
     private readonly usersRepository: UsersRepository,
+    @Inject('REDIS_REFRESH_TOKEN') private readonly refreshTokensRedisClient: Redis,
   ) {}
 
-  getInfo(refreshToken: string) {
-    const user = this.refreshTokens[refreshToken];
-    return user ? user.userId : null;
+  async getInfo(refreshToken: string) {
+    const refreshTokenData: RefreshTokenData = JSON.parse(await this.refreshTokensRedisClient.get(refreshToken));
+    return refreshTokenData ? refreshTokenData.userId : null;
   }
 
   getRefreshTokenExpireTime() {
-    return this.REFRESH_TOKEN_CONFIG.EXPIRE_INTERVAL;
-  }
-
-  onModuleInit() {
-    this.startPeriodicCleanup();
-  }
-
-  private startPeriodicCleanup() {
-    setInterval(() => {
-      this.cleanupExpiredTokens();
-    }, this.REFRESH_TOKEN_CONFIG.CLEANUP_INTERVAL);
-  }
-
-  private cleanupExpiredTokens() {
-    const now = new Date();
-    const expiredTokens = Object.keys(this.refreshTokens).filter((token) => this.refreshTokens[token].expiredAt < now);
-
-    expiredTokens.forEach((token) => {
-      this.removeRefreshToken(token);
-    });
+    return this.REFRESH_TOKEN_TTL;
   }
 
   async validateUser(loginDto: LoginDto) {
@@ -65,35 +43,32 @@ export class AuthService implements OnModuleInit {
     return { userId: user.userId, nickname: user.nickname };
   }
 
-  generateRefreshToken(userId: number, nickname: string) {
+  async generateRefreshToken(userId: number, nickname: string) {
     const token = uuid4();
-    this.refreshTokens[token] = {
+    const tokenData: RefreshTokenData = {
       userId,
       nickname,
-      expiredAt: new Date(Date.now() + this.REFRESH_TOKEN_CONFIG.EXPIRE_INTERVAL),
     };
+
+    await this.refreshTokensRedisClient.set(token, JSON.stringify(tokenData), 'EX', this.REFRESH_TOKEN_TTL);
     return token;
   }
 
   async generateAccessToken(refreshToken: string) {
-    await this.validateRefreshToken(refreshToken);
-    return this.jwtService.sign(this.refreshTokens[refreshToken], {
+    const tokenData: RefreshTokenData = await this.validateRefreshToken(refreshToken);
+    return this.jwtService.sign(tokenData, {
       expiresIn: '2d',
       secret: process.env.JWT_ACCESS_SECRET,
     });
   }
 
   private async validateRefreshToken(refreshToken: string) {
-    const tokenData = this.refreshTokens[refreshToken];
+    const tokenData = await this.refreshTokensRedisClient.get(refreshToken);
     if (!tokenData) throw RefreshTokenException.invalid();
-
-    if (tokenData.expiredAt < new Date()) {
-      this.removeRefreshToken(refreshToken);
-      throw RefreshTokenException.expired();
-    }
+    return JSON.parse(tokenData);
   }
 
-  removeRefreshToken(refreshToken: string) {
-    delete this.refreshTokens[refreshToken];
+  async removeRefreshToken(refreshToken: string) {
+    await this.refreshTokensRedisClient.del(refreshToken);
   }
 }
