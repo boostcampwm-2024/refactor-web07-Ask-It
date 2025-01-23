@@ -1,5 +1,7 @@
 import { createFileRoute, Outlet, redirect, ScrollRestoration } from '@tanstack/react-router';
-import React from 'react';
+import React, { Suspense } from 'react';
+
+import { ChattingListSkeletonUI } from '@/widgets/chatting-list';
 
 import { SocketProvider } from '@/features/socket';
 
@@ -16,7 +18,9 @@ export const Route = createFileRoute('/session')({
       <SocketProvider>
         <ScrollRestoration />
         <Outlet />
-        <LazyChattingList />
+        <Suspense fallback={<ChattingListSkeletonUI />}>
+          <LazyChattingList />
+        </Suspense>
       </SocketProvider>
     </div>
   ),
