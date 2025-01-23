@@ -156,17 +156,14 @@ function QuestionList() {
       });
 
     if (!deepEqual(updatedPinnedQuestions, pinnedQuestions)) {
-      console.log('pinned questions updated');
       setPinnedQuestions(updatedPinnedQuestions);
     }
 
     if (!deepEqual(updatedUnpinnedQuestions, unpinnedQuestions)) {
-      console.log('unpinned questions updated');
       setUnpinnedQuestions(updatedUnpinnedQuestions);
     }
 
     if (!deepEqual(updatedClosedQuestions, closedQuestions)) {
-      console.log('closed questions updated');
       setClosedQuestions(updatedClosedQuestions);
     }
   }, [questions, pinnedQuestions, unpinnedQuestions, closedQuestions]);
