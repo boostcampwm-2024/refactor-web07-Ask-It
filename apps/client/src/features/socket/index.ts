@@ -1,4 +1,3 @@
-export * from './socket.type';
-export * from './socket.service';
-export * from './socket.context';
-export * from './socket.hook';
+export * from './model/socket.context';
+export * from './model/socket.service';
+export * from './model/socket.type';

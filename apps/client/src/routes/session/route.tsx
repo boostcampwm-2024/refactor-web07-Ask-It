@@ -3,7 +3,9 @@ import React from 'react';
 
 import { SocketProvider } from '@/features/socket';
 
-const LazyChattingList = React.lazy(() => import('@/components').then((module) => ({ default: module.ChattingList })));
+const LazyChattingList = React.lazy(() =>
+  import('@/widgets/chatting-list').then((module) => ({ default: module.ChattingList })),
+);
 
 export const Route = createFileRoute('/session')({
   beforeLoad: ({ location }) => {

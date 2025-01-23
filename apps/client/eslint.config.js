@@ -2,7 +2,7 @@ import pluginJs from '@eslint/js';
 import prettier from 'eslint-config-prettier';
 import pluginImport from 'eslint-plugin-import';
 import pluginReact from 'eslint-plugin-react';
-import pluginReactHooks from 'eslint-plugin-react-hooks'; // 추가
+import pluginReactHooks from 'eslint-plugin-react-hooks';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
@@ -60,12 +60,32 @@ export default [
           groups: ['builtin', 'external', ['parent', 'sibling'], 'index'],
           pathGroups: [
             {
-              pattern: '@/component/**',
+              pattern: '@/app/**',
+              group: 'parent',
+              position: 'before',
+            },
+            {
+              pattern: '@/pages/**',
+              group: 'parent',
+              position: 'before',
+            },
+            {
+              pattern: '@/widgets/**',
               group: 'parent',
               position: 'before',
             },
             {
               pattern: '@/features/**',
+              group: 'parent',
+              position: 'before',
+            },
+            {
+              pattern: '@/entities/**',
+              group: 'parent',
+              position: 'before',
+            },
+            {
+              pattern: '@/shared/**',
               group: 'parent',
               position: 'before',
             },

@@ -1,14 +1,11 @@
 import { createFileRoute, isRedirect, redirect } from '@tanstack/react-router';
-import React from 'react';
 
-import { loadSessionData, useSessionStore } from '@/features/session';
+import { loadSessionData, QuestionReplyPage } from '@/pages/session';
 
-const LazyQuestionDetail = React.lazy(() =>
-  import('@/components').then((module) => ({ default: module.QuestionDetail })),
-);
+import { useSessionStore } from '@/entities/session';
 
 export const Route = createFileRoute('/session/$sessionId/$questionId/')({
-  component: LazyQuestionDetail,
+  component: QuestionReplyPage,
   beforeLoad: async ({ params: { sessionId, questionId } }) => {
     const { fromDetail } = useSessionStore.getState();
 
