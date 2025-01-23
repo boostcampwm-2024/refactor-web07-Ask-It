@@ -1,10 +1,6 @@
 import { useQuestionActions } from '@/widgets/question-list/model/useQuestionActions';
+import QuestionActions from '@/widgets/question-list/ui/QuestionActions';
 import QuestionBody from '@/widgets/question-list/ui/QuestionBody';
-import QuestionDeleteButton from '@/widgets/question-list/ui/QuestionDeleteButton';
-import QuestionEditButton from '@/widgets/question-list/ui/QuestionEditButton';
-import QuestionLikeButton from '@/widgets/question-list/ui/QuestionLikeButton';
-import QuestionPinButton from '@/widgets/question-list/ui/QuestionPinButton';
-import ReplyCountButton from '@/widgets/question-list/ui/ReplyCountButton';
 
 import { CreateQuestionModal } from '@/features/create-update-question';
 import { DeleteConfirmModal } from '@/features/delete-question';
@@ -30,10 +26,6 @@ function QuestionItem({ question, onQuestionSelect }: QuestionItemProps) {
     <DeleteConfirmModal onConfirm={handleDelete} />,
   );
 
-  const canEdit = question.isOwner && !question.closed && question.replies.length === 0;
-  const canDelete = isHost || (question.isOwner && !question.closed && question.replies.length === 0);
-  const showActions = !expired && (isHost || question.isOwner);
-
   return (
     <div
       className={`inline-flex h-fit w-full flex-col items-start justify-start gap-4 rounded-lg border ${question.pinned ? 'border-indigo-200' : 'border-gray-200'} bg-white px-4 py-2`}
@@ -45,20 +37,16 @@ function QuestionItem({ question, onQuestionSelect }: QuestionItemProps) {
         expired={expired}
         onClose={handleClose}
       />
-
-      <div className='inline-flex w-full justify-between'>
-        <div className='inline-flex items-center justify-start gap-2'>
-          <QuestionPinButton isHost={isHost} expired={expired} pinned={question.pinned} onClick={handlePin} />
-          <QuestionLikeButton liked={question.liked} likesCount={question.likesCount} onClick={handleLike} />
-          <ReplyCountButton count={question.replies.length} onClick={handleSelectQuestionId} />
-        </div>
-        {showActions && (
-          <div className='inline-flex items-center justify-start gap-2 px-2.5'>
-            <QuestionEditButton isVisible={canEdit} onClick={openCreateQuestionModal} />
-            <QuestionDeleteButton isVisible={canDelete} onClick={openDeleteConfirmModal} />
-          </div>
-        )}
-      </div>
+      <QuestionActions
+        question={question}
+        isHost={isHost}
+        expired={expired}
+        onPin={handlePin}
+        onLike={handleLike}
+        onSelect={handleSelectQuestionId}
+        onEdit={openCreateQuestionModal}
+        onDelete={openDeleteConfirmModal}
+      />
       {CreateQuestion}
       {DeleteConfirm}
     </div>
