@@ -171,22 +171,6 @@ function QuestionList() {
     }
   }, [questions, pinnedQuestions, unpinnedQuestions, closedQuestions]);
 
-  // const pinnedQuestions = questions
-  //   .filter((question) => question.pinned && !question.closed)
-  //   .sort((a, b) => b.likesCount - a.likesCount);
-
-  // const unpinnedQuestions = questions
-  //   .filter((question) => !question.pinned && !question.closed)
-  //   .sort((a, b) => b.likesCount - a.likesCount);
-
-  // const closedQuestions = questions
-  //   .filter((question) => question.closed)
-  //   .sort((a, b) => {
-  //     if (a.pinned && !b.pinned) return -1;
-  //     if (!a.pinned && b.pinned) return 1;
-  //     return b.likesCount - a.likesCount;
-  //   });
-
   return (
     <div className='inline-flex h-full w-4/5 flex-grow flex-col items-center justify-start rounded-lg bg-white shadow'>
       <div className='inline-flex h-[54px] w-full items-center justify-between border-b border-gray-200 px-8 py-2'>
