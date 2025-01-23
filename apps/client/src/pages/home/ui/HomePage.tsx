@@ -1,10 +1,11 @@
 import { GoArchive, GoPeople } from 'react-icons/go';
 import { IoChatboxEllipsesOutline, IoLockClosedOutline } from 'react-icons/io5';
 
+import FeatureCard from '@/pages/home/ui/FeatureCard';
+
 import { useAuthStore } from '@/features/auth';
 import { CreateSessionModal } from '@/features/create-session';
 
-import FeatureCard from '@/pages/home/ui/FeatureCard';
 import { Button } from '@/shared/ui/button';
 import { useModal } from '@/shared/ui/modal';
 

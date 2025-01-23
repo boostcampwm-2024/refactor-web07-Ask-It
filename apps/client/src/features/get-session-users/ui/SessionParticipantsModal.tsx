@@ -9,6 +9,7 @@ import { getSessionUsers } from '@/features/get-session-users';
 import { patchSessionHost } from '@/features/update-session-host';
 
 import { User, useSessionStore } from '@/entities/session';
+
 import { Button } from '@/shared/ui/button';
 import { Modal, useModalContext } from '@/shared/ui/modal';
 import { useToastStore } from '@/shared/ui/toast';

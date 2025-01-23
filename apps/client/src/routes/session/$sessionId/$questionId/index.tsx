@@ -1,7 +1,8 @@
 import { createFileRoute, isRedirect, redirect } from '@tanstack/react-router';
 
-import { useSessionStore } from '@/entities/session';
 import { loadSessionData, QuestionReplyPage } from '@/pages/session';
+
+import { useSessionStore } from '@/entities/session';
 
 export const Route = createFileRoute('/session/$sessionId/$questionId/')({
   component: QuestionReplyPage,

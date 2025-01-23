@@ -1,9 +1,10 @@
 import { useQuery } from '@tanstack/react-query';
 import { useMemo, useState } from 'react';
 
+import SessionRecord from '@/pages/my/ui/SessionRecord';
+
 import { getSessions } from '@/features/get-sessions';
 
-import SessionRecord from '@/pages/my/ui/SessionRecord';
 import { Button } from '@/shared/ui/button';
 
 function MyPage() {

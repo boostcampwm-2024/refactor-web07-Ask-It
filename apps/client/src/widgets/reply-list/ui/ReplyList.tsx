@@ -3,12 +3,14 @@ import { GoArrowLeft } from 'react-icons/go';
 import Markdown from 'react-markdown';
 import { useShallow } from 'zustand/react/shallow';
 
+import ReplyItem from '@/widgets/reply-list/ui/ReplyItem';
+
 import { CreateReplyModal } from '@/features/create-update-reply';
 
 import { useSessionStore } from '@/entities/session';
+
 import { Button } from '@/shared/ui/button';
 import { useModal } from '@/shared/ui/modal';
-import ReplyItem from '@/widgets/reply-list/ui/ReplyItem';
 
 function QuestionDetail() {
   const navigate = useNavigate();

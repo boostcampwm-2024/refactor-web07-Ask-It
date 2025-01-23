@@ -1,9 +1,10 @@
 import { AnimatePresence, motion, Variants } from 'motion/react';
 import { useState } from 'react';
 
-import { Question } from '@/entities/session';
 import QuestionDivider from '@/widgets/question-list/ui/QuestionDivider';
 import QuestionItem from '@/widgets/question-list/ui/QuestionItem';
+
+import { Question } from '@/entities/session';
 
 const itemVariants: Variants = {
   hidden: {

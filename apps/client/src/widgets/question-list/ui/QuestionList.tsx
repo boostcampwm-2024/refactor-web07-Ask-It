@@ -5,17 +5,19 @@ import { GrValidate } from 'react-icons/gr';
 import { IoClose, IoShareSocialOutline } from 'react-icons/io5';
 import { useShallow } from 'zustand/react/shallow';
 
+import QuestionSection from '@/widgets/question-list/ui/QuestionSection';
+import SessionSettingsDropdown from '@/widgets/question-list/ui/SessionSettingsDropdown';
+
 import { CreateQuestionModal } from '@/features/create-update-question';
 import { SessionParticipantsModal } from '@/features/get-session-users';
 import { useSocket } from '@/features/socket';
 import { postSessionTerminate, SessionTerminateModal } from '@/features/terminate-session';
 
 import { useSessionStore } from '@/entities/session';
+
 import { Button } from '@/shared/ui/button';
 import { useModal } from '@/shared/ui/modal';
 import { useToastStore } from '@/shared/ui/toast';
-import QuestionSection from '@/widgets/question-list/ui/QuestionSection';
-import SessionSettingsDropdown from '@/widgets/question-list/ui/SessionSettingsDropdown';
 
 function QuestionList() {
   const { isHost, expired, questions, sessionId, sessionTitle, sessionToken, setExpired, setSelectedQuestionId } =

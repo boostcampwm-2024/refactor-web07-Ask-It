@@ -18,6 +18,7 @@ import {
 } from '@/features/socket/model/socket.type';
 
 import { useSessionStore } from '@/entities/session';
+
 import { useToastStore } from '@/shared/ui/toast';
 
 export class SocketService {
