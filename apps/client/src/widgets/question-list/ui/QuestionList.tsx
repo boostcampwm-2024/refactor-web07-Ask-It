@@ -1,6 +1,6 @@
 import { isAxiosError } from 'axios';
 import { motion } from 'motion/react';
-import { useMemo, useRef, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { GrValidate } from 'react-icons/gr';
 import { IoClose, IoShareSocialOutline } from 'react-icons/io5';
 import { useShallow } from 'zustand/react/shallow';
@@ -13,8 +13,9 @@ import { SessionParticipantsModal } from '@/features/get-session-users';
 import { useSocket } from '@/features/socket';
 import { postSessionTerminate, SessionTerminateModal } from '@/features/terminate-session';
 
-import { useSessionStore } from '@/entities/session';
+import { Question, useSessionStore } from '@/entities/session';
 
+import { deepEqual } from '@/shared/model/deep-equal';
 import { Button } from '@/shared/ui/button';
 import { useModal } from '@/shared/ui/modal';
 import { useToastStore } from '@/shared/ui/toast';
@@ -78,37 +79,6 @@ function QuestionList() {
 
   const buttonRef = useRef<HTMLButtonElement>(null);
 
-  const sections = useMemo(
-    () => [
-      {
-        title: '고정된 질문',
-        initialOpen: true,
-        questions: questions
-          .filter((question) => question.pinned && !question.closed)
-          .sort((a, b) => b.likesCount - a.likesCount),
-      },
-      {
-        title: '질문',
-        initialOpen: true,
-        questions: questions
-          .filter((question) => !question.pinned && !question.closed)
-          .sort((a, b) => b.likesCount - a.likesCount),
-      },
-      {
-        title: '답변 완료된 질문',
-        initialOpen: false,
-        questions: questions
-          .filter((question) => question.closed)
-          .sort((a, b) => {
-            if (a.pinned && !b.pinned) return -1;
-            if (!a.pinned && b.pinned) return 1;
-            return b.likesCount - a.likesCount;
-          }),
-      },
-    ],
-    [questions],
-  );
-
   const sessionButtons = useMemo(
     () => [
       {
@@ -164,6 +134,40 @@ function QuestionList() {
     [sessionId, addToast, openSessionParticipantsModal, openSessionTerminateModal],
   );
 
+  const [pinnedQuestions, setPinnedQuestions] = useState<Question[]>([]);
+  const [unpinnedQuestions, setUnpinnedQuestions] = useState<Question[]>([]);
+  const [closedQuestions, setClosedQuestions] = useState<Question[]>([]);
+
+  useEffect(() => {
+    const updatedPinnedQuestions = questions
+      .filter((question) => question.pinned && !question.closed)
+      .sort((a, b) => b.likesCount - a.likesCount);
+
+    const updatedUnpinnedQuestions = questions
+      .filter((question) => !question.pinned && !question.closed)
+      .sort((a, b) => b.likesCount - a.likesCount);
+
+    const updatedClosedQuestions = questions
+      .filter((question) => question.closed)
+      .sort((a, b) => {
+        if (a.pinned && !b.pinned) return -1;
+        if (!a.pinned && b.pinned) return 1;
+        return b.likesCount - a.likesCount;
+      });
+
+    if (!deepEqual(updatedPinnedQuestions, pinnedQuestions)) {
+      setPinnedQuestions(updatedPinnedQuestions);
+    }
+
+    if (!deepEqual(updatedUnpinnedQuestions, unpinnedQuestions)) {
+      setUnpinnedQuestions(updatedUnpinnedQuestions);
+    }
+
+    if (!deepEqual(updatedClosedQuestions, closedQuestions)) {
+      setClosedQuestions(updatedClosedQuestions);
+    }
+  }, [questions, pinnedQuestions, unpinnedQuestions, closedQuestions]);
+
   return (
     <div className='inline-flex h-full w-4/5 flex-grow flex-col items-center justify-start rounded-lg bg-white shadow'>
       <div className='inline-flex h-[54px] w-full items-center justify-between border-b border-gray-200 px-8 py-2'>
@@ -210,15 +214,24 @@ function QuestionList() {
         </div>
       ) : (
         <motion.div className='inline-flex h-full w-full flex-col items-start justify-start gap-4 overflow-y-auto px-8 py-4'>
-          {sections.map((section) => (
-            <QuestionSection
-              key={section.title}
-              title={section.title}
-              initialOpen={section.initialOpen}
-              questions={section.questions}
-              onQuestionSelect={setSelectedQuestionId}
-            />
-          ))}
+          <QuestionSection
+            title='고정된 질문'
+            initialOpen={true}
+            questions={pinnedQuestions}
+            onQuestionSelect={setSelectedQuestionId}
+          />
+          <QuestionSection
+            title='질문'
+            initialOpen={true}
+            questions={unpinnedQuestions}
+            onQuestionSelect={setSelectedQuestionId}
+          />
+          <QuestionSection
+            title='답변 완료된 질문'
+            initialOpen={false}
+            questions={closedQuestions}
+            onQuestionSelect={setSelectedQuestionId}
+          />
         </motion.div>
       )}
       {CreateQuestion}
