@@ -20,13 +20,13 @@ export class AuthController {
   @LoginSwagger()
   async login(@Body() loginDto: LoginDto, @Res({ passthrough: true }) response: Response) {
     const { userId, nickname } = await this.authService.validateUser(loginDto);
-    const refreshToken = this.authService.generateRefreshToken(userId, nickname);
+    const refreshToken = await this.authService.generateRefreshToken(userId, nickname);
     const accessToken = await this.authService.generateAccessToken(refreshToken);
 
     response.cookie(this.REFRESH_TOKEN, refreshToken, {
       httpOnly: true,
-      secure: false, //TODO : https
-      maxAge: this.authService.getRefreshTokenExpireTime(),
+      secure: true,
+      maxAge: this.authService.getRefreshTokenExpireTime() * 1000,
     });
 
     return { accessToken, userId };
@@ -43,7 +43,7 @@ export class AuthController {
 
   @Post('logout')
   @LogoutSwagger()
-  logout(@Req() request: Request, @Res({ passthrough: true }) response: Response) {
+  async logout(@Req() request: Request, @Res({ passthrough: true }) response: Response) {
     const refreshToken = request.cookies[this.REFRESH_TOKEN];
     this.authService.removeRefreshToken(refreshToken);
     response.clearCookie(this.REFRESH_TOKEN);
