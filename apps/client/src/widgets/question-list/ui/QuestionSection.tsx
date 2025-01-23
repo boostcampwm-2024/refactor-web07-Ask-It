@@ -1,5 +1,6 @@
 import { AnimatePresence, motion, Variants } from 'motion/react';
 import { useState } from 'react';
+import React from 'react';
 
 import QuestionDivider from '@/widgets/question-list/ui/QuestionDivider';
 import QuestionItem from '@/widgets/question-list/ui/QuestionItem';
@@ -86,4 +87,4 @@ function QuestionSection({ title, questions, initialOpen, onQuestionSelect }: Qu
   );
 }
 
-export default QuestionSection;
+export default React.memo(QuestionSection);
