@@ -1,5 +1,6 @@
-import { useEffect } from 'react';
-import React from 'react';
+import React, { Suspense, useEffect } from 'react';
+
+import { QuestionListSkeletonUI } from '@/widgets/question-list';
 
 import { useSessionStore } from '@/entities/session';
 
@@ -16,7 +17,11 @@ function SessionPage() {
     }
   }, [sessionTitle]);
 
-  return <LazyQuestionList />;
+  return (
+    <Suspense fallback={<QuestionListSkeletonUI />}>
+      <LazyQuestionList />
+    </Suspense>
+  );
 }
 
 export default SessionPage;

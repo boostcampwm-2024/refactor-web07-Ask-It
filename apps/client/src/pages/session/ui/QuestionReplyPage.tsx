@@ -1,4 +1,6 @@
-import React from 'react';
+import React, { Suspense } from 'react';
+
+import { ReplyListSkeletonUI } from '@/widgets/reply-list';
 
 const LazyQuestionReplyPage = React.lazy(() =>
   import('@/widgets/reply-list').then((module) => ({ default: module.ReplyList })),
@@ -6,9 +8,9 @@ const LazyQuestionReplyPage = React.lazy(() =>
 
 function QuestionReplyPage() {
   return (
-    <React.Suspense fallback={null}>
+    <Suspense fallback={<ReplyListSkeletonUI />}>
       <LazyQuestionReplyPage />
-    </React.Suspense>
+    </Suspense>
   );
 }
 
