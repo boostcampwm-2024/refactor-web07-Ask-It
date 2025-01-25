@@ -2,7 +2,11 @@ import Markdown from 'react-markdown';
 
 import { Reply } from '@/entities/session';
 
-function ReplyBody({ reply }: { reply: Pick<Reply, 'body' | 'deleted'> }) {
+interface ReplyBodyProps {
+  reply: Pick<Reply, 'body' | 'deleted'>;
+}
+
+function ReplyBody({ reply }: Readonly<ReplyBodyProps>) {
   const replyContent = reply.deleted ? '삭제된 답변입니다' : reply.body;
 
   return (

@@ -55,6 +55,15 @@ function ChattingList() {
     }
   };
 
+  const adjustScrollPosition = () => {
+    const container = messagesEndRef.current;
+    if (!container) return;
+
+    const newHeight = container.scrollHeight;
+    const heightDiff = newHeight - prevHeightRef.current;
+    container.scrollTop = heightDiff;
+  };
+
   useEffect(() => {
     const handleScroll = () => {
       const container = messagesEndRef.current;
@@ -70,12 +79,7 @@ function ChattingList() {
           .then(({ chats }) => {
             if (chats.length < 20) hasMoreRef.current = false;
             chats.forEach(addChattingToFront);
-
-            requestAnimationFrame(() => {
-              const newHeight = container.scrollHeight;
-              const heightDiff = newHeight - prevHeightRef.current;
-              container.scrollTop = heightDiff;
-            });
+            requestAnimationFrame(adjustScrollPosition);
           })
           .catch(console.error)
           .finally(() => {

@@ -13,7 +13,11 @@ const getToastClass = (type: ToastType) => {
   }
 };
 
-function ToastMessage({ toast }: { toast: Toast }) {
+interface ToastMessageProps {
+  toast: Toast;
+}
+
+function ToastMessage({ toast }: Readonly<ToastMessageProps>) {
   return (
     <div
       className={`w-fit min-w-[200px] max-w-[300px] overflow-hidden rounded p-4 font-bold shadow ${toast.isActive ? 'animate-fadeIn' : 'animate-fadeOut'} ${getToastClass(toast.type)}`}

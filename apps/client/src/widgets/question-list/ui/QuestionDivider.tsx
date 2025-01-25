@@ -4,7 +4,7 @@ interface QuestionDividerProps {
   onClick?: () => void;
 }
 
-function QuestionDivider({ description, isExpanded, onClick }: QuestionDividerProps) {
+function QuestionDivider({ description, isExpanded, onClick }: Readonly<QuestionDividerProps>) {
   return (
     <div className='my-4 flex w-full items-center gap-2'>
       <hr className={`flex-grow rounded-3xl border-t-[1px] ${isExpanded ? 'border-indigo-600' : 'border-gray-300'}`} />

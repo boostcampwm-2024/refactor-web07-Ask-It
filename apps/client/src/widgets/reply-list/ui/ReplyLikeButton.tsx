@@ -2,7 +2,13 @@ import { GrLike, GrLikeFill } from 'react-icons/gr';
 
 import { Button } from '@/shared/ui/button';
 
-function ReplyLikeButton({ liked, likesCount, onClick }: { liked: boolean; likesCount: number; onClick: () => void }) {
+interface ReplyLikeButtonProps {
+  liked: boolean;
+  likesCount: number;
+  onClick: () => void;
+}
+
+function ReplyLikeButton({ liked, likesCount, onClick }: Readonly<ReplyLikeButtonProps>) {
   const LikeIcon = liked ? <GrLikeFill style={{ fill: 'rgb(165 180 252)' }} /> : <GrLike />;
 
   return (

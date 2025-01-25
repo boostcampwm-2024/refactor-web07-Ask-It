@@ -6,7 +6,7 @@ interface SessionTerminateModalProps {
   onConfirm?: () => void;
 }
 
-function SessionTerminateModal({ onCancel, onConfirm }: SessionTerminateModalProps) {
+function SessionTerminateModal({ onCancel, onConfirm }: Readonly<SessionTerminateModalProps>) {
   const { closeModal } = useModalContext();
 
   return (

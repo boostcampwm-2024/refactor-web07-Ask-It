@@ -26,7 +26,7 @@ function QuestionActions({
   onSelect,
   onEdit,
   onDelete,
-}: QuestionActionsProps) {
+}: Readonly<QuestionActionsProps>) {
   const canEdit = question.isOwner && !question.closed && question.replies.length === 0;
   const canDelete = isHost || (question.isOwner && !question.closed && question.replies.length === 0);
   const showActions = !expired && (isHost || question.isOwner);

@@ -69,7 +69,7 @@ function QuestionDetail() {
           </div>
         ) : (
           question.replies
-            .sort((a, b) => {
+            .toSorted((a, b) => {
               if (b.isHost !== a.isHost) {
                 return b.isHost ? 1 : -1;
               }

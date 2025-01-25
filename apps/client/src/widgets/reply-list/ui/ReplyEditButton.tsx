@@ -2,7 +2,12 @@ import { FiEdit2 } from 'react-icons/fi';
 
 import { Button } from '@/shared/ui/button';
 
-function ReplyEditButton({ isOwner, onClick }: { isOwner: boolean; onClick: () => void }) {
+interface ReplyEditButtonProps {
+  isOwner: boolean;
+  onClick: () => void;
+}
+
+function ReplyEditButton({ isOwner, onClick }: Readonly<ReplyEditButtonProps>) {
   if (!isOwner) return null;
 
   return (

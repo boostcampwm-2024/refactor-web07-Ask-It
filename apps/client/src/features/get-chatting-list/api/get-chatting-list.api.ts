@@ -11,5 +11,5 @@ export type GetChattingListResponseDTO = z.infer<typeof GetChattingListResponseS
 
 export const getChattingList = (token: string, sessionId: string, chatId?: number) =>
   axios
-    .get<GetChattingListResponseDTO>(`/api/chats${chatId ? `/${chatId}` : ''}`, { params: { token, sessionId } })
+    .get<GetChattingListResponseDTO>(`/api/chats${chatId ? '/' + chatId : ''}`, { params: { token, sessionId } })
     .then((res) => GetChattingListResponseSchema.parse(res.data));

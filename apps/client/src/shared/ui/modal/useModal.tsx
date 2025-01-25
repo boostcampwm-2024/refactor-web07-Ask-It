@@ -1,6 +1,13 @@
-import { ReactNode, useCallback, useContext, useMemo, useState } from 'react';
-import { createContext } from 'react';
-import { PropsWithChildren, useEffect } from 'react';
+import {
+  createContext,
+  PropsWithChildren,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { createPortal } from 'react-dom';
 
 export interface ModalContextProps {
@@ -10,7 +17,7 @@ export interface ModalContextProps {
 
 export const ModalContext = createContext<ModalContextProps | undefined>(undefined);
 
-function Background({ children }: PropsWithChildren) {
+function Background({ children }: Readonly<PropsWithChildren>) {
   const { closeModal } = useModalContext();
 
   useEffect(() => {

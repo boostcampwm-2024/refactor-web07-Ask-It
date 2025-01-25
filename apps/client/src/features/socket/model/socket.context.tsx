@@ -21,7 +21,7 @@ interface SocketProviderProps {
   children: ReactNode;
 }
 
-export function SocketProvider({ children }: SocketProviderProps) {
+export function SocketProvider({ children }: Readonly<SocketProviderProps>) {
   const { expired, sessionId, sessionToken } = useSessionStore(
     useShallow((state) => ({
       expired: state.expired,

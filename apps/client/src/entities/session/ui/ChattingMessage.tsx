@@ -4,7 +4,7 @@ interface ChattingMessageProps {
   chat: Chat;
 }
 
-function ChattingMessage({ chat: { nickname, content } }: ChattingMessageProps) {
+function ChattingMessage({ chat: { nickname, content } }: Readonly<ChattingMessageProps>) {
   return (
     <div className='inline-flex flex-col items-start justify-start gap-1 self-stretch p-2.5'>
       <span className='flex-shrink-0 text-sm font-semibold text-indigo-600'>{nickname}</span>

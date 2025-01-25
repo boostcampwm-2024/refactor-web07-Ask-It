@@ -3,19 +3,15 @@ import Markdown from 'react-markdown';
 
 import { Button } from '@/shared/ui/button';
 
-function QuestionBody({
-  body,
-  closed,
-  isHost,
-  expired,
-  onClose,
-}: {
+interface QuestionBodyProps {
   body: string;
   closed: boolean;
   isHost: boolean;
   expired: boolean;
   onClose: () => void;
-}) {
+}
+
+function QuestionBody({ body, closed, isHost, expired, onClose }: Readonly<QuestionBodyProps>) {
   return (
     <div className='flex h-fit flex-col items-start justify-start gap-2 self-stretch border-b border-gray-200 px-2.5 pb-4 pt-2.5'>
       <div className='inline-flex items-start justify-between gap-4 self-stretch'>

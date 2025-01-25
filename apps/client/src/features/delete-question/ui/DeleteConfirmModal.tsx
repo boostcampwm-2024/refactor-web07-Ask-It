@@ -6,7 +6,7 @@ interface DeleteConfirmModalProps {
   onConfirm?: () => void;
 }
 
-function DeleteConfirmModal({ onCancel, onConfirm }: DeleteConfirmModalProps) {
+function DeleteConfirmModal({ onCancel, onConfirm }: Readonly<DeleteConfirmModalProps>) {
   const { closeModal } = useModalContext();
 
   return (

@@ -15,32 +15,39 @@ interface ToastStore {
   addToast: (toast: Omit<Toast, 'isActive' | 'id'>) => void;
 }
 
-export const useToastStore = create<ToastStore>((set) => ({
-  toasts: [],
-  addToast: (toast) => {
-    const id = Math.random().toString(36).substring(2, 9);
-
+export const useToastStore = create<ToastStore>((set) => {
+  const deactivateToast = (id: string) => {
     set((state) => ({
-      toasts: [
-        ...state.toasts,
-        {
-          ...toast,
-          isActive: true,
-          id,
-        },
-      ],
+      toasts: state.toasts.map((t) => (t.id === id ? { ...t, isActive: false } : t)),
     }));
+  };
 
-    setTimeout(() => {
+  const removeToast = (id: string) => {
+    set((state) => ({
+      toasts: state.toasts.filter((t) => t.id !== id),
+    }));
+  };
+
+  return {
+    toasts: [],
+    addToast: (toast) => {
+      const id = window.crypto.randomUUID();
+
       set((state) => ({
-        toasts: state.toasts.map((t) => (t.id === id ? { ...t, isActive: false } : t)),
+        toasts: [
+          ...state.toasts,
+          {
+            ...toast,
+            isActive: true,
+            id,
+          },
+        ],
       }));
 
       setTimeout(() => {
-        set((state) => ({
-          toasts: state.toasts.filter((t) => t.id !== id),
-        }));
-      }, 300);
-    }, toast.duration);
-  },
-}));
+        deactivateToast(id);
+        setTimeout(() => removeToast(id), 300);
+      }, toast.duration);
+    },
+  };
+});

@@ -59,7 +59,7 @@ export const createSessionSlice: StateCreator<SessionSlice & QnASlice & Chatting
   setSelectedQuestionId: (selectedQuestionId) => set({ selectedQuestionId }),
   setSessionUsers: (sessionUsers) =>
     set({
-      sessionUsers: sessionUsers.sort((a, b) => {
+      sessionUsers: sessionUsers.toSorted((a, b) => {
         if (a.isHost && !b.isHost) return -1;
         if (!a.isHost && b.isHost) return 1;
         return a.nickname.localeCompare(b.nickname);
