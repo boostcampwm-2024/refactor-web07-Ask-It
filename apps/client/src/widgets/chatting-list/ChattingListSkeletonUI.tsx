@@ -22,8 +22,8 @@ function ChattingListSkeletonUI() {
 
           <div className='inline-flex h-full w-full flex-col items-start justify-start gap-3 overflow-y-auto p-2.5'>
             <div className='flex w-full flex-col gap-3'>
-              {[...Array(6)].map((_, i) => (
-                <div key={i} className='flex w-3/4 flex-col gap-1'>
+              {[...Array(6)].map(() => (
+                <div key={window.crypto.randomUUID()} className='flex w-3/4 flex-col gap-1'>
                   <div className='h-4 w-16 animate-pulse rounded bg-indigo-100'></div>
                   <div className='h-12 animate-pulse rounded-lg bg-indigo-50 p-2'></div>
                 </div>
