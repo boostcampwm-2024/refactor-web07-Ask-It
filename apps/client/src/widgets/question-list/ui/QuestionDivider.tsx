@@ -10,7 +10,7 @@ function QuestionDivider({ description, isExpanded, onClick }: Readonly<Question
       <hr className={`flex-grow rounded-3xl border-t-[1px] ${isExpanded ? 'border-indigo-600' : 'border-gray-300'}`} />
       {description && (
         <>
-          <div className='flex cursor-pointer items-center gap-1' onClick={onClick}>
+          <button className='flex cursor-pointer items-center gap-1' onClick={onClick}>
             <svg
               className={`inline-block h-3 w-3 transition-transform ${
                 isExpanded ? 'font-semibold text-indigo-600' : '-rotate-180 font-normal text-gray-500'
@@ -23,7 +23,7 @@ function QuestionDivider({ description, isExpanded, onClick }: Readonly<Question
             <span className={`text-sm ${isExpanded ? 'font-semibold text-indigo-600' : 'font-normal text-gray-500'}`}>
               {description}
             </span>
-          </div>
+          </button>
           <hr
             className={`flex-grow rounded-3xl border-t-[1px] ${isExpanded ? 'border-indigo-600' : 'border-gray-300'}`}
           />

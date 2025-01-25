@@ -212,12 +212,12 @@ test('질문 생성을 하면 새로운 질문이 리스트에 생긴다.', asyn
   await page.fill('textarea', '완전 새로운 질문');
 
   const responsePromise = page.waitForResponse(async (response) => response.url().includes('/api/questions'));
-  const createButton = page.getByRole('button', { name: '생성하기' });
+  const createButton = page.getByRole('button', { name: '생성하기' }).last();
   await createButton.click();
   const response = await responsePromise;
   expect(response.status()).toBe(200);
 
-  await expect(page.getByRole('button', { name: '생성하기' })).toBeHidden();
+  await expect(page.getByRole('button', { name: '생성하기' }).last()).toBeHidden();
   await expect(page.locator('text=완전 새로운 질문')).toBeVisible();
 });
 
@@ -227,7 +227,7 @@ test('질문 삭제를 하면 리스트에서 사라진다.', async ({ page }) =
 
   const responsePromise = page.waitForResponse(async (response) => response.url().includes('/api/questions/1'));
 
-  const confirmButton = page.getByRole('button', { name: '삭제하기' });
+  const confirmButton = page.getByRole('button', { name: '삭제하기' }).last();
   await confirmButton.click();
 
   const response = await responsePromise;
@@ -242,7 +242,7 @@ test('질문을 수정하면 리스트에 반영된다.', async ({ page }) => {
   await page.fill('textarea', '수정된 질문 내용');
 
   const responsePromise = page.waitForResponse(async (response) => response.url().includes('/api/questions/1/body'));
-  const confirmButton = page.getByRole('button', { name: '수정하기' });
+  const confirmButton = page.getByRole('button', { name: '수정하기' }).last();
   await confirmButton.click();
 
   const response = await responsePromise;

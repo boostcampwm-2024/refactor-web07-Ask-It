@@ -131,7 +131,7 @@ test('회원 가입이 이미 중복된 닉네임이 있어서 실패하는 경�
 test('로그인 플로우 전체 테스트', async ({ page }) => {
   await page.click('text=로그인');
 
-  const loginButton = page.getByRole('button', { name: '로그인' }).nth(1);
+  const loginButton = page.getByRole('button', { name: '로그인' }).last();
 
   await page.fill('input[placeholder="example@gmail.com"]', 'test@example.com');
   await page.fill('input[placeholder="비밀번호를 입력해주세요"]', 'Password123!');
