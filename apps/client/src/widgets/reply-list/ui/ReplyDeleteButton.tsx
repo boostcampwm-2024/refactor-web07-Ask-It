@@ -2,7 +2,12 @@ import { GrClose } from 'react-icons/gr';
 
 import { Button } from '@/shared/ui/button';
 
-function ReplyDeleteButton({ canDelete, onClick }: { canDelete: boolean; onClick: () => void }) {
+interface ReplyDeleteButtonProps {
+  canDelete: boolean;
+  onClick: () => void;
+}
+
+function ReplyDeleteButton({ canDelete, onClick }: Readonly<ReplyDeleteButtonProps>) {
   if (!canDelete) return null;
 
   return (

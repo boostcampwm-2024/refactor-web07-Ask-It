@@ -12,7 +12,7 @@ interface SessionSettingsDropdownProps {
   onClose: () => void;
 }
 
-function SessionSettingsDropdown({ buttons, triggerRef, onClose }: SessionSettingsDropdownProps) {
+function SessionSettingsDropdown({ buttons, triggerRef, onClose }: Readonly<SessionSettingsDropdownProps>) {
   const dropdownRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {

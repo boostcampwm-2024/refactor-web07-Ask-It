@@ -177,7 +177,7 @@ test('답변 삭제', async ({ page }) => {
   await deleteButton.waitFor();
   await deleteButton.click();
 
-  const confirmButton = page.getByRole('button', { name: '삭제하기' });
+  const confirmButton = page.getByRole('button', { name: '삭제하기' }).last();
   await confirmButton.waitFor();
   await confirmButton.click();
 
@@ -201,7 +201,7 @@ test('답글 생성', async ({ page }) => {
 
   const responsePromise = page.waitForResponse(async (response) => response.url().includes('/api/replies'));
 
-  const submitButton = page.getByRole('button', { name: '생성하기' });
+  const submitButton = page.getByRole('button', { name: '생성하기' }).last();
   await submitButton.waitFor();
   await submitButton.click();
 
@@ -222,12 +222,12 @@ test('답글 수정', async ({ page }) => {
   await textarea.fill('수정된 리플 내용');
 
   const responsePromise = page.waitForResponse(async (response) => response.url().includes('/api/replies/1/body'));
-  const submitButton = page.getByRole('button', { name: '수정하기' });
+  const submitButton = page.getByRole('button', { name: '수정하기' }).last();
   await submitButton.waitFor();
   await submitButton.click();
 
   const response = await responsePromise;
   expect(response.status()).toBe(200);
-  await expect(page.getByRole('button', { name: '수정하기' })).toBeHidden();
+  await expect(page.getByRole('button', { name: '수정하기' }).last()).toBeHidden();
   await expect(page.getByText('수정된 리플 내용')).toBeVisible();
 });

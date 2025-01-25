@@ -2,7 +2,11 @@ import { GrValidate } from 'react-icons/gr';
 
 import { Reply } from '@/entities/session';
 
-function ReplyHeader({ reply }: { reply: Pick<Reply, 'deleted' | 'isHost' | 'nickname'> }) {
+interface ReplyHeaderProps {
+  reply: Pick<Reply, 'deleted' | 'isHost' | 'nickname'>;
+}
+
+function ReplyHeader({ reply }: Readonly<ReplyHeaderProps>) {
   const nickname = reply.deleted ? '알 수 없음' : reply.nickname;
   const showHostBadge = !reply.deleted && reply.isHost;
 

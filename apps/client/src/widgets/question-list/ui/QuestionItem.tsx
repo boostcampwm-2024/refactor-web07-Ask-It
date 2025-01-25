@@ -14,7 +14,7 @@ interface QuestionItemProps {
   onQuestionSelect: () => void;
 }
 
-function QuestionItem({ question, onQuestionSelect }: QuestionItemProps) {
+function QuestionItem({ question, onQuestionSelect }: Readonly<QuestionItemProps>) {
   const { isHost, expired, handleLike, handleClose, handlePin, handleDelete, handleSelectQuestionId } =
     useQuestionActions(question, onQuestionSelect);
 

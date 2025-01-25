@@ -15,7 +15,7 @@ interface ReplyItemProps {
   reply: Reply;
 }
 
-function ReplyItem({ question, reply }: ReplyItemProps) {
+function ReplyItem({ question, reply }: Readonly<ReplyItemProps>) {
   const { isHost, expired, handleLike, handleDelete } = useReplyActions(question, reply);
 
   const { Modal: CreateReply, openModal: openCreateReplyModal } = useModal(

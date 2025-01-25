@@ -20,7 +20,7 @@ function ReplyActions({
   handleLike,
   openCreateReplyModal,
   openDeleteModal,
-}: ReplyActionsProps) {
+}: Readonly<ReplyActionsProps>) {
   if (reply.deleted) {
     return <ReplyLikeButton liked={reply.liked} likesCount={reply.likesCount} onClick={handleLike} />;
   }

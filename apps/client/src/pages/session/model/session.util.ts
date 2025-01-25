@@ -62,42 +62,43 @@ export async function loadSessionData(options: LoadSessionOptions) {
   }
 
   // 4) 질문(QnA) 로드
-  try {
-    const response = await getQuestions({ sessionId, token });
+  getQuestions({ sessionId, token })
+    .then((response) => {
+      setIsHost(response.isHost);
 
-    setIsHost(response.isHost);
-    setExpired(response.expired);
-    setSessionTitle(response.sessionTitle);
+      setExpired(response.expired);
+      setSessionTitle(response.sessionTitle);
 
-    response.questions.forEach(addQuestion);
+      response.questions.forEach(addQuestion);
 
-    // questionId가 있으면 선택 상태를 세팅하거나, 없는 경우 페이지 리다이렉트 등 처리
-    if (questionId) {
-      setSelectedQuestionId(Number(questionId));
+      // questionId가 있으면 선택 상태를 세팅하거나, 없는 경우 페이지 리다이렉트 등 처리
+      if (questionId) {
+        setSelectedQuestionId(Number(questionId));
 
-      // 질문 목록에 questionId가 없으면 리다이렉트
-      const found = response.questions.some((q) => q.questionId === Number(questionId));
-      if (!found) {
-        throw redirect({ to: `/session/$sessionId`, params: { sessionId } });
+        // 질문 목록에 questionId가 없으면 리다이렉트
+        const found = response.questions.some((q) => q.questionId === Number(questionId));
+        if (!found) {
+          throw redirect({ to: `/session/$sessionId`, params: { sessionId } });
+        }
+
+        // fromDetailBehavior 옵션이 true면, 세부 로직 추가
+        if (fromDetailBehavior) {
+          setFromDetail(true);
+        }
       }
+    })
+    .catch((e) => {
+      console.error(e);
+      // TanStack router에서 isRedirect로 검사 후 재-throw
+      throw redirect({ to: '/' });
+    });
 
-      // fromDetailBehavior 옵션이 true면, 세부 로직 추가
-      if (fromDetailBehavior) {
-        setFromDetail(true);
-      }
-    }
-  } catch (e) {
-    console.error(e);
-    // TanStack router에서 isRedirect로 검사 후 재-throw
-    throw redirect({ to: '/' });
-  }
-
-  // 5) 채팅 로드
-  try {
-    const { chats } = await getChattingList(token, sessionId);
-    chats.reverse().forEach(addChatting);
-  } catch (e) {
-    console.error(e);
-    throw redirect({ to: '/' });
-  }
+  getChattingList(token, sessionId)
+    .then(({ chats }) => {
+      chats.toReversed().forEach(addChatting);
+    })
+    .catch((e) => {
+      console.error(e);
+      throw redirect({ to: '/' });
+    });
 }

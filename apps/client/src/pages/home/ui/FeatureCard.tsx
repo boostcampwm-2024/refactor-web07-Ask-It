@@ -4,7 +4,7 @@ interface FeatureCardProps {
   description: string;
 }
 
-function FeatureCard({ icon, title, description }: FeatureCardProps) {
+function FeatureCard({ icon, title, description }: Readonly<FeatureCardProps>) {
   return (
     <div className='inline-flex shrink grow basis-0 flex-col items-start gap-4 self-stretch rounded-lg bg-gray-50 p-6'>
       {icon}

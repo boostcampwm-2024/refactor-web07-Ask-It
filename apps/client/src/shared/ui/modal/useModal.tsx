@@ -1,6 +1,13 @@
-import { ReactNode, useCallback, useContext, useMemo, useState } from 'react';
-import { createContext } from 'react';
-import { PropsWithChildren, useEffect } from 'react';
+import {
+  createContext,
+  PropsWithChildren,
+  ReactNode,
+  useCallback,
+  useContext,
+  useEffect,
+  useMemo,
+  useState,
+} from 'react';
 import { createPortal } from 'react-dom';
 
 export interface ModalContextProps {
@@ -10,7 +17,7 @@ export interface ModalContextProps {
 
 export const ModalContext = createContext<ModalContextProps | undefined>(undefined);
 
-function Background({ children }: PropsWithChildren) {
+function Background({ children }: Readonly<PropsWithChildren>) {
   const { closeModal } = useModalContext();
 
   useEffect(() => {
@@ -26,7 +33,7 @@ function Background({ children }: PropsWithChildren) {
   }, [closeModal]);
 
   return (
-    <div
+    <button
       onClick={(e) => {
         e.stopPropagation();
         if (e.target === e.currentTarget) closeModal();
@@ -37,7 +44,7 @@ function Background({ children }: PropsWithChildren) {
       className='fixed left-0 top-0 z-10 flex h-dvh w-dvw cursor-auto items-center justify-center bg-[#808080]/20 backdrop-blur-sm'
     >
       {children}
-    </div>
+    </button>
   );
 }
 

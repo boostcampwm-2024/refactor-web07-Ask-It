@@ -2,17 +2,14 @@ import { GrPin } from 'react-icons/gr';
 
 import { Button } from '@/shared/ui/button';
 
-function QuestionPinButton({
-  isHost,
-  expired,
-  pinned,
-  onClick,
-}: {
+interface QuestionPinButtonProps {
   isHost: boolean;
   expired: boolean;
   pinned: boolean;
   onClick: () => void;
-}) {
+}
+
+function QuestionPinButton({ isHost, expired, pinned, onClick }: Readonly<QuestionPinButtonProps>) {
   if (expired || !isHost) return null;
 
   return (

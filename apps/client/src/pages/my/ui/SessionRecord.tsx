@@ -13,7 +13,7 @@ interface SessionRecordProps {
   session: Session;
 }
 
-function SessionRecord({ session }: SessionRecordProps) {
+function SessionRecord({ session }: Readonly<SessionRecordProps>) {
   return (
     <div className='flex h-fit flex-col items-start justify-start gap-4 self-stretch border-b border-gray-200 px-2.5 pb-4 pt-2.5'>
       <div className='flex h-fit flex-col items-start justify-center gap-2.5 self-stretch'>

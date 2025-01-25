@@ -1,6 +1,5 @@
 import { AnimatePresence, motion, Variants } from 'motion/react';
-import { useState } from 'react';
-import React from 'react';
+import React, { useState } from 'react';
 
 import QuestionDivider from '@/widgets/question-list/ui/QuestionDivider';
 import QuestionItem from '@/widgets/question-list/ui/QuestionItem';
@@ -58,7 +57,7 @@ interface QuestionSectionProps {
   onQuestionSelect: (questionId: number) => void;
 }
 
-function QuestionSection({ title, questions, initialOpen, onQuestionSelect }: QuestionSectionProps) {
+function QuestionSection({ title, questions, initialOpen, onQuestionSelect }: Readonly<QuestionSectionProps>) {
   const [isExpanded, setIsExpanded] = useState(initialOpen);
 
   if (questions.length === 0) return null;

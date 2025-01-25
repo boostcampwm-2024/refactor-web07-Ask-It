@@ -35,32 +35,37 @@ export const createQnASlice: StateCreator<QnASlice, [], [], QnASlice> = (set) =>
         q.questionId === questionId ? { ...q, replies: [...q.replies, reply] } : q,
       ),
     })),
-  updateReply: (questionId, reply) =>
+  updateReply: (questionId, reply) => {
+    const updateReplies = (replies: Reply[]) =>
+      replies.map((r) => (r.replyId === reply.replyId ? { ...r, ...reply } : r));
+
     set((state) => ({
       ...state,
       questions: state.questions.map((q) =>
-        q.questionId === questionId
-          ? {
-              ...q,
-              replies: q.replies.map((r) => (r.replyId === reply.replyId ? { ...r, ...reply } : r)),
-            }
-          : q,
+        q.questionId === questionId ? { ...q, replies: updateReplies(q.replies) } : q,
       ),
-    })),
-  removeReply: (replyId) =>
+    }));
+  },
+  removeReply: (replyId) => {
+    const filterReplies = (replies: Reply[]) => replies.filter((r) => r.replyId !== replyId);
+
     set((state) => ({
       ...state,
       questions: state.questions.map((q) => ({
         ...q,
-        replies: q.replies.filter((r) => r.replyId !== replyId),
+        replies: filterReplies(q.replies),
       })),
-    })),
-  updateReplyIsHost: (userId, isHost) =>
+    }));
+  },
+  updateReplyIsHost: (userId, isHost) => {
+    const updateHostStatus = (replies: Reply[]) => replies.map((r) => (r.userId === userId ? { ...r, isHost } : r));
+
     set((state) => ({
       ...state,
       questions: state.questions.map((q) => ({
         ...q,
-        replies: q.replies.map((r) => (r.userId === userId ? { ...r, isHost } : r)),
+        replies: updateHostStatus(q.replies),
       })),
-    })),
+    }));
+  },
 });

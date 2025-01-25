@@ -3,6 +3,7 @@ import prettier from 'eslint-config-prettier';
 import pluginImport from 'eslint-plugin-import';
 import pluginReact from 'eslint-plugin-react';
 import pluginReactHooks from 'eslint-plugin-react-hooks';
+import sonarjs from 'eslint-plugin-sonarjs';
 import globals from 'globals';
 import tseslint from 'typescript-eslint';
 
@@ -40,6 +41,7 @@ export default [
       },
     },
     rules: {
+      'no-duplicate-imports': 'error',
       'react/react-in-jsx-scope': 'off',
       'react/jsx-boolean-value': ['error', 'always'],
       'react/jsx-no-duplicate-props': ['error'],
@@ -116,6 +118,7 @@ export default [
       'max-lines-per-function': 'off',
     },
   },
+  sonarjs.configs.recommended,
   pluginJs.configs.recommended,
   ...tseslint.configs.recommended,
   pluginReact.configs.flat.recommended,

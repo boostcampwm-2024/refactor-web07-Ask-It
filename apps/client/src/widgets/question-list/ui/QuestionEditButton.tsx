@@ -2,7 +2,12 @@ import { FiEdit2 } from 'react-icons/fi';
 
 import { Button } from '@/shared/ui/button';
 
-function QuestionEditButton({ isVisible, onClick }: { isVisible: boolean; onClick: () => void }) {
+interface QuestionEditButtonProps {
+  isVisible: boolean;
+  onClick: () => void;
+}
+
+function QuestionEditButton({ isVisible, onClick }: Readonly<QuestionEditButtonProps>) {
   if (!isVisible) return null;
 
   return (

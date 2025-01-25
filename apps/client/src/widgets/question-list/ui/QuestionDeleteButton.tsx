@@ -2,7 +2,12 @@ import { GrClose } from 'react-icons/gr';
 
 import { Button } from '@/shared/ui/button';
 
-function QuestionDeleteButton({ isVisible, onClick }: { isVisible: boolean; onClick: () => void }) {
+interface QuestionDeleteButtonProps {
+  isVisible: boolean;
+  onClick: () => void;
+}
+
+function QuestionDeleteButton({ isVisible, onClick }: Readonly<QuestionDeleteButtonProps>) {
   if (!isVisible) return null;
 
   return (

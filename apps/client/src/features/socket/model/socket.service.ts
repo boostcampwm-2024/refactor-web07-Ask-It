@@ -22,7 +22,7 @@ import { useSessionStore } from '@/entities/session';
 import { useToastStore } from '@/shared/ui/toast';
 
 export class SocketService {
-  private socket: Socket;
+  private readonly socket: Socket;
 
   constructor(sessionId: string, token: string) {
     this.socket = io(import.meta.env.VITE_SOCKET_URL, {
