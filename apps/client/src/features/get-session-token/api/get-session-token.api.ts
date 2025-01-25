@@ -8,7 +8,7 @@ export const GetSessionTokenResponseSchema = z.object({
 export type GetSessionTokenResponseDTO = z.infer<typeof GetSessionTokenResponseSchema>;
 
 export const getSessionToken = (sessionId: string) => {
-  const tokens = JSON.parse(localStorage.getItem('sessionTokens') || '{}') as Record<string, string>;
+  const tokens = JSON.parse(localStorage.getItem('sessionTokens') ?? '{}') as Record<string, string>;
 
   const token = tokens[sessionId];
 
