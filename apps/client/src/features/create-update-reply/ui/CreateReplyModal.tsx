@@ -61,7 +61,7 @@ function CreateReplyModal({ question, reply }: Readonly<CreateReplyModalProps>) 
             className={`${!submitDisabled ? 'bg-indigo-600' : 'cursor-not-allowed bg-indigo-300'}`}
             onClick={handleSubmit}
           >
-            <div className='text-sm font-bold text-white'>생성하기</div>
+            <div className='text-sm font-bold text-white'>{reply ? '수정하기' : '생성하기'}</div>
           </Button>
         </div>
       </footer>
