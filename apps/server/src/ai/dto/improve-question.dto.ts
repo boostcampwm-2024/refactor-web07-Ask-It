@@ -5,7 +5,7 @@ import { BaseDto } from '@common/base.dto';
 
 export class ImproveQuestionDto extends BaseDto {
   @ApiProperty({
-    example: '이것은 질문의 내용입니다.',
+    example: '리마큐가 뭐임?',
     description: '질문 본문 내용',
     required: true,
   })
