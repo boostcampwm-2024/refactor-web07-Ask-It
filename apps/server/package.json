@@ -105,6 +105,7 @@
       "@chats/(.*)$": "<rootDir>/chats/$1",
       "@socket/(.*)$": "<rootDir>/socket/$1",
       "@logger/(.*)$": "<rootDir>/logger/$1",
+      "@ai/(.*)$": "<rootDir>/ai/$1",
       "@prisma-alias/(.*)$": "<rootDir>/prisma/$1",
       "@main/(.*)$": "<rootDir>/main/$1"
     }
