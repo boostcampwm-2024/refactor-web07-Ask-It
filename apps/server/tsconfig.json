@@ -30,6 +30,7 @@
       "@chats/*": ["src/chats/*"],
       "@socket/*": ["src/socket/*"],
       "@logger/*": ["src/logger/*"],
+      "@ai/*": ["src/ai/*"],
       "@prisma-alias/*": ["src/prisma/*"],
       "@main/*": ["src/main/*"]
     }
