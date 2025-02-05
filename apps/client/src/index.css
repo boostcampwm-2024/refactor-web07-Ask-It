@@ -6,6 +6,25 @@
   margin: 0;
 }
 
+.prose > * + * {
+  margin-top: 0.5rem;
+}
+
+.prose h1 {
+  font-size: 1.75rem;
+  line-height: 2rem;
+}
+
+.prose h2 {
+  font-size: 1.5rem;
+  line-height: 1.75rem;
+}
+
+.prose h3 {
+  font-size: 1.25rem;
+  line-height: 1.5rem;
+}
+
 ::-webkit-scrollbar {
   width: 8px;
 }
