@@ -46,7 +46,7 @@ export class AiService {
     const requestData = {
       messages: [
         {
-          role: 'user',
+          role: 'system',
           content: prompt,
         },
         {
