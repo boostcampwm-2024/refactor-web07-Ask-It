@@ -1,6 +1,5 @@
 import { Button } from '@/shared/ui/button';
 import { useModalContext } from '@/shared/ui/modal';
-import { useToastStore } from '@/shared/ui/toast';
 
 interface CreateQuestionModalFooterProps {
   supportResult: string | null;

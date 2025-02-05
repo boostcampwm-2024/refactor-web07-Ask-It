@@ -31,7 +31,7 @@ export default function CreateReplyModalSide({
             className='flex h-10 w-10 items-center justify-center rounded-full border p-2 shadow-md'
             onClick={() => setContentType(contentType === 'reply' ? 'preview' : 'reply')}
           >
-            {contentType === 'reply' ? <VscEdit size={32} /> : <VscMarkdown size={32} />}
+            {contentType === 'reply' ? <VscMarkdown size={32} /> : <VscEdit size={32} />}
           </button>
         )}
       </div>
