@@ -1,15 +1,11 @@
 export const getContentBodyLength = (body: string) => {
-  let length = body.trim().length;
-
   const regex = /!?\[(\w+)\]\([^)]+\)/g;
   const matches = body.match(regex) || [];
 
-  matches.forEach((match) => {
+  return matches.reduce((length, match) => {
     const textContent = /\[(\w+)\]/.exec(match)?.[1] || '';
-    length = length - match.trim().length + textContent.trim().length;
-  });
-
-  return length;
+    return length - match.trim().length + textContent.trim().length;
+  }, body.trim().length);
 };
 
 export const isValidBodyLength = (body: string) => {
