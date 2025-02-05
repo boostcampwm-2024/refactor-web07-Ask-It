@@ -64,7 +64,7 @@ function CreateQuestionModal({ question }: Readonly<CreateQuestionModalProps>) {
       </div>
       <CreateQuestionModalFooter
         supportResult={supportResult}
-        question={body}
+        question={question}
         buttonEnabled={buttonEnabled}
         handleQuestionImprovement={handleQuestionImprovement}
         handleQuestionSummary={handleQuestionSummary}

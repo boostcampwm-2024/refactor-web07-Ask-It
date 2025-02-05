@@ -1,9 +1,11 @@
+import { Question } from '@/entities/session';
+
 import { Button } from '@/shared/ui/button';
 import { useModalContext } from '@/shared/ui/modal';
 
 interface CreateQuestionModalFooterProps {
   supportResult: string | null;
-  question: string;
+  question?: Question;
   buttonEnabled: boolean;
   handleQuestionImprovement: () => void;
   handleQuestionSummary: () => void;
