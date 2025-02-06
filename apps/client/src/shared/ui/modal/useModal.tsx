@@ -11,6 +11,7 @@ import {
 import { createPortal } from 'react-dom';
 
 export interface ModalContextProps {
+  preventCloseFromBackground: boolean;
   openModal: () => void;
   closeModal: () => void;
 }
@@ -18,7 +19,7 @@ export interface ModalContextProps {
 export const ModalContext = createContext<ModalContextProps | undefined>(undefined);
 
 function Background({ children }: Readonly<PropsWithChildren>) {
-  const { closeModal } = useModalContext();
+  const { closeModal, preventCloseFromBackground } = useModalContext();
 
   useEffect(() => {
     const handleEsc = (e: KeyboardEvent) => {
@@ -37,6 +38,7 @@ function Background({ children }: Readonly<PropsWithChildren>) {
       role='dialog'
       onClick={(e) => {
         e.stopPropagation();
+        if (window.getSelection()?.toString() || preventCloseFromBackground) return;
         if (e.target === e.currentTarget) closeModal();
       }}
       onKeyDown={(e) => e.stopPropagation()}
@@ -49,7 +51,7 @@ function Background({ children }: Readonly<PropsWithChildren>) {
   );
 }
 
-export const useModal = (children: ReactNode) => {
+export const useModal = (children: ReactNode, preventCloseFromBackground: boolean = false) => {
   const [isOpen, setIsOpen] = useState(false);
   const [isClosing, setIsClosing] = useState(false);
 
@@ -66,14 +68,14 @@ export const useModal = (children: ReactNode) => {
   const Modal = useMemo(() => {
     if (!isOpen) return null;
     return createPortal(
-      <ModalContext.Provider value={{ openModal, closeModal }}>
+      <ModalContext.Provider value={{ openModal, closeModal, preventCloseFromBackground }}>
         <Background>
           <div className={`modal-content ${isClosing ? 'animate-modalClose' : 'animate-modalOpen'}`}>{children}</div>
         </Background>
       </ModalContext.Provider>,
       document.body,
     );
-  }, [isOpen, openModal, closeModal, isClosing, children]);
+  }, [isOpen, openModal, closeModal, preventCloseFromBackground, isClosing, children]);
 
   return useMemo(
     () => ({
