@@ -26,7 +26,7 @@ function QuestionDetail() {
 
   const question = questions.find((q) => q.questionId === selectedQuestionId);
 
-  const { Modal, openModal } = useModal(<CreateReplyModal question={question} />);
+  const { Modal, openModal } = useModal(<CreateReplyModal question={question} />, true);
 
   if (!question) {
     return null;
