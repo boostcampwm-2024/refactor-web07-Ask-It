@@ -19,23 +19,25 @@ export default function ReplyContentView({
 }: Readonly<ReplyContentViewProps>) {
   if (contentType === 'preview') {
     return (
-      <div className='flex-1 overflow-y-auto rounded border bg-white p-4'>
-        <Markdown className='prose prose-stone'>{replyBody}</Markdown>
+      <div className='flex-1 overflow-auto p-4'>
+        <Markdown className='w-[calc(100%-3rem] prose prose-stone h-full break-words pr-[3rem]'>{replyBody}</Markdown>
       </div>
     );
   }
 
   if (contentType === 'question') {
     return (
-      <div className='flex-1 overflow-y-auto rounded border bg-white p-4'>
-        <Markdown className='prose prose-stone'>{questionBody}</Markdown>
+      <div className='flex-1 overflow-auto p-4'>
+        <Markdown className='w-[calc(100%-3rem] prose prose-stone h-full break-words pr-[3rem]'>
+          {questionBody}
+        </Markdown>
       </div>
     );
   }
 
   return (
     <textarea
-      className='flex-1 resize-none rounded border p-4 focus:outline-none'
+      className='flex-1 resize-none overflow-auto p-4 pr-[4rem] focus:outline-none'
       value={replyBody}
       onChange={(e) => onChange(e.target.value)}
       placeholder='답변을 남겨주세요.'
