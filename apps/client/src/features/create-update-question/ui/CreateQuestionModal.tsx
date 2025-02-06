@@ -23,6 +23,7 @@ function CreateQuestionModal({ question }: Readonly<CreateQuestionModalProps>) {
       handleAccept: setBody,
     });
 
+  const [supportType, setSupportType] = useState<'improve' | 'shorten' | null>(null);
   const [openPreview, setOpenPreview] = useState(false);
 
   const bodyLength = getContentBodyLength(supportResult ?? body);
@@ -36,16 +37,27 @@ function CreateQuestionModal({ question }: Readonly<CreateQuestionModalProps>) {
 
   const handleQuestionImprovement = () => {
     if (buttonEnabled && isValidLength && sessionId && token) {
+      setSupportType('improve');
       questionImprovement({ token, sessionId, body });
     }
   };
 
   const handleQuestionShortening = () => {
-    if (buttonEnabled && sessionId && token) questionShortening({ token, sessionId, body });
+    if (buttonEnabled && sessionId && token) {
+      setSupportType('shorten');
+      questionShortening({ token, sessionId, body });
+    }
   };
 
   const handleRetry = () => {
-    if (sessionId && token) questionImprovement({ token, sessionId, body });
+    if (sessionId && token) {
+      if (supportType === 'improve') {
+        questionImprovement({ token, sessionId, body });
+      }
+      if (supportType === 'shorten') {
+        questionShortening({ token, sessionId, body });
+      }
+    }
   };
 
   return (
