@@ -37,6 +37,10 @@ export class AiService {
     return await this.requestAIResponse(userContent, prompt.improveQuestion);
   }
 
+  public async requestShortenQuestion(userContent: string) {
+    return await this.requestAIResponse(userContent, prompt.shortenQuestion);
+  }
+
   private async requestAIResponse(userContent: string, prompt: string) {
     const headers = {
       Authorization: this.API_KEY,
@@ -56,7 +60,7 @@ export class AiService {
       ],
       topP: 0.8,
       topK: 0,
-      maxTokens: 512,
+      maxTokens: 1024,
       temperature: 0.5,
       repeatPenalty: 5.0,
       stopBefore: [],
