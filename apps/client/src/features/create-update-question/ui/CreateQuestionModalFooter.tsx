@@ -6,9 +6,10 @@ import { useModalContext } from '@/shared/ui/modal';
 interface CreateQuestionModalFooterProps {
   supportResult: string | null;
   question?: Question;
+  isValidLength: boolean;
   buttonEnabled: boolean;
   handleQuestionImprovement: () => void;
-  handleQuestionSummary: () => void;
+  handleQuestionShortening: () => void;
   handleCreateOrUpdate: () => void;
   handleRetry: () => void;
   accept: () => void;
@@ -18,9 +19,10 @@ interface CreateQuestionModalFooterProps {
 export default function CreateQuestionModalFooter({
   supportResult,
   question,
+  isValidLength,
   buttonEnabled,
   handleQuestionImprovement,
-  handleQuestionSummary,
+  handleQuestionShortening,
   handleCreateOrUpdate,
   handleRetry,
   accept,
@@ -34,14 +36,14 @@ export default function CreateQuestionModalFooter({
         <>
           <div className='flex flex-row gap-2'>
             <Button
-              className={`${buttonEnabled ? 'bg-indigo-600' : 'cursor-not-allowed bg-indigo-300'}`}
+              className={`${buttonEnabled && isValidLength ? 'bg-indigo-600' : 'cursor-not-allowed bg-indigo-300'}`}
               onClick={handleQuestionImprovement}
             >
               <div className='text-sm font-bold text-white'>질문 개선하기</div>
             </Button>
             <Button
               className={`${buttonEnabled ? 'bg-indigo-600' : 'cursor-not-allowed bg-indigo-300'}`}
-              onClick={handleQuestionSummary}
+              onClick={handleQuestionShortening}
             >
               <div className='text-sm font-bold text-white'>질문 축약하기</div>
             </Button>
@@ -51,7 +53,7 @@ export default function CreateQuestionModalFooter({
               <div className='text-sm font-bold text-white'>취소하기</div>
             </Button>
             <Button
-              className={`${buttonEnabled ? 'bg-indigo-600' : 'cursor-not-allowed bg-indigo-300'}`}
+              className={`${buttonEnabled && isValidLength ? 'bg-indigo-600' : 'cursor-not-allowed bg-indigo-300'}`}
               onClick={handleCreateOrUpdate}
             >
               <div className='text-sm font-bold text-white'>{question ? '수정하기' : '생성하기'}</div>

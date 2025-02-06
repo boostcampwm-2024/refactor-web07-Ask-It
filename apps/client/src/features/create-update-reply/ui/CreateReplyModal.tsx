@@ -21,7 +21,7 @@ function CreateReplyModal({ question, reply }: Readonly<CreateReplyModalProps>) 
 
   const bodyLength = getContentBodyLength(body);
 
-  const buttonEnabled = !submitDisabled && isValidBodyLength(body) && contentType !== 'question';
+  const buttonEnabled = !submitDisabled && isValidBodyLength(bodyLength) && contentType !== 'question';
 
   return (
     <div className='relative flex h-[20rem] w-[40rem] flex-col rounded-lg bg-gray-50 p-4'>

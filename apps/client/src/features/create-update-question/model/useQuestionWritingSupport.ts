@@ -1,16 +1,19 @@
 import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
 
-import {
-  postQuestionImprovement,
-  QuestionImprovementRequest,
-} from '@/features/create-update-question/api/improve-question.api';
+import { postQuestionImprovement } from '@/features/create-update-question/api/improve-question.api';
+import { postQuestionShortening } from '@/features/create-update-question/api/shortening-question.api';
 
 export const useQuestionWritingSupport = ({ handleAccept }: { handleAccept: (body: string) => void }) => {
   const { mutate: questionImprovement, isPending: isQuestionImprovementInProgress } = useMutation({
-    mutationFn: (request: QuestionImprovementRequest) => {
-      return postQuestionImprovement(request);
+    mutationFn: postQuestionImprovement,
+    onSuccess: (data) => {
+      setSupportResult(data.result.question);
     },
+  });
+
+  const { mutate: questionShortening, isPending: isQuestionShorteningInProgress } = useMutation({
+    mutationFn: postQuestionShortening,
     onSuccess: (data) => {
       setSupportResult(data.result.question);
     },
@@ -29,10 +32,11 @@ export const useQuestionWritingSupport = ({ handleAccept }: { handleAccept: (bod
     setSupportResult(null);
   };
 
-  const requestEnable = !isQuestionImprovementInProgress;
+  const requestEnable = !isQuestionImprovementInProgress && !isQuestionShorteningInProgress;
 
   return {
     questionImprovement,
+    questionShortening,
     isQuestionImprovementInProgress,
     requestEnable,
     supportResult,

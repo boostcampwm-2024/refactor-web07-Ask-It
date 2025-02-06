@@ -9,45 +9,55 @@ import QuestionContentView from '@/features/create-update-question/ui/QuestionCo
 import { Question, useSessionStore } from '@/entities/session';
 import { getContentBodyLength, isValidBodyLength } from '@/entities/session/model/qna.util';
 
-import { useToastStore } from '@/shared/ui/toast';
-
 interface CreateQuestionModalProps {
   question?: Question;
 }
 
 function CreateQuestionModal({ question }: Readonly<CreateQuestionModalProps>) {
-  const addToast = useToastStore((state) => state.addToast);
-
   const token = useSessionStore((state) => state.sessionToken);
   const sessionId = useSessionStore((state) => state.sessionId);
 
   const { body, setBody, handleSubmit, submitDisabled } = useQuestionMutation(question);
-  const { questionImprovement, requestEnable, supportResult, accept, reject } = useQuestionWritingSupport({
-    handleAccept: setBody,
-  });
+  const { questionImprovement, questionShortening, requestEnable, supportResult, accept, reject } =
+    useQuestionWritingSupport({
+      handleAccept: setBody,
+    });
 
+  const [supportType, setSupportType] = useState<'improve' | 'shorten' | null>(null);
   const [openPreview, setOpenPreview] = useState(false);
 
   const bodyLength = getContentBodyLength(supportResult ?? body);
 
-  const buttonEnabled = !submitDisabled && requestEnable && isValidBodyLength(body);
+  const isValidLength = isValidBodyLength(bodyLength);
+  const buttonEnabled = !submitDisabled && requestEnable;
 
   const handleCreateOrUpdate = () => {
-    if (buttonEnabled) handleSubmit();
+    if (buttonEnabled && isValidLength) handleSubmit();
   };
 
   const handleQuestionImprovement = () => {
-    if (buttonEnabled && sessionId && token) {
+    if (buttonEnabled && isValidLength && sessionId && token) {
+      setSupportType('improve');
       questionImprovement({ token, sessionId, body });
     }
   };
 
-  const handleQuestionSummary = () => {
-    if (buttonEnabled) addToast({ type: 'INFO', message: '추후 업데이트 예정입니다.', duration: 3000 });
+  const handleQuestionShortening = () => {
+    if (buttonEnabled && sessionId && token) {
+      setSupportType('shorten');
+      questionShortening({ token, sessionId, body });
+    }
   };
 
   const handleRetry = () => {
-    if (sessionId && token) questionImprovement({ token, sessionId, body });
+    if (sessionId && token) {
+      if (supportType === 'improve') {
+        questionImprovement({ token, sessionId, body });
+      }
+      if (supportType === 'shorten') {
+        questionShortening({ token, sessionId, body });
+      }
+    }
   };
 
   return (
@@ -65,9 +75,10 @@ function CreateQuestionModal({ question }: Readonly<CreateQuestionModalProps>) {
       <CreateQuestionModalFooter
         supportResult={supportResult}
         question={question}
+        isValidLength={isValidLength}
         buttonEnabled={buttonEnabled}
         handleQuestionImprovement={handleQuestionImprovement}
-        handleQuestionSummary={handleQuestionSummary}
+        handleQuestionShortening={handleQuestionShortening}
         handleCreateOrUpdate={handleCreateOrUpdate}
         handleRetry={handleRetry}
         accept={accept}

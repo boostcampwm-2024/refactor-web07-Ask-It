@@ -8,6 +8,6 @@ export const getContentBodyLength = (body: string) => {
   }, body.trim().length);
 };
 
-export const isValidBodyLength = (body: string) => {
-  return body.trim().length > 0 && body.trim().length <= 500;
+export const isValidBodyLength = (body: number) => {
+  return body > 0 && body <= 500;
 };
