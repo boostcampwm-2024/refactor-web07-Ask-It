@@ -20,6 +20,7 @@ function ReplyItem({ question, reply }: Readonly<ReplyItemProps>) {
 
   const { Modal: CreateReply, openModal: openCreateReplyModal } = useModal(
     <CreateReplyModal question={question} reply={reply} />,
+    true,
   );
 
   const { Modal: DeleteModal, openModal: openDeleteModal } = useModal(<DeleteConfirmModal onConfirm={handleDelete} />);

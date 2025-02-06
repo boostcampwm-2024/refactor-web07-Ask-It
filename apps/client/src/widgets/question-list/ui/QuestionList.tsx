@@ -39,7 +39,7 @@ function QuestionList() {
 
   const socket = useSocket();
 
-  const { Modal: CreateQuestion, openModal: openCreateQuestionModal } = useModal(<CreateQuestionModal />);
+  const { Modal: CreateQuestion, openModal: openCreateQuestionModal } = useModal(<CreateQuestionModal />, true);
 
   const { Modal: SessionParticipants, openModal: openSessionParticipantsModal } = useModal(
     <SessionParticipantsModal />,

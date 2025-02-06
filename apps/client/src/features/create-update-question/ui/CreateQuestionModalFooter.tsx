@@ -65,7 +65,7 @@ export default function CreateQuestionModalFooter({
               <div className='text-sm font-bold text-white'>취소하기</div>
             </Button>
             <Button className='bg-gray-500' onClick={handleRetry}>
-              <div className='text-sm font-bold text-white'>다시 작성하기</div>
+              <div className='text-sm font-bold text-white'>다시 요청하기</div>
             </Button>
             <Button className='bg-indigo-600' onClick={accept}>
               <div className='text-sm font-bold text-white'>사용하기</div>

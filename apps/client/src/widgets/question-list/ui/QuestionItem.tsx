@@ -20,6 +20,7 @@ function QuestionItem({ question, onQuestionSelect }: Readonly<QuestionItemProps
 
   const { Modal: CreateQuestion, openModal: openCreateQuestionModal } = useModal(
     <CreateQuestionModal question={question} />,
+    true,
   );
 
   const { Modal: DeleteConfirm, openModal: openDeleteConfirmModal } = useModal(
