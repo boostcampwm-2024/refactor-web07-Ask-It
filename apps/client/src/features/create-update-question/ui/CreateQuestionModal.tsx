@@ -28,7 +28,7 @@ function CreateQuestionModal({ question }: Readonly<CreateQuestionModalProps>) {
 
   const [openPreview, setOpenPreview] = useState(false);
 
-  const bodyLength = getContentBodyLength(body);
+  const bodyLength = getContentBodyLength(supportResult ?? body);
 
   const buttonEnabled = !submitDisabled && requestEnable && isValidBodyLength(body);
 
