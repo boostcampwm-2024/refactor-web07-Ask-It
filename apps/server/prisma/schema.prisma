@@ -136,3 +136,20 @@ model Chatting {
   @@index([sessionId])
   @@index([sessionId, chattingId(Sort.desc)])
 }
+
+model Prompt {
+  name    String  @id
+  content String
+
+  PromptHistory PromptHistory[] @relation("promptHistories")
+}
+
+model PromptHistory {
+  historyId   Int     @id @default(autoincrement()) @map("history_id")
+  request     String  
+  response    String
+  promptName  String  @map("prompt_name")
+  result      String
+
+  prompt      Prompt  @relation("promptHistories", fields: [promptName], references: [name])
+}
