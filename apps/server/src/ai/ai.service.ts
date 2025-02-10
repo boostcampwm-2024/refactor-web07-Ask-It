@@ -1,6 +1,8 @@
 import { Injectable } from '@nestjs/common';
 
-import { prompt } from '@ai/promt.constant';
+import { CreateHistoryDto } from './dto/create-history.dto';
+
+import { PrismaService } from '@prisma-alias/prisma.service';
 
 interface ClovaApiResponse {
   status: {
@@ -28,17 +30,25 @@ export class AiService {
   private readonly CLOVA_API_URL: string;
   private readonly API_KEY: string;
 
-  constructor() {
+  constructor(private readonly prisma: PrismaService) {
     this.CLOVA_API_URL = process.env.CLOVA_API_URL;
     this.API_KEY = 'Bearer ' + process.env.CLOVA_API_KEY;
   }
 
   public async requestImproveQuestion(userContent: string) {
-    return await this.requestAIResponse(userContent, prompt.improveQuestion);
+    const prompt = await this.prisma.prompt.findUnique({ where: { name: 'IMPROVE_QUESTION' } });
+    return await this.requestAIResponse(userContent, prompt.content);
   }
 
   public async requestShortenQuestion(userContent: string) {
-    return await this.requestAIResponse(userContent, prompt.shortenQuestion);
+    const prompt = await this.prisma.prompt.findUnique({ where: { name: 'SHORTEN_QUESTION' } });
+    return await this.requestAIResponse(userContent, prompt.content);
+  }
+
+  public async createHistory({ request, response, promptName, result }: CreateHistoryDto) {
+    await this.prisma.promptHistory.create({
+      data: { request, response, promptName, result },
+    });
   }
 
   private async requestAIResponse(userContent: string, prompt: string) {
