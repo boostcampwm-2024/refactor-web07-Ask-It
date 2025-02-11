@@ -18,12 +18,20 @@ function CreateQuestionModal({ question }: Readonly<CreateQuestionModalProps>) {
   const sessionId = useSessionStore((state) => state.sessionId);
 
   const { body, setBody, handleSubmit, submitDisabled } = useQuestionMutation(question);
-  const { questionImprovement, questionShortening, requestEnable, supportResult, accept, reject } =
-    useQuestionWritingSupport({
-      handleAccept: setBody,
-    });
+  const {
+    questionImprovement,
+    questionShortening,
+    requestEnable,
+    supportResult,
+    accept,
+    reject,
+    supportType,
+    setSupportType,
+  } = useQuestionWritingSupport({
+    body,
+    handleAccept: setBody,
+  });
 
-  const [supportType, setSupportType] = useState<'improve' | 'shorten' | null>(null);
   const [openPreview, setOpenPreview] = useState(false);
 
   const bodyLength = getContentBodyLength(supportResult ?? body);
@@ -37,24 +45,24 @@ function CreateQuestionModal({ question }: Readonly<CreateQuestionModalProps>) {
 
   const handleQuestionImprovement = () => {
     if (buttonEnabled && isValidLength && sessionId && token) {
-      setSupportType('improve');
+      setSupportType('IMPROVE_QUESTION');
       questionImprovement({ token, sessionId, body });
     }
   };
 
   const handleQuestionShortening = () => {
     if (buttonEnabled && sessionId && token) {
-      setSupportType('shorten');
+      setSupportType('SHORTEN_QUESTION');
       questionShortening({ token, sessionId, body });
     }
   };
 
   const handleRetry = () => {
     if (sessionId && token) {
-      if (supportType === 'improve') {
+      if (supportType === 'IMPROVE_QUESTION') {
         questionImprovement({ token, sessionId, body });
       }
-      if (supportType === 'shorten') {
+      if (supportType === 'SHORTEN_QUESTION') {
         questionShortening({ token, sessionId, body });
       }
     }
