@@ -5,6 +5,7 @@ import { AiService } from './ai.service';
 import { CreateHistoryDto } from './dto/create-history.dto';
 import { ImproveQuestionDto } from './dto/improve-question.dto';
 import { ShortenQuestionDto } from './dto/shorten-question.dto';
+import { AiRequestValidationGuard } from './guards/restrict-request.guard';
 import { CreateHistorySwagger } from './swagger/create-history.swagger';
 import { ImproveQuestionSwagger } from './swagger/improve-question.swagger';
 import { ShortenQuestionSwagger } from './swagger/shorten-question.swagger';
@@ -12,6 +13,7 @@ import { ShortenQuestionSwagger } from './swagger/shorten-question.swagger';
 import { SessionTokenValidationGuard } from '@common/guards/session-token-validation.guard';
 
 @Controller('ai')
+@UseGuards(AiRequestValidationGuard)
 export class AiController {
   constructor(private readonly aiService: AiService) {}
 
