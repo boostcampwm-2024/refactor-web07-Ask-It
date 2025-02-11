@@ -1,11 +1,11 @@
 import { PropsWithChildren, useState } from 'react';
 
-interface PopupProps extends PropsWithChildren {
+interface PopoverProps extends PropsWithChildren {
   text: string;
   position?: 'top' | 'bottom' | 'left' | 'right';
 }
 
-export default function Popup({ children, text, position = 'bottom' }: Readonly<PopupProps>) {
+export default function Popover({ children, text, position = 'bottom' }: Readonly<PopoverProps>) {
   const [isVisible, setIsVisible] = useState(false);
 
   const positionClasses = {
