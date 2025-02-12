@@ -2,7 +2,7 @@ import { ValidationArguments, ValidatorConstraint, ValidatorConstraintInterface 
 
 @ValidatorConstraint({ name: 'ContentLengthValidator', async: false })
 export class ContentLengthValidator implements ValidatorConstraintInterface {
-  getContentBodyLength = (body: string) => {
+  static getContentBodyLength(body: string) {
     const regex = /!?\[(\w+)\]\([^)]+\)/g;
     const matches = (body.match(regex) || []) as RegExpMatchArray;
 
@@ -10,16 +10,16 @@ export class ContentLengthValidator implements ValidatorConstraintInterface {
       const textContent = /\[(\w+)\]/.exec(match)?.[1] || '';
       return length - match.trim().length + textContent.trim().length;
     }, body.trim().length);
-  };
+  }
 
-  isValidBodyLength = (body: number, restrictNumber: number) => {
+  static isValidBodyLength(body: number, restrictNumber: number) {
     return body > 0 && body <= restrictNumber;
-  };
+  }
 
   validate(body: string, args: ValidationArguments) {
     const maxLength = args.constraints[0] || 500;
-    const length = this.getContentBodyLength(body);
-    return this.isValidBodyLength(length, maxLength);
+    const length = ContentLengthValidator.getContentBodyLength(body);
+    return ContentLengthValidator.isValidBodyLength(length, maxLength);
   }
 
   defaultMessage(args: ValidationArguments) {
