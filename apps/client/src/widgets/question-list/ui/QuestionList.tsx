@@ -191,12 +191,14 @@ function QuestionList() {
                   <p className='text-sm font-bold text-black'>설정</p>
                 </Button>
               )}
-              {isHost && isDropdownOpen && (
-                <SessionSettingsDropdown
-                  buttons={sessionButtons}
-                  onClose={() => setIsDropdownOpen(false)}
-                  triggerRef={buttonRef}
-                />
+              {isHost && (
+                <div className={`${isDropdownOpen ? 'opacity-100' : 'opacity-0'} transition-all duration-200`}>
+                  <SessionSettingsDropdown
+                    buttons={sessionButtons}
+                    onClose={() => setIsDropdownOpen(false)}
+                    triggerRef={buttonRef}
+                  />
+                </div>
               )}
             </div>
             <Button className='bg-indigo-600' onClick={openCreateQuestionModal}>

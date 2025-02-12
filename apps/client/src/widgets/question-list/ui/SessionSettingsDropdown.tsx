@@ -37,7 +37,7 @@ function SessionSettingsDropdown({ buttons, triggerRef, onClose }: Readonly<Sess
   return (
     <div
       ref={dropdownRef}
-      className='absolute z-10 flex w-max flex-col gap-2 rounded-md bg-white p-4 shadow-lg ring-1 ring-black ring-opacity-5'
+      className='absolute z-10 mt-2 flex w-max flex-col gap-2 rounded-md bg-white p-4 shadow-lg ring-1 ring-black ring-opacity-5'
     >
       {buttons.map(({ key, button, onClick }) => (
         <Button
