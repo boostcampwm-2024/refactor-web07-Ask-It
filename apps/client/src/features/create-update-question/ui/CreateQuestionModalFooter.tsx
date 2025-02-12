@@ -4,6 +4,7 @@ import { Question } from '@/entities/session';
 
 import { Button } from '@/shared/ui/button';
 import { useModalContext } from '@/shared/ui/modal';
+import { Popover } from '@/shared/ui/popover';
 
 interface CreateQuestionModalFooterProps {
   supportResult: string | null;
@@ -11,7 +12,6 @@ interface CreateQuestionModalFooterProps {
   isValidLength: boolean;
   buttonEnabled: boolean;
   handleQuestionImprovement: () => void;
-  handleQuestionShortening: () => void;
   handleCreateOrUpdate: () => void;
   handleRetry: (requirements: string) => void;
   accept: () => void;
@@ -29,26 +29,49 @@ function RetryActions({
 }>) {
   const [retryEnabled, setRetryEnabled] = useState<boolean>(false);
   const [retryRequirements, setRetryRequirements] = useState<string>('');
+  const [isRetryRequirementsTooLong, setIsRetryRequirementsTooLong] = useState<boolean>(false);
+
+  const handleChangeRetryRequirements = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    if (value.length <= 150) {
+      setRetryRequirements(value);
+      setIsRetryRequirementsTooLong(false);
+    } else {
+      setIsRetryRequirementsTooLong(true);
+    }
+  };
+
+  const handleCancelRetry = () => {
+    setRetryEnabled(false);
+    setRetryRequirements('');
+  };
+
+  const handleRetryRequest = () => {
+    handleRetry(retryRequirements);
+    setRetryEnabled(false);
+    setRetryRequirements('');
+  };
 
   if (retryEnabled) {
     return (
       <div className='flex w-full flex-row gap-2'>
-        <input
-          className={`w-full resize-none overflow-auto rounded-sm border bg-white px-4 ${retryRequirements ? 'text-base' : 'text-sm'} focus:outline-none`}
-          placeholder='추가 요청 내용을 입력해주세요.'
-          value={retryRequirements}
-          onChange={(e) => setRetryRequirements(e.target.value)}
-        />
-        <Button
-          className='shrink-0 bg-gray-500'
-          onClick={() => {
-            setRetryEnabled(false);
-            setRetryRequirements('');
-          }}
+        <Popover
+          className='w-full flex-1'
+          text='요청 사항은 150자를 넘을 수 없습니다.'
+          enabled={isRetryRequirementsTooLong}
+          position='top-right'
         >
+          <input
+            className={`h-full w-full resize-none overflow-auto rounded-sm border bg-white px-4 ${retryRequirements ? 'text-base' : 'text-sm'} focus:outline-none`}
+            placeholder='추가 요청 내용을 입력해주세요.'
+            value={retryRequirements}
+            onChange={handleChangeRetryRequirements}
+          />
+        </Popover>
+        <Button className='shrink-0 bg-gray-500' onClick={handleCancelRetry}>
           <div className='text-sm font-bold text-white'>취소하기</div>
         </Button>
-        <Button className='shrink-0 bg-indigo-600' onClick={() => handleRetry(retryRequirements)}>
+        <Button className='shrink-0 bg-indigo-600' onClick={handleRetryRequest}>
           <div className='text-sm font-bold text-white'>요청하기</div>
         </Button>
       </div>
@@ -76,7 +99,6 @@ export default function CreateQuestionModalFooter({
   isValidLength,
   buttonEnabled,
   handleQuestionImprovement,
-  handleQuestionShortening,
   handleCreateOrUpdate,
   handleRetry,
   accept,
@@ -88,20 +110,12 @@ export default function CreateQuestionModalFooter({
     <footer className='flex h-[3rem] flex-row items-end justify-between'>
       {supportResult === null ? (
         <>
-          <div className='flex flex-row gap-2'>
-            <Button
-              className={`${buttonEnabled && isValidLength ? 'bg-indigo-600' : 'cursor-not-allowed bg-indigo-300'}`}
-              onClick={handleQuestionImprovement}
-            >
-              <div className='text-sm font-bold text-white'>질문 개선하기</div>
-            </Button>
-            <Button
-              className={`${buttonEnabled ? 'bg-indigo-600' : 'cursor-not-allowed bg-indigo-300'}`}
-              onClick={handleQuestionShortening}
-            >
-              <div className='text-sm font-bold text-white'>질문 축약하기</div>
-            </Button>
-          </div>
+          <Button
+            className={`${buttonEnabled && isValidLength ? 'bg-indigo-600' : 'cursor-not-allowed bg-indigo-300'}`}
+            onClick={handleQuestionImprovement}
+          >
+            <div className='text-sm font-bold text-white'>질문 개선하기</div>
+          </Button>
           <div className='flex flex-row gap-2'>
             <Button className='bg-gray-500' onClick={closeModal}>
               <div className='text-sm font-bold text-white'>취소하기</div>

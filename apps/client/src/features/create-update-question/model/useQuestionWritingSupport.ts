@@ -2,8 +2,8 @@ import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
 
 import { AIRequestType, postAIHistory } from '@/features/ai-history';
+import { postRetryQuestionImprovement } from '@/features/create-update-question/api/improve-question-retry.api';
 import { postQuestionImprovement } from '@/features/create-update-question/api/improve-question.api';
-import { postQuestionShortening } from '@/features/create-update-question/api/shortening-question.api';
 
 export const useQuestionWritingSupport = ({
   body,
@@ -22,8 +22,8 @@ export const useQuestionWritingSupport = ({
     },
   });
 
-  const { mutate: questionShortening, isPending: isQuestionShorteningInProgress } = useMutation({
-    mutationFn: postQuestionShortening,
+  const { mutate: retryQuestionImprovement, isPending: isRetryQuestionImprovement } = useMutation({
+    mutationFn: postRetryQuestionImprovement,
     onSuccess: (data) => {
       setSupportResult(data.result.question);
     },
@@ -54,11 +54,11 @@ export const useQuestionWritingSupport = ({
     }
   };
 
-  const requestEnable = !isQuestionImprovementInProgress && !isQuestionShorteningInProgress;
+  const requestEnable = !isQuestionImprovementInProgress && !isRetryQuestionImprovement;
 
   return {
     questionImprovement,
-    questionShortening,
+    retryQuestionImprovement,
     isQuestionImprovementInProgress,
     requestEnable,
     supportResult,

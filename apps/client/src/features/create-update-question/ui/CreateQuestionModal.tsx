@@ -20,7 +20,7 @@ function CreateQuestionModal({ question }: Readonly<CreateQuestionModalProps>) {
   const { body, setBody, handleSubmit, submitDisabled } = useQuestionMutation(question);
   const {
     questionImprovement,
-    questionShortening,
+    retryQuestionImprovement,
     requestEnable,
     supportResult,
     accept,
@@ -50,21 +50,15 @@ function CreateQuestionModal({ question }: Readonly<CreateQuestionModalProps>) {
     }
   };
 
-  const handleQuestionShortening = () => {
-    if (buttonEnabled && sessionId && token) {
-      setSupportType('SHORTEN_QUESTION');
-      questionShortening({ token, sessionId, body });
-    }
-  };
-
-  const handleRetry = () => {
-    if (sessionId && token) {
-      if (supportType === 'IMPROVE_QUESTION') {
-        questionImprovement({ token, sessionId, body });
-      }
-      if (supportType === 'SHORTEN_QUESTION') {
-        questionShortening({ token, sessionId, body });
-      }
+  const handleRetry = (requirements: string) => {
+    if (sessionId && token && supportResult && supportType) {
+      retryQuestionImprovement({
+        token,
+        sessionId,
+        original: body,
+        received: supportResult,
+        retryMessage: requirements,
+      });
     }
   };
 
@@ -86,7 +80,6 @@ function CreateQuestionModal({ question }: Readonly<CreateQuestionModalProps>) {
         isValidLength={isValidLength}
         buttonEnabled={buttonEnabled}
         handleQuestionImprovement={handleQuestionImprovement}
-        handleQuestionShortening={handleQuestionShortening}
         handleCreateOrUpdate={handleCreateOrUpdate}
         handleRetry={handleRetry}
         accept={accept}
