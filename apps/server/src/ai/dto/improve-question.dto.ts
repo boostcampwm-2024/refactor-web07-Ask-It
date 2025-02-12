@@ -1,6 +1,7 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsNotEmpty, IsString } from 'class-validator';
+import { IsNotEmpty, IsString, Validate } from 'class-validator';
 
+import { ContentLengthValidator } from '@ai/utils/length-validator';
 import { BaseDto } from '@common/base.dto';
 
 export class ImproveQuestionDto extends BaseDto {
@@ -11,5 +12,6 @@ export class ImproveQuestionDto extends BaseDto {
   })
   @IsString()
   @IsNotEmpty({ message: '질문 본문은 필수입니다.' })
+  @Validate(ContentLengthValidator, [500])
   body: string;
 }
