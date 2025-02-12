@@ -11,7 +11,6 @@ interface CreateQuestionModalFooterProps {
   isValidLength: boolean;
   buttonEnabled: boolean;
   handleQuestionImprovement: () => void;
-  handleQuestionShortening: () => void;
   handleCreateOrUpdate: () => void;
   handleRetry: (requirements: string) => void;
   accept: () => void;
@@ -76,7 +75,6 @@ export default function CreateQuestionModalFooter({
   isValidLength,
   buttonEnabled,
   handleQuestionImprovement,
-  handleQuestionShortening,
   handleCreateOrUpdate,
   handleRetry,
   accept,
@@ -88,20 +86,12 @@ export default function CreateQuestionModalFooter({
     <footer className='flex h-[3rem] flex-row items-end justify-between'>
       {supportResult === null ? (
         <>
-          <div className='flex flex-row gap-2'>
-            <Button
-              className={`${buttonEnabled && isValidLength ? 'bg-indigo-600' : 'cursor-not-allowed bg-indigo-300'}`}
-              onClick={handleQuestionImprovement}
-            >
-              <div className='text-sm font-bold text-white'>질문 개선하기</div>
-            </Button>
-            <Button
-              className={`${buttonEnabled ? 'bg-indigo-600' : 'cursor-not-allowed bg-indigo-300'}`}
-              onClick={handleQuestionShortening}
-            >
-              <div className='text-sm font-bold text-white'>질문 축약하기</div>
-            </Button>
-          </div>
+          <Button
+            className={`${buttonEnabled && isValidLength ? 'bg-indigo-600' : 'cursor-not-allowed bg-indigo-300'}`}
+            onClick={handleQuestionImprovement}
+          >
+            <div className='text-sm font-bold text-white'>질문 개선하기</div>
+          </Button>
           <div className='flex flex-row gap-2'>
             <Button className='bg-gray-500' onClick={closeModal}>
               <div className='text-sm font-bold text-white'>취소하기</div>

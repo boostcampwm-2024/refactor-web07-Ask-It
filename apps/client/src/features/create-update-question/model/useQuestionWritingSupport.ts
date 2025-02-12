@@ -3,7 +3,6 @@ import { useState } from 'react';
 
 import { AIRequestType, postAIHistory } from '@/features/ai-history';
 import { postQuestionImprovement } from '@/features/create-update-question/api/improve-question.api';
-import { postQuestionShortening } from '@/features/create-update-question/api/shortening-question.api';
 
 export const useQuestionWritingSupport = ({
   body,
@@ -17,13 +16,6 @@ export const useQuestionWritingSupport = ({
 
   const { mutate: questionImprovement, isPending: isQuestionImprovementInProgress } = useMutation({
     mutationFn: postQuestionImprovement,
-    onSuccess: (data) => {
-      setSupportResult(data.result.question);
-    },
-  });
-
-  const { mutate: questionShortening, isPending: isQuestionShorteningInProgress } = useMutation({
-    mutationFn: postQuestionShortening,
     onSuccess: (data) => {
       setSupportResult(data.result.question);
     },
@@ -54,11 +46,10 @@ export const useQuestionWritingSupport = ({
     }
   };
 
-  const requestEnable = !isQuestionImprovementInProgress && !isQuestionShorteningInProgress;
+  const requestEnable = !isQuestionImprovementInProgress;
 
   return {
     questionImprovement,
-    questionShortening,
     isQuestionImprovementInProgress,
     requestEnable,
     supportResult,
