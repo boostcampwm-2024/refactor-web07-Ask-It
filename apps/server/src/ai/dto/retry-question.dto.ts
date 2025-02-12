@@ -12,7 +12,7 @@ export class RetryImproveDto extends BaseDto {
   })
   @IsString()
   @IsNotEmpty({ message: '원본 질문은 필수입니다.' })
-  @Validate(ContentLengthValidator, [500]) //해치
+  @Validate(ContentLengthValidator, [500])
   original: string;
 
   @ApiProperty({
