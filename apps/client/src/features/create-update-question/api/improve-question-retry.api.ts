@@ -6,7 +6,7 @@ export const RetryImproveQuestionRequestSchema = z.object({
   sessionId: z.string(),
   original: z.string(),
   received: z.string(),
-  retryMessage: z.string(),
+  retryMessage: z.string().max(150),
 });
 
 export const RetryImproveQuestionResponseSchema = z.object({
