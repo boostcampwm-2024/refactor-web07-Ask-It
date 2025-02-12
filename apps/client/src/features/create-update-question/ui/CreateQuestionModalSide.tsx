@@ -1,5 +1,7 @@
 import { VscEdit, VscMarkdown } from 'react-icons/vsc';
 
+import { Popover } from '@/shared/ui/popover';
+
 interface CreateQuestionModalSideProps {
   bodyLength: number;
   openPreview: boolean;
@@ -22,12 +24,14 @@ export default function CreateQuestionModalSide({
 }: Readonly<CreateQuestionModalSideProps>) {
   return (
     <div className='absolute right-8 flex h-[calc(100%-5rem)] w-12 flex-col items-center justify-between py-4'>
-      <button
-        className='flex h-10 w-10 items-center justify-center rounded-full border p-2 shadow-md'
-        onClick={() => setOpenPreview(!openPreview)}
-      >
-        {openPreview ? <VscEdit size={32} /> : <VscMarkdown size={32} />}
-      </button>
+      <Popover text={openPreview ? '마크다운 미리보기 끄기' : '마크다운 미리보기'} position='right'>
+        <button
+          className='flex h-10 w-10 items-center justify-center rounded-full border p-2 shadow-md'
+          onClick={() => setOpenPreview(!openPreview)}
+        >
+          {openPreview ? <VscEdit size={32} /> : <VscMarkdown size={32} />}
+        </button>
+      </Popover>
       <span className={`${bodyLength > 500 ? 'text-red-600' : 'text-slate-400'} ${textSize(bodyLength)}`}>
         {bodyLength}/500
       </span>

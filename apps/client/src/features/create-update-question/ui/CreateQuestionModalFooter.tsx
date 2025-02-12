@@ -1,3 +1,5 @@
+import { useState } from 'react';
+
 import { Question } from '@/entities/session';
 
 import { Button } from '@/shared/ui/button';
@@ -11,9 +13,61 @@ interface CreateQuestionModalFooterProps {
   handleQuestionImprovement: () => void;
   handleQuestionShortening: () => void;
   handleCreateOrUpdate: () => void;
-  handleRetry: () => void;
+  handleRetry: (requirements: string) => void;
   accept: () => void;
   reject: () => void;
+}
+
+function RetryActions({
+  handleRetry,
+  reject,
+  accept,
+}: Readonly<{
+  handleRetry: (requirements: string) => void;
+  reject: () => void;
+  accept: () => void;
+}>) {
+  const [retryEnabled, setRetryEnabled] = useState<boolean>(false);
+  const [retryRequirements, setRetryRequirements] = useState<string>('');
+
+  if (retryEnabled) {
+    return (
+      <div className='flex w-full flex-row gap-2'>
+        <input
+          className={`w-full resize-none overflow-auto rounded-sm border bg-white px-4 ${retryRequirements ? 'text-base' : 'text-sm'} focus:outline-none`}
+          placeholder='추가 요청 내용을 입력해주세요.'
+          value={retryRequirements}
+          onChange={(e) => setRetryRequirements(e.target.value)}
+        />
+        <Button
+          className='shrink-0 bg-gray-500'
+          onClick={() => {
+            setRetryEnabled(false);
+            setRetryRequirements('');
+          }}
+        >
+          <div className='text-sm font-bold text-white'>취소하기</div>
+        </Button>
+        <Button className='shrink-0 bg-indigo-600' onClick={() => handleRetry(retryRequirements)}>
+          <div className='text-sm font-bold text-white'>요청하기</div>
+        </Button>
+      </div>
+    );
+  }
+
+  return (
+    <div className='flex flex-row gap-2'>
+      <Button className='bg-gray-500' onClick={reject}>
+        <div className='text-sm font-bold text-white'>취소하기</div>
+      </Button>
+      <Button className='bg-gray-500' onClick={() => setRetryEnabled(true)}>
+        <div className='text-sm font-bold text-white'>다시 요청하기</div>
+      </Button>
+      <Button className='bg-indigo-600' onClick={accept}>
+        <div className='text-sm font-bold text-white'>사용하기</div>
+      </Button>
+    </div>
+  );
 }
 
 export default function CreateQuestionModalFooter({
@@ -61,19 +115,7 @@ export default function CreateQuestionModalFooter({
           </div>
         </>
       ) : (
-        <>
-          <div className='flex flex-row gap-2'>
-            <Button className='bg-gray-500' onClick={reject}>
-              <div className='text-sm font-bold text-white'>취소하기</div>
-            </Button>
-            <Button className='bg-gray-500' onClick={handleRetry}>
-              <div className='text-sm font-bold text-white'>다시 요청하기</div>
-            </Button>
-            <Button className='bg-indigo-600' onClick={accept}>
-              <div className='text-sm font-bold text-white'>사용하기</div>
-            </Button>
-          </div>
-        </>
+        <RetryActions handleRetry={handleRetry} reject={reject} accept={accept} />
       )}
     </footer>
   );
