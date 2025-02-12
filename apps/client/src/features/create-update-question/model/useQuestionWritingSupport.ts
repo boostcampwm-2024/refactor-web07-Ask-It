@@ -2,6 +2,7 @@ import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
 
 import { AIRequestType, postAIHistory } from '@/features/ai-history';
+import { postRetryQuestionImprovement } from '@/features/create-update-question/api/improve-question-retry.api';
 import { postQuestionImprovement } from '@/features/create-update-question/api/improve-question.api';
 
 export const useQuestionWritingSupport = ({
@@ -16,6 +17,13 @@ export const useQuestionWritingSupport = ({
 
   const { mutate: questionImprovement, isPending: isQuestionImprovementInProgress } = useMutation({
     mutationFn: postQuestionImprovement,
+    onSuccess: (data) => {
+      setSupportResult(data.result.question);
+    },
+  });
+
+  const { mutate: retryQuestionImprovement, isPending: isRetryQuestionImprovement } = useMutation({
+    mutationFn: postRetryQuestionImprovement,
     onSuccess: (data) => {
       setSupportResult(data.result.question);
     },
@@ -46,10 +54,11 @@ export const useQuestionWritingSupport = ({
     }
   };
 
-  const requestEnable = !isQuestionImprovementInProgress;
+  const requestEnable = !isQuestionImprovementInProgress && !isRetryQuestionImprovement;
 
   return {
     questionImprovement,
+    retryQuestionImprovement,
     isQuestionImprovementInProgress,
     requestEnable,
     supportResult,

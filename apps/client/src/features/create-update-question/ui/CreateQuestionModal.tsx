@@ -18,11 +18,19 @@ function CreateQuestionModal({ question }: Readonly<CreateQuestionModalProps>) {
   const sessionId = useSessionStore((state) => state.sessionId);
 
   const { body, setBody, handleSubmit, submitDisabled } = useQuestionMutation(question);
-  const { questionImprovement, requestEnable, supportResult, accept, reject, supportType, setSupportType } =
-    useQuestionWritingSupport({
-      body,
-      handleAccept: setBody,
-    });
+  const {
+    questionImprovement,
+    retryQuestionImprovement,
+    requestEnable,
+    supportResult,
+    accept,
+    reject,
+    supportType,
+    setSupportType,
+  } = useQuestionWritingSupport({
+    body,
+    handleAccept: setBody,
+  });
 
   const [openPreview, setOpenPreview] = useState(false);
 
@@ -42,11 +50,15 @@ function CreateQuestionModal({ question }: Readonly<CreateQuestionModalProps>) {
     }
   };
 
-  const handleRetry = () => {
-    if (sessionId && token) {
-      if (supportType === 'IMPROVE_QUESTION') {
-        questionImprovement({ token, sessionId, body });
-      }
+  const handleRetry = (requirements: string) => {
+    if (sessionId && token && supportResult && supportType) {
+      retryQuestionImprovement({
+        token,
+        sessionId,
+        original: body,
+        received: supportResult,
+        retryMessage: requirements,
+      });
     }
   };
 
