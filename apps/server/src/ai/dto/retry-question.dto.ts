@@ -4,7 +4,7 @@ import { IsNotEmpty, IsString, Validate } from 'class-validator';
 import { ContentLengthValidator } from '@ai/utils/length-validator';
 import { BaseDto } from '@common/base.dto';
 
-export class RetryImproveDto extends BaseDto {
+export class RetryImproveQuestionDto extends BaseDto {
   @ApiProperty({
     example: '호날두 vs 메시',
     description: '원본 질문 내용',
@@ -12,7 +12,7 @@ export class RetryImproveDto extends BaseDto {
   })
   @IsString()
   @IsNotEmpty({ message: '원본 질문은 필수입니다.' })
-  @Validate(ContentLengthValidator, [500])
+  @Validate(ContentLengthValidator, [500, 1])
   original: string;
 
   @ApiProperty({
@@ -22,7 +22,7 @@ export class RetryImproveDto extends BaseDto {
   })
   @IsString()
   @IsNotEmpty({ message: '개선할 질문 내용은 필수입니다.' })
-  @Validate(ContentLengthValidator, [500])
+  @Validate(ContentLengthValidator, [500, 1])
   received: string;
 
   @ApiProperty({
@@ -31,6 +31,6 @@ export class RetryImproveDto extends BaseDto {
     required: true,
   })
   @IsString()
-  @Validate(ContentLengthValidator, [150])
+  @Validate(ContentLengthValidator, [150, 0])
   retryMessage: string;
 }
