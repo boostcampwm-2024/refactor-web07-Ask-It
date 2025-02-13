@@ -6,9 +6,10 @@ export class CreateHistoryDto {
     example: 'IMPROVE_QUESTION',
     description: '프롬프트 종류',
     required: true,
+    enum: ['IMPROVE_QUESTION', 'IMPROVE_REPLY'],
   })
-  @IsIn(['IMPROVE_QUESTION', 'SHORTEN_QUESTION'], {
-    message: 'promptName은 IMPROVE_QUESTION 또는 SHORTEN_QUESTION이어야 합니다.',
+  @IsIn(['IMPROVE_QUESTION', 'IMPROVE_REPLY'], {
+    message: 'promptName은 IMPROVE_QUESTION 또는 IMPROVE_REPLY이어야 합니다.',
   })
   @IsNotEmpty()
   promptName: string;
