@@ -24,7 +24,7 @@ export default function CreateQuestionModalSide({
 }: Readonly<CreateQuestionModalSideProps>) {
   return (
     <div className='absolute right-8 flex h-[calc(100%-5rem)] w-12 flex-col items-center justify-between py-4'>
-      <Popover text={openPreview ? '마크다운 미리보기 끄기' : '마크다운 미리보기'} position='right'>
+      <Popover text={openPreview ? '마크다운 편집' : '마크다운 미리보기'} position='right'>
         <button
           className='flex h-10 w-10 items-center justify-center rounded-full border p-2 shadow-md'
           onClick={() => setOpenPreview(!openPreview)}
