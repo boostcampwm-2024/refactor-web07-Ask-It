@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { z } from 'zod';
 
-export const AIRequestTypeSchema = z.enum(['IMPROVE_QUESTION']);
+export const AIRequestTypeSchema = z.enum(['IMPROVE_QUESTION', 'IMPROVE_REPLY']);
 
 export const AIResultTypeSchema = z.enum(['ACCEPT', 'REJECT']);
 
