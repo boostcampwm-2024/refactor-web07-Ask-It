@@ -2,39 +2,43 @@ import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
 
 import { AIRequestType, postAIHistory } from '@/features/ai-history';
-import { postRetryQuestionImprovement } from '@/features/create-update-question/api/improve-question-retry.api';
-import { postQuestionImprovement } from '@/features/create-update-question/api/improve-question.api';
+import { postRetryReplyImprovement } from '@/features/create-update-reply/api/improve-reply-retry.api';
+import { postReplyImprovement } from '@/features/create-update-reply/api/improve-reply.api';
 
-export const useQuestionWritingSupport = ({
+export const useReplyWritingSupport = ({
+  questionBody,
   body,
   handleAccept,
 }: {
+  questionBody: string;
   body: string;
   handleAccept: (body: string) => void;
 }) => {
   const [supportResult, setSupportResult] = useState<string | null>(null);
   const [supportType, setSupportType] = useState<AIRequestType | null>(null);
 
-  const { mutate: questionImprovement, isPending: isQuestionImprovementInProgress } = useMutation({
-    mutationFn: postQuestionImprovement,
+  const { mutate: replyImprovement, isPending: isReplyImprovementInProgress } = useMutation({
+    mutationFn: postReplyImprovement,
     onSuccess: (data) => {
-      setSupportResult(data.result.question);
+      setSupportResult(data.result.reply);
     },
   });
 
-  const { mutate: retryQuestionImprovement, isPending: isRetryQuestionImprovementInProgress } = useMutation({
-    mutationFn: postRetryQuestionImprovement,
+  const { mutate: retryReplyImprovement, isPending: isRetryReplyImprovementInProgress } = useMutation({
+    mutationFn: postRetryReplyImprovement,
     onSuccess: (data) => {
-      setSupportResult(data.result.question);
+      setSupportResult(data.result.reply);
     },
   });
+
+  const request = `# Q)\n${questionBody}\n\n# A)\n${body}`;
 
   const accept = () => {
     if (supportResult && supportType) {
       handleAccept(supportResult);
       postAIHistory({
         promptName: supportType,
-        request: body,
+        request,
         response: supportResult,
         result: 'ACCEPT',
       });
@@ -46,7 +50,7 @@ export const useQuestionWritingSupport = ({
     if (supportResult && supportType) {
       postAIHistory({
         promptName: supportType,
-        request: body,
+        request,
         response: supportResult,
         result: 'REJECT',
       });
@@ -54,17 +58,17 @@ export const useQuestionWritingSupport = ({
     }
   };
 
-  const requestEnable = !isQuestionImprovementInProgress && !isRetryQuestionImprovementInProgress;
+  const requestEnable = !isReplyImprovementInProgress && !isRetryReplyImprovementInProgress;
 
   return {
-    questionImprovement,
-    retryQuestionImprovement,
-    isQuestionImprovementInProgress,
-    requestEnable,
+    replyImprovement,
+    retryReplyImprovement,
     supportResult,
-    accept,
-    reject,
+    setSupportResult,
     supportType,
     setSupportType,
+    accept,
+    reject,
+    requestEnable,
   };
 };
