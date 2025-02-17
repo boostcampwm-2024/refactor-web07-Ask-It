@@ -152,7 +152,7 @@ jobs:
             fi
 
             cd $SERVER_DIR/apps/classifier
-            git lfs pull
+            cp -r /home/${{ secrets.SERVER_USER }}/models/* .
             sudo docker build -t ask-it-classifier .
             if [ $(sudo docker ps -q -f name=ask-it-classifier) ]; then
               sudo docker stop ask-it-classifier
