@@ -236,7 +236,7 @@ test('질문 삭제를 하면 리스트에서 사라진다.', async ({ page }) =
 });
 
 test('질문을 수정하면 리스트에 반영된다.', async ({ page }) => {
-  const editButton = page.locator('div:nth-child(2) > div:nth-child(2) > button:nth-child(1)');
+  const editButton = page.locator('div:nth-child(2) > div:nth-child(2) > button').first();
   await editButton.click();
 
   await page.fill('textarea', '수정된 질문 내용');
