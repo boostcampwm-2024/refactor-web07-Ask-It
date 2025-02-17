@@ -129,6 +129,6 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
   }
 
   public broadcastAbuseChattings(sessionId: string, chattings: number[]) {
-    this.server.to(sessionId).emit(SOCKET_EVENTS.CHATTING_FILTERED, chattings);
+    this.server.to(sessionId).emit(SOCKET_EVENTS.CHATTING_FILTERED, { chattingIds: chattings });
   }
 }
