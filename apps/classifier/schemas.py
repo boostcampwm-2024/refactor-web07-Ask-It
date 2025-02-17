@@ -1,6 +1,17 @@
 from pydantic import BaseModel
 
 
+class SlangPredictionRequest(BaseModel):
+    input: str
+
+    class Config:
+        json_schema_extra = {
+            "example": {
+                "input": "X같네",
+            }
+        }
+
+
 class PredictionRequest(BaseModel):
     input: str
     output: str
