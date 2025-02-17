@@ -4,6 +4,7 @@ export const ChatSchema = z.object({
   chattingId: z.number(),
   content: z.string(),
   nickname: z.string(),
+  abuse: z.boolean(),
 });
 
 export type Chat = z.infer<typeof ChatSchema>;

@@ -5,6 +5,7 @@ import { useAuthStore } from '@/features/auth';
 import {
   ChatErrorEventPayload,
   ChatMessageEventPayload,
+  ChattingFilteredEventPayload,
   HostChangedEventPayload,
   ParticipantCountUpdatedEventPayload,
   QuestionCreatedEventPayload,
@@ -122,6 +123,10 @@ export class SocketService {
         duration: 3000,
       });
       this.socket.disconnect();
+    });
+
+    this.socket.on('chattingFiltered', ({ chattingIds }: ChattingFilteredEventPayload) => {
+      chattingIds.forEach(store.updateChattingAbuse);
     });
   }
 
