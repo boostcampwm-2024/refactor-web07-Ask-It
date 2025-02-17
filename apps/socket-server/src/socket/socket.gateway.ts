@@ -1,3 +1,6 @@
+import { ChatsService } from '@chats/chats.service';
+import { SessionTokenValidationGuard } from '@common/guards/session-token-validation.guard';
+import { LoggerService } from '@logger/logger.service';
 import {
   ConnectedSocket,
   MessageBody,
@@ -7,12 +10,8 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { Server, Socket } from 'socket.io';
-
-import { ChatsService } from '@chats/chats.service';
-import { SessionTokenValidationGuard } from '@common/guards/session-token-validation.guard';
-import { LoggerService } from '@logger/logger.service';
 import { SOCKET_EVENTS } from '@socket/socket.constant';
+import { Server, Socket } from 'socket.io';
 
 interface Client {
   sessionId: string;
@@ -127,5 +126,9 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
     this.server.to(sessionId).emit(SOCKET_EVENTS.PARTICIPANT_COUNT_UPDATED, {
       participantCount: this.getParticipantCount(sessionId),
     });
+  }
+
+  public broadcastAbuseChattings(sessionId: string, chattings: number[]) {
+    this.server.to(sessionId).emit(SOCKET_EVENTS.CHATTING_FILTERED, chattings);
   }
 }

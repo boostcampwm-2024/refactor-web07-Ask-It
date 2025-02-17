@@ -59,17 +59,34 @@ export class ChatsService {
       (max, { chattingId }) => Math.max(max, chattingId),
       this.lastProcessedChattingId,
     );
-    await Promise.all(
-      newChats.map(async ({ chattingId, body }) => {
+    const abuseResult = await Promise.all(
+      newChats.map(async ({ chattingId, body, sessionId }) => {
         const abuse = (await this.checkAbuse(body)) ? AbuseState.BLOCKED : AbuseState.SAFE;
         this.chatsRepository.update(chattingId, abuse);
+        return { chattingId, sessionId, abuse };
       }),
     );
 
-    //TODO: socket broadcast
+    this.broadcast(abuseResult.filter(({ abuse }) => abuse === AbuseState.BLOCKED));
+
     const endTime = new Date();
     const executionTime = endTime.getTime() - startTime.getTime();
     console.log(`2. end batch - Execution time: ${executionTime}ms`);
+  }
+
+  async broadcast(abuseChattings: { chattingId: number; sessionId: string }[]) {
+    const SOCKET_SERVER_HOST = process.env.SOCKET_SERVER_HOST;
+    const SOCKET_SERVER_PORT = process.env.SOCKET_SERVER_PORT;
+
+    try {
+      fetch(`${SOCKET_SERVER_HOST}:${SOCKET_SERVER_PORT}/api/socket/abuse-chattings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ abuseChattings }),
+      });
+    } catch (error) {
+      console.error('/api/socket/abuse-chattings fetch 요청 실패', error);
+    }
   }
 
   async checkAbuse(content: string) {
