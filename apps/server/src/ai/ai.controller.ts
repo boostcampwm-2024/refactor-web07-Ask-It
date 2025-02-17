@@ -19,18 +19,42 @@ export class AiController {
   constructor(private readonly aiService: AiService) {}
 
   private handleStreamResponse(aiStream: Readable, res: Response) {
-    res.setHeader('Content-Type', 'text/plain');
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Cache-Control', 'no-cache');
+    res.setHeader('Connection', 'keep-alive');
+
+    let resultData = '';
+    let chunkData = '';
 
     aiStream.on('data', (chunk) => {
-      res.write(chunk.toString());
+      const rawData = chunk.toString();
+      const lines = rawData.split('\n');
+
+      for (const line of lines) {
+        if (line.startsWith('data:')) {
+          try {
+            const jsonData = JSON.parse(line.replace('data:', '').trim());
+            if (jsonData.message && jsonData.message.content) {
+              if (chunkData) {
+                res.write(JSON.stringify({ type: 'stream', content: chunkData }) + '\n');
+                resultData += chunkData;
+              }
+              chunkData = jsonData.message.content;
+            }
+          } catch (error) {}
+        }
+      }
     });
 
     aiStream.on('end', () => {
+      if (chunkData) {
+        res.write(JSON.stringify({ type: 'result', content: resultData + chunkData }) + '\n');
+      }
       res.end();
     });
 
     aiStream.on('error', (err) => {
-      res.status(500).send('Error occurred while processing AI response');
+      res.status(500).json({ type: 'error', content: 'Error occurred while processing AI response' });
     });
   }
 

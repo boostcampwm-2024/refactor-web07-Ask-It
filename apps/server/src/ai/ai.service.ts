@@ -8,27 +8,6 @@ import { RetryImproveQuestionDto } from '@ai/dto/retry-question.dto';
 import { RetryImproveReplyDto } from '@ai/dto/retry-reply.dto';
 import { PrismaService } from '@prisma-alias/prisma.service';
 
-interface ClovaApiResponse {
-  status: {
-    code: string;
-    message: string;
-  };
-  result?: {
-    message: {
-      role: string;
-      content: string;
-    };
-    stopReason: string;
-    inputLength: number;
-    outputLength: number;
-    aiFilter?: Array<{
-      groupName: string;
-      name: string;
-      score: string;
-    }>;
-  };
-}
-
 type Role = 'system' | 'user' | 'assistant';
 
 interface Message {
@@ -120,12 +99,6 @@ export class AiService {
       includeAiFilters: true,
       seed: 0,
     };
-
-    // const response = await fetch(url, {
-    //   method: 'POST',
-    //   headers: headers,
-    //   body: JSON.stringify(requestData),
-    // });
 
     const response = await axios.post(url, requestData, {
       headers,
