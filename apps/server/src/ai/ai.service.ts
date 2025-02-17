@@ -1,4 +1,5 @@
 import { Injectable } from '@nestjs/common';
+import axios from 'axios';
 
 import { CreateHistoryDto } from './dto/create-history.dto';
 
@@ -50,14 +51,8 @@ export class AiService {
   public async requestImproveQuestion(userContent: string) {
     const { content: prompt } = await this.prisma.prompt.findUnique({ where: { name: 'IMPROVE_QUESTION' } });
     const messages: Message[] = [
-      {
-        role: 'system',
-        content: prompt,
-      },
-      {
-        role: 'user',
-        content: userContent,
-      },
+      { role: 'system', content: prompt },
+      { role: 'user', content: userContent },
     ];
     return await this.requestAIResponse(messages, this.CLOVA_API_QUESTION_URL);
   }
@@ -66,14 +61,8 @@ export class AiService {
     const { content: prompt } = await this.prisma.prompt.findUnique({ where: { name: 'IMPROVE_REPLY' } });
     const content = `# Q) ${originalQuestion} # A) ${userContent}`;
     const messages: Message[] = [
-      {
-        role: 'system',
-        content: prompt,
-      },
-      {
-        role: 'user',
-        content: content,
-      },
+      { role: 'system', content: prompt },
+      { role: 'user', content: content },
     ];
     return await this.requestAIResponse(messages, this.CLOVA_API_REPLY_URL);
   }
@@ -84,22 +73,10 @@ export class AiService {
     }
     const { content: prompt } = await this.prisma.prompt.findUnique({ where: { name: 'IMPROVE_QUESTION' } });
     const messages: Message[] = [
-      {
-        role: 'system',
-        content: prompt,
-      },
-      {
-        role: 'user',
-        content: original,
-      },
-      {
-        role: 'assistant',
-        content: received,
-      },
-      {
-        role: 'user',
-        content: retryMessage,
-      },
+      { role: 'system', content: prompt },
+      { role: 'user', content: original },
+      { role: 'assistant', content: received },
+      { role: 'user', content: retryMessage },
     ];
     return await this.requestAIResponse(messages, this.CLOVA_API_QUESTION_URL);
   }
@@ -111,22 +88,10 @@ export class AiService {
     const content = `# Q) ${originalQuestion} # A) ${original}`;
     const { content: prompt } = await this.prisma.prompt.findUnique({ where: { name: 'IMPROVE_REPLY' } });
     const messages: Message[] = [
-      {
-        role: 'system',
-        content: prompt,
-      },
-      {
-        role: 'user',
-        content: content,
-      },
-      {
-        role: 'assistant',
-        content: received,
-      },
-      {
-        role: 'user',
-        content: retryMessage,
-      },
+      { role: 'system', content: prompt },
+      { role: 'user', content: content },
+      { role: 'assistant', content: received },
+      { role: 'user', content: retryMessage },
     ];
     return await this.requestAIResponse(messages, this.CLOVA_API_REPLY_URL);
   }
@@ -141,6 +106,7 @@ export class AiService {
     const headers = {
       Authorization: this.API_KEY,
       'Content-Type': 'application/json',
+      Accept: 'text/event-stream',
     };
 
     const requestData = {
@@ -155,14 +121,17 @@ export class AiService {
       seed: 0,
     };
 
-    const response = await fetch(url, {
-      method: 'POST',
-      headers: headers,
-      body: JSON.stringify(requestData),
+    // const response = await fetch(url, {
+    //   method: 'POST',
+    //   headers: headers,
+    //   body: JSON.stringify(requestData),
+    // });
+
+    const response = await axios.post(url, requestData, {
+      headers,
+      responseType: 'stream',
     });
 
-    const data: ClovaApiResponse = JSON.parse(await response.text());
-
-    return data.result.message.content;
+    return response.data;
   }
 }
