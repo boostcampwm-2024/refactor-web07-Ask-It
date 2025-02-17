@@ -129,6 +129,7 @@ model Chatting {
   body            String
   createdAt       DateTime @default(now()) @map("created_at")
   sessionId       String   @map("session_id")
+  abuse           Boolean  @default(false)
 
   session               Session          @relation("SessionChattings", fields: [sessionId], references: [sessionId])
   createUserTokenEntity UserSessionToken @relation("TokenChattings", fields: [createUserToken], references: [token])
