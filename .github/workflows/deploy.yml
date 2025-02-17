@@ -129,3 +129,33 @@ jobs:
               sudo docker rm ask-it-socket
             fi
             sudo docker run -d -p 4000:4000 --network ask-it --name ask-it-socket ask-it-socket
+
+      # 7. 분류 서버 배포
+      - name: Deploy Classifier Server
+        if: contains(env.CHANGED_FILES, 'apps/classifier/')
+        uses: appleboy/ssh-action@v0.1.4
+        with:
+          host: ${{ secrets.WEB_SERVER_IP }}
+          username: ${{ secrets.SERVER_USER }}
+          key: ${{ secrets.NCP_SERVER_RSA_PRIVATE_KEY }}
+          script: |
+            SERVER_DIR="/home/${{ secrets.SERVER_USER }}/Ask-It-classifier-server"
+            if [ ! -d "$SERVER_DIR" ]; then
+              mkdir -p $SERVER_DIR
+            fi
+            if [ ! -d "$SERVER_DIR/.git" ]; then
+              git clone "${{ secrets.GIT_REPO_URL }}" $SERVER_DIR
+            else
+              cd $SERVER_DIR
+              git reset --hard
+              git pull origin main
+            fi
+
+            cd $SERVER_DIR/apps/classifier
+            git lfs pull
+            sudo docker build -t ask-it-classifier .
+            if [ $(sudo docker ps -q -f name=ask-it-classifier) ]; then
+              sudo docker stop ask-it-classifier
+              sudo docker rm ask-it-classifier
+            fi
+            sudo docker run -d -p 8000:8000 --network ask-it --name ask-it-classifier ask-it-classifier
