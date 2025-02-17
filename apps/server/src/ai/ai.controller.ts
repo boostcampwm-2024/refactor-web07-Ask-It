@@ -7,6 +7,10 @@ import { Response } from 'express';
 import { AiService } from './ai.service';
 import { ImproveQuestionDto } from './dto/improve-question.dto';
 import { AiRequestValidationGuard } from './guards/restrict-request.guard';
+import { ImproveQuestionSwagger } from './swagger/improve-question.swagger';
+import { ImproveReplySwagger } from './swagger/improve-reply.swagger';
+import { RetryQuestionSwagger } from './swagger/retry-question.swagger';
+import { RetryReplySwagger } from './swagger/retry-reply.swagger';
 
 import { ImproveReplyDto } from '@ai/dto/improve-reply.dto';
 import { RetryImproveQuestionDto } from '@ai/dto/retry-question.dto';
@@ -59,6 +63,7 @@ export class AiController {
   }
 
   @Post('question-improve')
+  @ImproveQuestionSwagger()
   @ApiBody({ type: ImproveQuestionDto })
   @UseGuards(SessionTokenValidationGuard)
   public async improveQuestion(@Body() improveQuestionDto: ImproveQuestionDto, @Res() res: Response) {
@@ -68,6 +73,7 @@ export class AiController {
   }
 
   @Post('reply-improve')
+  @ImproveReplySwagger()
   @ApiBody({ type: ImproveReplyDto })
   @UseGuards(SessionTokenValidationGuard)
   public async improveReply(@Body() improveReplyDto: ImproveReplyDto, @Res() res: Response) {
@@ -76,6 +82,7 @@ export class AiController {
   }
 
   @Post('question-improve-retry')
+  @RetryQuestionSwagger()
   @ApiBody({ type: RetryImproveQuestionDto })
   @UseGuards(SessionTokenValidationGuard)
   public async retryImproveQuestion(@Body() retryImproveQuestionDto: RetryImproveQuestionDto, @Res() res: Response) {
@@ -84,6 +91,7 @@ export class AiController {
   }
 
   @Post('reply-improve-retry')
+  @RetryReplySwagger()
   @ApiBody({ type: RetryImproveReplyDto })
   @UseGuards(SessionTokenValidationGuard)
   public async retryImproveReply(@Body() retryImproveReplyDto: RetryImproveReplyDto, @Res() res: Response) {
