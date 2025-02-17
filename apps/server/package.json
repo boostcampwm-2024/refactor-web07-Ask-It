@@ -29,6 +29,7 @@
     "@nestjs/mapped-types": "*",
     "@nestjs/platform-express": "^10.4.6",
     "@nestjs/platform-socket.io": "^10.4.8",
+    "@nestjs/schedule": "^5.0.1",
     "@nestjs/swagger": "^8.0.4",
     "@nestjs/websockets": "^10.4.8",
     "@prisma/client": "^5.22.0",
