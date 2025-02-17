@@ -22,13 +22,14 @@ export class ChatsService {
     const chats = await this.chatsRepository.getChatsForInfiniteScroll(sessionId, count, chatId);
 
     return chats.map((x) => {
-      const { createUserTokenEntity, chattingId, body: content } = x;
+      const { createUserTokenEntity, chattingId, body: content, abuse } = x;
       const { user } = createUserTokenEntity;
       const nickname = user?.nickname || '익명';
       return {
         chattingId,
         nickname,
         content,
+        abuse,
       };
     });
   }
