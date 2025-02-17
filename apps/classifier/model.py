@@ -32,7 +32,7 @@ inv_label_maps = {
 }
 
 
-def predict(text: str, type: str) -> str:
+def predict(text: str, type: str) -> tuple[str, float]:
     inputs = tokenizer(
         text, return_tensors="pt", truncation=True, padding="max_length", max_length=512
     )
@@ -46,6 +46,6 @@ def predict(text: str, type: str) -> str:
     logits = outputs.logits
     probabilities = torch.softmax(logits, dim=-1)
     predicted_label = torch.argmax(probabilities, dim=-1).item()
-    print(probabilities)
+    predicted_probability = probabilities[0, predicted_label].item()
 
-    return inv_label_map[predicted_label]
+    return inv_label_map[predicted_label], predicted_probability
