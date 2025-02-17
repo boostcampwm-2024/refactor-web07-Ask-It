@@ -20,7 +20,7 @@ interface SlangPredictResult {
 @Injectable()
 export class ChatsService {
   private lastProcessedChattingId = 0;
-  private readonly BATCH_SIZE = 10; //TODO: 적합한 수치 확인 필요
+  private readonly BATCH_SIZE = 10;
 
   constructor(
     private readonly chatsRepository: ChatsRepository,
@@ -54,7 +54,7 @@ export class ChatsService {
     });
   }
 
-  @Cron(CronExpression.EVERY_MINUTE, { name: 'chatting-abuse-detection' }) //TODO: 적합한 수치 필요
+  @Cron(CronExpression.EVERY_MINUTE, { name: 'chatting-abuse-detection' })
   async detectAbuseBatch() {
     const startTime = new Date();
 
