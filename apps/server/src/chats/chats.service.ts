@@ -4,6 +4,8 @@ import { AbuseState } from '@prisma/client';
 
 import { ChatsRepository } from './chats.repository';
 
+import { LoggerService } from '@logger/logger.service';
+
 export interface ChatSaveDto {
   sessionId: string;
   token: string;
@@ -20,7 +22,10 @@ export class ChatsService {
   private lastProcessedChattingId = 0;
   private readonly BATCH_SIZE = 10; //TODO: 적합한 수치 확인 필요
 
-  constructor(private readonly chatsRepository: ChatsRepository) {}
+  constructor(
+    private readonly chatsRepository: ChatsRepository,
+    private readonly logger: LoggerService,
+  ) {}
 
   async saveChat(data: ChatSaveDto) {
     const chat = await this.chatsRepository.save(data);
@@ -52,7 +57,6 @@ export class ChatsService {
   @Cron(CronExpression.EVERY_MINUTE, { name: 'chatting-abuse-detection' }) //TODO: 적합한 수치 필요
   async detectAbuseBatch() {
     const startTime = new Date();
-    console.log(`1. start batch ${this.lastProcessedChattingId}`);
 
     const newChats = await this.chatsRepository.getChatsForFilter(this.BATCH_SIZE, this.lastProcessedChattingId);
     this.lastProcessedChattingId = newChats.reduce(
@@ -71,7 +75,9 @@ export class ChatsService {
 
     const endTime = new Date();
     const executionTime = endTime.getTime() - startTime.getTime();
-    console.log(`2. end batch - Execution time: ${executionTime}ms`);
+    this.logger.log(
+      `[BATCH] last chatting id: ${this.lastProcessedChattingId} chatting count: ${newChats.length} execution time: ${executionTime}ms `,
+    );
   }
 
   async broadcast(abuseChattings: { chattingId: number; sessionId: string }[]) {
@@ -85,7 +91,7 @@ export class ChatsService {
         body: JSON.stringify({ abuseChattings }),
       });
     } catch (error) {
-      console.error('/api/socket/abuse-chattings fetch 요청 실패', error);
+      this.logger.error('Failed to fetch /api/socket/abuse-chattings', error.stack);
     }
   }
 
@@ -101,15 +107,14 @@ export class ChatsService {
       });
 
       if (!response.ok) {
-        //TODO: 로깅 (Classifier server error: ${response.status} ${response.statusText})
+        this.logger.error(`Classifier server response: ${response.status}`, response.statusText);
         return false;
       }
 
       const data: SlangPredictResult = JSON.parse(await response.text());
-      console.log(`[${data.predicted} ${data.probability}] ${content}`);
       return data.predicted === '욕설';
     } catch (error) {
-      //TODO: 로깅 필요
+      this.logger.error(`Unexpected error while requesting classifier server`, error.stack);
       return false;
     }
   }
