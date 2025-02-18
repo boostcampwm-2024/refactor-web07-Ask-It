@@ -21,23 +21,26 @@ function CreateQuestionModal({ question }: Readonly<CreateQuestionModalProps>) {
   const {
     questionImprovement,
     retryQuestionImprovement,
-    requestEnable,
     supportResult,
     accept,
     reject,
     supportType,
     setSupportType,
+    isPending,
   } = useQuestionWritingSupport({
     body,
     handleAccept: setBody,
   });
+
+  const [isAnimationComplete, setIsAnimationComplete] = useState(true);
 
   const [openPreview, setOpenPreview] = useState(false);
 
   const bodyLength = getContentBodyLength(supportResult ?? body);
 
   const isValidLength = isValidBodyLength(bodyLength);
-  const buttonEnabled = !submitDisabled && requestEnable;
+
+  const buttonEnabled = !submitDisabled && !isPending && isAnimationComplete;
 
   const handleCreateOrUpdate = () => {
     if (buttonEnabled && isValidLength) handleSubmit();
@@ -46,12 +49,14 @@ function CreateQuestionModal({ question }: Readonly<CreateQuestionModalProps>) {
   const handleQuestionImprovement = () => {
     if (buttonEnabled && isValidLength && sessionId && token) {
       setSupportType('IMPROVE_QUESTION');
+      setIsAnimationComplete(false);
       questionImprovement({ token, sessionId, body });
     }
   };
 
   const handleRetry = (requirements: string) => {
     if (sessionId && token && supportResult && supportType) {
+      setIsAnimationComplete(false);
       retryQuestionImprovement({
         token,
         sessionId,
@@ -69,8 +74,9 @@ function CreateQuestionModal({ question }: Readonly<CreateQuestionModalProps>) {
           supportResult={supportResult}
           questionBody={body}
           openPreview={openPreview}
-          isWritingPending={!requestEnable}
+          isWritingPending={isPending && supportResult === null}
           onQuestionBodyChange={setBody}
+          onAnimationComplete={() => setIsAnimationComplete(true)}
         />
         <CreateQuestionModalSide bodyLength={bodyLength} openPreview={openPreview} setOpenPreview={setOpenPreview} />
       </div>

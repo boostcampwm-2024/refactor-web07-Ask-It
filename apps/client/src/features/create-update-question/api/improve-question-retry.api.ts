@@ -1,4 +1,3 @@
-import axios from 'axios';
 import { z } from 'zod';
 
 export const RetryImproveQuestionRequestSchema = z.object({
@@ -9,17 +8,50 @@ export const RetryImproveQuestionRequestSchema = z.object({
   retryMessage: z.string().max(150),
 });
 
-export const RetryImproveQuestionResponseSchema = z.object({
-  result: z.object({
-    question: z.string(),
-  }),
-});
-
 export type RetryImproveQuestionRequest = z.infer<typeof RetryImproveQuestionRequestSchema>;
 
-export type RetryImproveQuestionResponse = z.infer<typeof RetryImproveQuestionResponseSchema>;
+export const postRetryQuestionImprovement = async (
+  body: RetryImproveQuestionRequest,
+  onMessage: (message: { type: string; content: string }) => void,
+  onComplete?: () => void,
+  onError?: (error: unknown) => void,
+) => {
+  const response = await fetch('/api/ai/question-improve-retry', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify(RetryImproveQuestionRequestSchema.parse(body)),
+  });
+  if (!response.body) throw new Error('ReadableStream not supported');
 
-export const postRetryQuestionImprovement = (body: RetryImproveQuestionRequest) =>
-  axios
-    .post<RetryImproveQuestionResponse>('/api/ai/question-improve-retry', RetryImproveQuestionRequestSchema.parse(body))
-    .then((res) => RetryImproveQuestionResponseSchema.parse(res.data));
+  const reader = response.body.getReader();
+  const decoder = new TextDecoder();
+  let buffer = '';
+
+  const processLine = (line: string): void => {
+    if (!line.trim()) return;
+    try {
+      const parsed = JSON.parse(line);
+      if (parsed.type === 'stream') {
+        onMessage(parsed);
+      }
+    } catch (error) {
+      if (onError) onError(error);
+    }
+  };
+
+  try {
+    let result = await reader.read();
+    while (!result.done) {
+      buffer += decoder.decode(result.value, { stream: true });
+      const lines = buffer.split('\n');
+      buffer = lines.pop() || '';
+      for (const line of lines) {
+        processLine(line);
+      }
+      result = await reader.read();
+    }
+    if (onComplete) onComplete();
+  } catch (error) {
+    if (onError) onError(error);
+  }
+};

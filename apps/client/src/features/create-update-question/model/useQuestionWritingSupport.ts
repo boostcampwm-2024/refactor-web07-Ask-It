@@ -1,9 +1,14 @@
-import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
 
 import { AIRequestType, postAIHistory } from '@/features/ai-history';
-import { postRetryQuestionImprovement } from '@/features/create-update-question/api/improve-question-retry.api';
-import { postQuestionImprovement } from '@/features/create-update-question/api/improve-question.api';
+import {
+  postRetryQuestionImprovement,
+  RetryImproveQuestionRequest,
+} from '@/features/create-update-question/api/improve-question-retry.api';
+import {
+  postQuestionImprovementStream,
+  QuestionImprovementRequest,
+} from '@/features/create-update-question/api/improve-question.api';
 
 export const useQuestionWritingSupport = ({
   body,
@@ -15,19 +20,34 @@ export const useQuestionWritingSupport = ({
   const [supportResult, setSupportResult] = useState<string | null>(null);
   const [supportType, setSupportType] = useState<AIRequestType | null>(null);
 
-  const { mutate: questionImprovement, isPending: isQuestionImprovementInProgress } = useMutation({
-    mutationFn: postQuestionImprovement,
-    onSuccess: (data) => {
-      setSupportResult(data.result.question);
-    },
-  });
+  const [isPending, setIsPending] = useState(false);
 
-  const { mutate: retryQuestionImprovement, isPending: isRetryQuestionImprovementInProgress } = useMutation({
-    mutationFn: postRetryQuestionImprovement,
-    onSuccess: (data) => {
-      setSupportResult(data.result.question);
-    },
-  });
+  const questionImprovement = (body: QuestionImprovementRequest) => {
+    setIsPending(true);
+    postQuestionImprovementStream(
+      body,
+      ({ content }) => {
+        setSupportResult((prev) => (prev ?? '') + content);
+      },
+      () => {
+        setIsPending(false);
+      },
+    );
+  };
+
+  const retryQuestionImprovement = (body: RetryImproveQuestionRequest) => {
+    setSupportResult(null);
+    setIsPending(true);
+    postRetryQuestionImprovement(
+      body,
+      ({ content }) => {
+        setSupportResult((prev) => (prev ?? '') + content);
+      },
+      () => {
+        setIsPending(false);
+      },
+    );
+  };
 
   const accept = () => {
     if (supportResult && supportType) {
@@ -54,17 +74,14 @@ export const useQuestionWritingSupport = ({
     }
   };
 
-  const requestEnable = !isQuestionImprovementInProgress && !isRetryQuestionImprovementInProgress;
-
   return {
     questionImprovement,
     retryQuestionImprovement,
-    isQuestionImprovementInProgress,
-    requestEnable,
     supportResult,
     accept,
     reject,
     supportType,
     setSupportType,
+    isPending,
   };
 };

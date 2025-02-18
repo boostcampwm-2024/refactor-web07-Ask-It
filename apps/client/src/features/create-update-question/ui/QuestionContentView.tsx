@@ -1,11 +1,14 @@
 import Markdown from 'react-markdown';
 
+import AnimatedText from '@/features/create-update-question/ui/AnimatedText';
+
 interface QuestionContentViewProps {
   supportResult: string | null;
   questionBody: string;
   openPreview: boolean;
   isWritingPending: boolean;
   onQuestionBodyChange: (body: string) => void;
+  onAnimationComplete: () => void;
 }
 
 export default function QuestionContentView({
@@ -14,6 +17,7 @@ export default function QuestionContentView({
   openPreview,
   isWritingPending,
   onQuestionBodyChange,
+  onAnimationComplete,
 }: Readonly<QuestionContentViewProps>) {
   if (isWritingPending) {
     return (
@@ -25,21 +29,9 @@ export default function QuestionContentView({
 
   if (supportResult !== null) {
     if (openPreview) {
-      return (
-        <div className='flex-1 overflow-auto p-4'>
-          <Markdown className='w-[calc(100%-3rem] prose prose-stone h-full break-words pr-[3rem]'>
-            {supportResult}
-          </Markdown>
-        </div>
-      );
+      return <AnimatedText text={supportResult} renderAsMarkdown={true} onComplete={onAnimationComplete} />;
     }
-    return (
-      <textarea
-        className='flex-1 resize-none overflow-auto p-4 pr-[4rem] focus:outline-none'
-        value={supportResult}
-        readOnly={true}
-      />
-    );
+    return <AnimatedText text={supportResult} onComplete={onAnimationComplete} />;
   }
 
   if (openPreview) {

@@ -19,10 +19,12 @@ interface CreateQuestionModalFooterProps {
 }
 
 function RetryActions({
+  buttonEnabled,
   handleRetry,
   reject,
   accept,
 }: Readonly<{
+  buttonEnabled: boolean;
   handleRetry: (requirements: string) => void;
   reject: () => void;
   accept: () => void;
@@ -80,13 +82,25 @@ function RetryActions({
 
   return (
     <div className='flex flex-row gap-2'>
-      <Button className='bg-gray-500' onClick={reject}>
+      <Button
+        className={`${buttonEnabled ? 'bg-gray-500' : 'cursor-not-allowed bg-gray-300'}`}
+        onClick={reject}
+        disabled={!buttonEnabled}
+      >
         <div className='text-sm font-bold text-white'>취소하기</div>
       </Button>
-      <Button className='bg-gray-500' onClick={() => setRetryEnabled(true)}>
+      <Button
+        className={`${buttonEnabled ? 'bg-gray-500' : 'cursor-not-allowed bg-gray-300'}`}
+        onClick={() => buttonEnabled && setRetryEnabled(true)}
+        disabled={!buttonEnabled}
+      >
         <div className='text-sm font-bold text-white'>다시 요청하기</div>
       </Button>
-      <Button className='bg-indigo-600' onClick={accept}>
+      <Button
+        className={`${buttonEnabled ? 'bg-indigo-600' : 'cursor-not-allowed bg-indigo-300'}`}
+        onClick={accept}
+        disabled={!buttonEnabled}
+      >
         <div className='text-sm font-bold text-white'>사용하기</div>
       </Button>
     </div>
@@ -129,7 +143,7 @@ export default function CreateQuestionModalFooter({
           </div>
         </>
       ) : (
-        <RetryActions handleRetry={handleRetry} reject={reject} accept={accept} />
+        <RetryActions buttonEnabled={buttonEnabled} handleRetry={handleRetry} reject={reject} accept={accept} />
       )}
     </footer>
   );
