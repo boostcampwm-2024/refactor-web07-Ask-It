@@ -93,6 +93,8 @@ model QuestionLike {
 
   question              Question         @relation("QuestionLikes", fields: [questionId], references: [questionId], onDelete: Cascade)
   createUserTokenEntity UserSessionToken @relation("TokenQuestionLikes", fields: [createUserToken], references: [token])
+
+  @@unique([questionId, createUserToken])
 }
 
 model Reply {
@@ -117,18 +119,44 @@ model ReplyLike {
 
   reply                 Reply            @relation("ReplyLikes", fields: [replyId], references: [replyId], onDelete: Cascade)
   createUserTokenEntity UserSessionToken @relation("TokenReplyLikes", fields: [createUserToken], references: [token])
+
+  @@unique([replyId, createUserToken])
+}
+
+enum AbuseState {
+  PENDING
+  SAFE
+  BLOCKED
 }
 
 model Chatting {
-  chattingId      Int      @id @default(autoincrement()) @map("chatting_id")
-  createUserToken String   @map("create_user_token")
+  chattingId      Int         @id @default(autoincrement()) @map("chatting_id")
+  createUserToken String      @map("create_user_token")
   body            String
-  createdAt       DateTime @default(now()) @map("created_at")
-  sessionId       String   @map("session_id")
+  createdAt       DateTime    @default(now()) @map("created_at")
+  sessionId       String      @map("session_id")
+  abuse           AbuseState  @default(PENDING)
 
   session               Session          @relation("SessionChattings", fields: [sessionId], references: [sessionId])
   createUserTokenEntity UserSessionToken @relation("TokenChattings", fields: [createUserToken], references: [token])
 
   @@index([sessionId])
   @@index([sessionId, chattingId(Sort.desc)])
+}
+
+model Prompt {
+  name    String  @id
+  content String
+
+  PromptHistory PromptHistory[] @relation("promptHistories")
+}
+
+model PromptHistory {
+  historyId   Int     @id @default(autoincrement()) @map("history_id")
+  request     String  
+  response    String
+  promptName  String  @map("prompt_name")
+  result      String
+
+  prompt      Prompt  @relation("promptHistories", fields: [promptName], references: [name])
 }
