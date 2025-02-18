@@ -53,7 +53,6 @@ export class AiController {
               if (jsonData.message && jsonData.message.content) {
                 if (chunkData) {
                   res.write(JSON.stringify({ type: 'stream', content: chunkData }) + '\n');
-                  resultData += chunkData;
                 }
                 chunkData = jsonData.message.content;
               }
