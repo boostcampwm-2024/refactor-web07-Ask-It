@@ -5,7 +5,7 @@ from schemas import (
     PredictionRequest,
     PredictionResponse,
 )
-from model import predict
+from model import predict, predict_batch
 
 app = FastAPI()
 
@@ -26,6 +26,8 @@ async def improve_reply_predict(data: PredictionRequest):
 
 @app.post("/slang-predict", response_model=SlangPredictionResponse)
 async def slang_predict(data: SlangPredictionRequest):
-    text = data.input
-    predicted = predict(text, type="slang")
-    return {"predicted": predicted[0], "probability": predicted[1]}
+    text = data.inputs
+    predicted = predict_batch(text, type="slang")
+    return {
+        "predictions": [{"predicted": p[0], "probability": p[1]} for p in predicted]
+    }
