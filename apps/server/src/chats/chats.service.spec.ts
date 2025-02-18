@@ -10,6 +10,8 @@ import {
   MOCK_SAVED_CHAT_NO_NICKNAME,
 } from './test-chats.mock';
 
+import { LoggerService } from '@logger/logger.service';
+
 describe('ChatsService', () => {
   let service: ChatsService;
   let chatsRepository: jest.Mocked<ChatsRepository>;
@@ -24,8 +26,17 @@ describe('ChatsService', () => {
           useValue: {
             save: jest.fn(),
             getChatsForInfiniteScroll: jest.fn(),
-            getChatsForFilter: jest.fn(), // 추가
-            update: jest.fn(), // 추가
+            getChatsForFilter: jest.fn(),
+            update: jest.fn(),
+          },
+        },
+        {
+          provide: LoggerService,
+          useValue: {
+            log: jest.fn(),
+            error: jest.fn(),
+            warn: jest.fn(),
+            debug: jest.fn(),
           },
         },
       ],
