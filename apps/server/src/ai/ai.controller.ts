@@ -5,8 +5,10 @@ import { ApiBody } from '@nestjs/swagger';
 import { Response } from 'express';
 
 import { AiService } from './ai.service';
+import { CreateHistoryDto } from './dto/create-history.dto';
 import { ImproveQuestionDto } from './dto/improve-question.dto';
 import { AiRequestValidationGuard } from './guards/restrict-request.guard';
+import { CreateHistorySwagger } from './swagger/create-history.swagger';
 import { ImproveQuestionSwagger } from './swagger/improve-question.swagger';
 import { ImproveReplySwagger } from './swagger/improve-reply.swagger';
 import { RetryQuestionSwagger } from './swagger/retry-question.swagger';
@@ -27,7 +29,6 @@ export class AiController {
     res.setHeader('Cache-Control', 'no-cache');
     res.setHeader('Connection', 'keep-alive');
 
-    let resultData = '';
     let chunkData = '';
     let buffer = '';
 
@@ -109,5 +110,12 @@ export class AiController {
   public async retryImproveReply(@Body() retryImproveReplyDto: RetryImproveReplyDto, @Res() res: Response) {
     const aiStream = await this.aiService.retryImproveReply(retryImproveReplyDto);
     this.handleStreamResponse(aiStream, res);
+  }
+
+  @Post('history')
+  @CreateHistorySwagger()
+  @ApiBody({ type: CreateHistoryDto })
+  public createHistory(@Body() createHistoryDto: CreateHistoryDto) {
+    this.aiService.createHistory(createHistoryDto);
   }
 }
