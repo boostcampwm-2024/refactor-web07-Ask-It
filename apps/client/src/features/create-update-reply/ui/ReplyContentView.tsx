@@ -1,25 +1,30 @@
 import Markdown from 'react-markdown';
 
+import AnimatedText from '@/features/create-update-question/ui/AnimatedText';
 import { ContentType } from '@/features/create-update-reply/model/reply-modal.type';
 
 import { Question, Reply } from '@/entities/session';
 
 interface ReplyContentViewProps {
+  isAnimationBlocked: boolean;
   supportResult: string | null;
   contentType: ContentType;
   questionBody: Question['body'];
   replyBody: Reply['body'];
   isWritingPending: boolean;
   onReplyBodyChange: (body: string) => void;
+  onAnimationComplete: () => void;
 }
 
 export default function ReplyContentView({
+  isAnimationBlocked,
   supportResult,
   contentType,
   questionBody,
   replyBody,
   isWritingPending,
   onReplyBodyChange,
+  onAnimationComplete,
 }: Readonly<ReplyContentViewProps>) {
   if (isWritingPending) {
     return (
@@ -29,21 +34,28 @@ export default function ReplyContentView({
     );
   }
 
-  if (contentType === 'preview') {
-    return (
-      <div className='flex-1 overflow-auto p-4'>
-        <Markdown className='w-[calc(100%-3rem] prose prose-stone h-full break-words pr-[3rem]'>
-          {supportResult === null ? replyBody : supportResult}
-        </Markdown>
-      </div>
-    );
-  }
-
   if (contentType === 'question') {
     return (
       <div className='flex-1 overflow-auto p-4'>
         <Markdown className='w-[calc(100%-3rem] prose prose-stone h-full break-words pr-[3rem]'>
           {questionBody}
+        </Markdown>
+      </div>
+    );
+  }
+
+  if (supportResult !== null && !isAnimationBlocked) {
+    if (contentType === 'preview') {
+      return <AnimatedText text={supportResult} renderAsMarkdown={true} onComplete={onAnimationComplete} />;
+    }
+    return <AnimatedText text={supportResult} onComplete={onAnimationComplete} />;
+  }
+
+  if (contentType === 'preview') {
+    return (
+      <div className='flex-1 overflow-auto p-4'>
+        <Markdown className='w-[calc(100%-3rem] prose prose-stone h-full break-words pr-[3rem]'>
+          {supportResult === null ? replyBody : supportResult}
         </Markdown>
       </div>
     );
