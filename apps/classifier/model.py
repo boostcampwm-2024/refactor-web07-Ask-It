@@ -49,3 +49,33 @@ def predict(text: str, type: str) -> tuple[str, float]:
     predicted_probability = probabilities[0, predicted_label].item()
 
     return inv_label_map[predicted_label], predicted_probability
+
+
+def predict_batch(texts: list[str], type: str) -> list[tuple[str, float]]:
+    inputs = tokenizer(
+        texts,
+        return_tensors="pt",
+        truncation=True,
+        padding="max_length",
+        max_length=512,
+    )
+
+    model = models[type]
+    inv_label_map = inv_label_maps[type]
+
+    with torch.no_grad():
+        outputs = model(**inputs)
+
+    logits = outputs.logits
+    probabilities = torch.softmax(logits, dim=-1)
+    predicted_labels = torch.argmax(probabilities, dim=-1)
+    predicted_probabilities = probabilities[
+        torch.arange(probabilities.size(0)), predicted_labels
+    ]
+
+    return [
+        (inv_label_map[label], prob)
+        for label, prob in zip(
+            predicted_labels.tolist(), predicted_probabilities.tolist()
+        )
+    ]
