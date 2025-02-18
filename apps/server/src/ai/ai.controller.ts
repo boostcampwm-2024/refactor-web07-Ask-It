@@ -29,30 +29,42 @@ export class AiController {
 
     let resultData = '';
     let chunkData = '';
+    let buffer = '';
 
     aiStream.on('data', (chunk) => {
-      const rawData = chunk.toString();
-      const lines = rawData.split('\n');
+      buffer += chunk.toString();
+      const blocks = buffer.split('\n\n');
+      buffer = blocks.pop() || '';
 
-      for (const line of lines) {
-        if (line.startsWith('data:')) {
-          try {
-            const jsonData = JSON.parse(line.replace('data:', '').trim());
-            if (jsonData.message && jsonData.message.content) {
-              if (chunkData) {
-                res.write(JSON.stringify({ type: 'stream', content: chunkData }) + '\n');
-                resultData += chunkData;
-              }
-              chunkData = jsonData.message.content;
+      for (const block of blocks) {
+        const lines = block.split('\n');
+        for (let i = 0; i < lines.length; i++) {
+          const line = lines[i].trim();
+          if (line.startsWith('data:')) {
+            let dataStr = '';
+            if (line === 'data:' && i + 1 < lines.length) {
+              dataStr = lines[++i].trim();
+            } else {
+              dataStr = line.slice(5).trim();
             }
-          } catch (error) {}
+            try {
+              const jsonData = JSON.parse(dataStr);
+              if (jsonData.message && jsonData.message.content) {
+                if (chunkData) {
+                  res.write(JSON.stringify({ type: 'stream', content: chunkData }) + '\n');
+                  resultData += chunkData;
+                }
+                chunkData = jsonData.message.content;
+              }
+            } catch (error) {}
+          }
         }
       }
     });
 
     aiStream.on('end', () => {
       if (chunkData) {
-        res.write(JSON.stringify({ type: 'result', content: resultData + chunkData }) + '\n');
+        res.write(JSON.stringify({ type: 'result', content: chunkData }) + '\n');
       }
       res.end();
     });
