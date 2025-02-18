@@ -39,8 +39,6 @@ function CreateReplyModal({ question, reply }: Readonly<CreateReplyModalProps>) 
   const bodyLength = getContentBodyLength(supportResult ?? body);
   const isValidLength = isValidBodyLength(bodyLength);
 
-  console.log(!submitDisabled, isValidLength, contentType !== 'question', isAnimationComplete);
-
   const buttonEnabled = !submitDisabled && isValidLength && contentType !== 'question' && isAnimationComplete;
 
   const handleCreateOrUpdate = () => {
