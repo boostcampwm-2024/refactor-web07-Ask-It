@@ -1,4 +1,5 @@
 import { Roles } from '@common/roles/roles';
+import { AbuseState } from '@prisma/client';
 
 export const MOCK_DATE = new Date('2024-01-01T00:00:00.000Z');
 
@@ -16,6 +17,7 @@ export const MOCK_SAVED_CHAT = {
   createUserToken: 'mockToken',
   body: 'Test chat message',
   createdAt: MOCK_DATE,
+  abuse: AbuseState.PENDING,
   createUserTokenEntity: {
     user: { ...MOCK_USER },
   },
@@ -36,6 +38,7 @@ export const MOCK_SAVED_CHAT_NO_NICKNAME = {
   sessionId: 'session123',
   body: 'Test message',
   createdAt: new Date(),
+  abuse: AbuseState.PENDING,
 };
 
 export const MOCK_CHAT_DATA = [
@@ -45,6 +48,7 @@ export const MOCK_CHAT_DATA = [
     body: 'Message 1',
     createdAt: new Date(),
     sessionId: '123',
+    abuse: AbuseState.SAFE,
     createUserTokenEntity: {
       user: {
         userId: 1,
@@ -65,6 +69,7 @@ export const MOCK_CHAT_DATA = [
     body: 'Message 2',
     createdAt: new Date(),
     sessionId: '123',
+    abuse: AbuseState.BLOCKED,
     createUserTokenEntity: {
       user: {
         userId: 2,
@@ -88,6 +93,7 @@ export const MOCK_CHAT_DATA_NO_NICKNAME = [
     createUserToken: 'token1',
     createdAt: new Date(),
     sessionId: '123',
+    abuse: AbuseState.SAFE,
     createUserTokenEntity: {
       user: {
         userId: 1,
