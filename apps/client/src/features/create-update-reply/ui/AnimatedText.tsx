@@ -33,7 +33,7 @@ export default function AnimatedText({
   if (renderAsMarkdown) {
     return (
       <div className='h-full flex-1 overflow-auto p-4'>
-        <Markdown className='w-[calc(100%-3rem] prose prose-stone h-full max-h-full break-words pr-[3rem]'>
+        <Markdown className='prose prose-stone h-full max-h-full w-[calc(100%-3rem)] break-words pr-[3rem]'>
           {displayed}
         </Markdown>
       </div>
