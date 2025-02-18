@@ -34,16 +34,19 @@ export const GetChatsSwagger = () =>
               chattingId: 3593,
               nickname: '익명',
               content: 'gggg',
+              abuse: false,
             },
             {
               chattingId: 3592,
               nickname: 'jiho',
               content: 'asdfdasd',
+              abuse: false,
             },
             {
               chattingId: 3591,
               nickname: '익명',
               content: 'd',
+              abuse: true,
             },
           ],
         },
@@ -65,6 +68,10 @@ export const GetChatsSwagger = () =>
                 content: {
                   type: 'string',
                   description: '채팅 내용',
+                },
+                abuse: {
+                  type: 'boolean',
+                  description: '위험 여부 (true: 위험, false: 안전)',
                 },
               },
             },

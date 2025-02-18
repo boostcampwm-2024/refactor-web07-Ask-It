@@ -123,12 +123,19 @@ model ReplyLike {
   @@unique([replyId, createUserToken])
 }
 
+enum AbuseState {
+  PENDING
+  SAFE
+  BLOCKED
+}
+
 model Chatting {
-  chattingId      Int      @id @default(autoincrement()) @map("chatting_id")
-  createUserToken String   @map("create_user_token")
+  chattingId      Int         @id @default(autoincrement()) @map("chatting_id")
+  createUserToken String      @map("create_user_token")
   body            String
-  createdAt       DateTime @default(now()) @map("created_at")
-  sessionId       String   @map("session_id")
+  createdAt       DateTime    @default(now()) @map("created_at")
+  sessionId       String      @map("session_id")
+  abuse           AbuseState  @default(PENDING)
 
   session               Session          @relation("SessionChattings", fields: [sessionId], references: [sessionId])
   createUserTokenEntity UserSessionToken @relation("TokenChattings", fields: [createUserToken], references: [token])

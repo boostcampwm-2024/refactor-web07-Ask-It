@@ -1,4 +1,5 @@
 import { Test, TestingModule } from '@nestjs/testing';
+import { AbuseState } from '@prisma/client';
 
 import { ChatsRepository } from './chats.repository';
 import { ChatSaveDto, ChatsService } from './chats.service';
@@ -9,9 +10,12 @@ import {
   MOCK_SAVED_CHAT_NO_NICKNAME,
 } from './test-chats.mock';
 
+import { LoggerService } from '@logger/logger.service';
+
 describe('ChatsService', () => {
   let service: ChatsService;
   let chatsRepository: jest.Mocked<ChatsRepository>;
+  let fetchMock: jest.SpyInstance;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -22,6 +26,17 @@ describe('ChatsService', () => {
           useValue: {
             save: jest.fn(),
             getChatsForInfiniteScroll: jest.fn(),
+            getChatsForFilter: jest.fn(),
+            update: jest.fn(),
+          },
+        },
+        {
+          provide: LoggerService,
+          useValue: {
+            log: jest.fn(),
+            error: jest.fn(),
+            warn: jest.fn(),
+            debug: jest.fn(),
           },
         },
       ],
@@ -29,6 +44,13 @@ describe('ChatsService', () => {
 
     service = module.get<ChatsService>(ChatsService);
     chatsRepository = module.get(ChatsRepository);
+
+    fetchMock = jest.spyOn(global, 'fetch').mockImplementation(() =>
+      Promise.resolve({
+        ok: true,
+        text: () => Promise.resolve(JSON.stringify({ predicted: '일반어', probability: 0.9 })),
+      } as Response),
+    );
   });
 
   it('서비스가 정의되어 있어야 한다', () => {
@@ -51,6 +73,7 @@ describe('ChatsService', () => {
         chattingId: 1,
         nickname: 'TestUser',
         content: 'Test chat message',
+        abuse: false,
       });
     });
 
@@ -70,6 +93,7 @@ describe('ChatsService', () => {
         chattingId: 1,
         nickname: '익명',
         content: 'Test message',
+        abuse: false,
       });
     });
   });
@@ -85,8 +109,8 @@ describe('ChatsService', () => {
       const result = await service.getChatsForInfiniteScroll(sessionId, count, chatId);
 
       expect(result).toEqual([
-        { chattingId: 10, nickname: 'User1', content: 'Message 1' },
-        { chattingId: 9, nickname: 'User2', content: 'Message 2' },
+        { chattingId: 10, nickname: 'User1', content: 'Message 1', abuse: false },
+        { chattingId: 9, nickname: 'User2', content: 'Message 2', abuse: true },
       ]);
     });
 
@@ -99,7 +123,76 @@ describe('ChatsService', () => {
 
       const result = await service.getChatsForInfiniteScroll(sessionId, count, chatId);
 
-      expect(result).toEqual([{ chattingId: 10, nickname: '익명', content: 'Message 1' }]);
+      expect(result).toEqual([{ chattingId: 10, nickname: '익명', content: 'Message 1', abuse: false }]);
+    });
+  });
+
+  describe('detectAbuseBatch', () => {
+    it('새로운 채팅들을 필터링하고 상태를 업데이트해야 한다', async () => {
+      const SAFE_WORD = 'Hello';
+      const BAD_WORD = 'Bad word';
+
+      const mockChats = [
+        { ...MOCK_SAVED_CHAT, chattingId: 1, body: SAFE_WORD },
+        { ...MOCK_SAVED_CHAT, chattingId: 2, body: BAD_WORD },
+      ];
+
+      chatsRepository.getChatsForFilter.mockResolvedValue(mockChats);
+
+      fetchMock
+        .mockResolvedValueOnce({
+          ok: true,
+          text: () => Promise.resolve(JSON.stringify({ predicted: '일반어', probability: 0.9 })),
+        } as Response)
+        .mockResolvedValueOnce({
+          ok: true,
+          text: () => Promise.resolve(JSON.stringify({ predicted: '욕설', probability: 0.9 })),
+        } as Response);
+
+      await service.detectAbuseBatch();
+
+      expect(chatsRepository.update).toHaveBeenCalledWith(1, AbuseState.SAFE);
+      expect(chatsRepository.update).toHaveBeenCalledWith(2, AbuseState.BLOCKED);
+    });
+  });
+
+  describe('checkAbuse', () => {
+    it('욕설이 감지되면 true를 반환해야 한다', async () => {
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        text: () => Promise.resolve(JSON.stringify({ predicted: '욕설', probability: 0.9 })),
+      } as Response);
+
+      const result = await service.checkAbuse('욕설 내용');
+      expect(result).toBe(true);
+    });
+
+    it('일반어가 감지되면 false를 반환해야 한다', async () => {
+      fetchMock.mockResolvedValueOnce({
+        ok: true,
+        text: () => Promise.resolve(JSON.stringify({ predicted: '일반어', probability: 0.9 })),
+      } as Response);
+
+      const result = await service.checkAbuse('일반 내용');
+      expect(result).toBe(false);
+    });
+
+    it('API 요청이 실패하면 false를 반환해야 한다', async () => {
+      fetchMock.mockResolvedValueOnce({
+        ok: false,
+        status: 500,
+        statusText: 'Internal Server Error',
+      } as Response);
+
+      const result = await service.checkAbuse('테스트 내용');
+      expect(result).toBe(false);
+    });
+
+    it('네트워크 에러가 발생하면 false를 반환해야 한다', async () => {
+      fetchMock.mockRejectedValueOnce(new Error('Network error'));
+
+      const result = await service.checkAbuse('테스트 내용');
+      expect(result).toBe(false);
     });
   });
 });

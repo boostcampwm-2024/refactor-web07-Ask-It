@@ -128,4 +128,8 @@ export class SocketGateway implements OnGatewayConnection, OnGatewayDisconnect {
       participantCount: this.getParticipantCount(sessionId),
     });
   }
+
+  public broadcastAbuseChattings(sessionId: string, chattings: number[]) {
+    this.server.to(sessionId).emit(SOCKET_EVENTS.CHATTING_FILTERED, { chattingIds: chattings });
+  }
 }

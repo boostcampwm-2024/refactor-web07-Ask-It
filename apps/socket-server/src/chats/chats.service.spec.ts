@@ -2,12 +2,7 @@ import { Test, TestingModule } from '@nestjs/testing';
 
 import { ChatsRepository } from './chats.repository';
 import { ChatSaveDto, ChatsService } from './chats.service';
-import {
-  MOCK_CHAT_DATA,
-  MOCK_CHAT_DATA_NO_NICKNAME,
-  MOCK_SAVED_CHAT,
-  MOCK_SAVED_CHAT_NO_NICKNAME,
-} from './test-chats.mock';
+import { MOCK_SAVED_CHAT, MOCK_SAVED_CHAT_NO_NICKNAME } from './test-chats.mock';
 
 describe('ChatsService', () => {
   let service: ChatsService;
