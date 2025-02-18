@@ -44,7 +44,17 @@ import Redis from 'ioredis';
         });
       },
     },
+    {
+      provide: 'REDIS_RESTRICT_IP',
+      useFactory: () => {
+        return new Redis({
+          host: process.env.REDIS_HOST,
+          port: Number(process.env.REDIS_PORT),
+          db: 4,
+        });
+      },
+    },
   ],
-  exports: ['REDIS_SESSION', 'REDIS_TOKEN', 'REDIS_REFRESH_TOKEN', 'REDIS_RESTRICT_TOKEN'],
+  exports: ['REDIS_SESSION', 'REDIS_TOKEN', 'REDIS_REFRESH_TOKEN', 'REDIS_RESTRICT_TOKEN', 'REDIS_RESTRICT_IP'],
 })
 export class RedisModule {}
