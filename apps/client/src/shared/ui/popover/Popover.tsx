@@ -39,7 +39,7 @@ export default function Popover({ children, className, text, enabled, position =
     <div className={`${className} relative`} onMouseEnter={handleMouseEnter} onMouseLeave={handleMouseLeave}>
       {children}
       <div
-        className={`${positionClasses[position]} flex w-max items-center justify-center break-words rounded-md border bg-white p-2 text-sm shadow-md transition-opacity duration-200 ease-in-out ${actualVisible ? 'opacity-100' : 'opacity-0'}`}
+        className={`${positionClasses[position]} pointer-events-none flex w-max items-center justify-center break-words rounded-md border bg-white p-2 text-sm shadow-md transition-opacity duration-200 ease-in-out ${actualVisible ? 'opacity-100' : 'opacity-0'}`}
       >
         {text}
       </div>

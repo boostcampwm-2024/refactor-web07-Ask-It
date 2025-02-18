@@ -3,23 +3,6 @@ import { z } from 'zod';
 import { UserSchema } from '@/entities/session';
 import { QuestionSchema, ReplySchema } from '@/entities/session/model/qna.type';
 
-export type SocketEventType =
-  | 'questionCreated'
-  | 'questionUpdated'
-  | 'questionDeleted'
-  | 'questionLiked'
-  | 'replyCreated'
-  | 'replyUpdated'
-  | 'replyDeleted'
-  | 'replyLiked'
-  | 'createChat'
-  | 'chatMessage'
-  | 'chatError'
-  | 'invalidConnection'
-  | 'participantCountUpdated'
-  | 'hostChanged'
-  | 'sessionEnded';
-
 export const SocketEventTypeSchema = z.enum([
   'questionCreated',
   'questionUpdated',
@@ -36,6 +19,7 @@ export const SocketEventTypeSchema = z.enum([
   'participantCountUpdated',
   'hostChanged',
   'sessionEnded',
+  'chattingFiltered',
 ]);
 
 export const QuestionCreatedEventPayloadSchema = z.object({
@@ -98,6 +82,7 @@ export const ChatMessageEventPayloadSchema = z.object({
   chattingId: z.number(),
   content: z.string(),
   nickname: z.string(),
+  abuse: z.boolean(),
 });
 
 export const ChatErrorEventPayloadSchema = z.object({
@@ -113,6 +98,10 @@ export const HostChangedEventPayloadSchema = z.object({
   user: UserSchema,
 });
 
+export const ChattingFilteredEventPayloadSchema = z.object({
+  chattingIds: z.array(z.number()),
+});
+
 export type QuestionCreatedEventPayload = z.infer<typeof QuestionCreatedEventPayloadSchema>;
 export type QuestionUpdatedEventPayload = z.infer<typeof QuestionUpdatedEventPayloadSchema>;
 export type QuestionDeletedEventPayload = z.infer<typeof QuestionDeletedEventPayloadSchema>;
@@ -125,3 +114,4 @@ export type ChatMessageEventPayload = z.infer<typeof ChatMessageEventPayloadSche
 export type ChatErrorEventPayload = z.infer<typeof ChatErrorEventPayloadSchema>;
 export type ParticipantCountUpdatedEventPayload = z.infer<typeof ParticipantCountUpdatedEventPayloadSchema>;
 export type HostChangedEventPayload = z.infer<typeof HostChangedEventPayloadSchema>;
+export type ChattingFilteredEventPayload = z.infer<typeof ChattingFilteredEventPayloadSchema>;

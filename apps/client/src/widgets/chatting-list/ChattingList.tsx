@@ -1,11 +1,14 @@
 import { AnimatePresence, motion } from 'motion/react';
 import { useCallback, useEffect, useRef, useState } from 'react';
+import { RiRobot2Line } from 'react-icons/ri';
 import { useShallow } from 'zustand/react/shallow';
 
 import { getChattingList } from '@/features/get-chatting-list';
 import { useSocket } from '@/features/socket';
 
 import { ChattingMessage, useSessionStore } from '@/entities/session';
+
+import { useToastStore } from '@/shared/ui/toast';
 
 function ChattingList() {
   const { expired, chatting, participantCount, sessionId, sessionToken, addChattingToFront } = useSessionStore(
@@ -19,6 +22,8 @@ function ChattingList() {
     })),
   );
 
+  const addToast = useToastStore((state) => state.addToast);
+
   const [message, setMessage] = useState('');
   const [isBottom, setIsBottom] = useState(true);
   const userScrolling = useRef(false);
@@ -31,6 +36,8 @@ function ChattingList() {
   const prevHeightRef = useRef(0);
 
   const [isLoading, setIsLoading] = useState(false);
+
+  const [showAbuseMessage, setShowAbuseMessage] = useState(false);
 
   const checkScrollPosition = useCallback(() => {
     if (messagesEndRef.current) {
@@ -62,6 +69,15 @@ function ChattingList() {
     const newHeight = container.scrollHeight;
     const heightDiff = newHeight - prevHeightRef.current;
     container.scrollTop = heightDiff;
+  };
+
+  const toggleShowAbuseMessage = () => {
+    addToast({
+      type: 'INFO',
+      message: showAbuseMessage ? '클린봇 기능을 비활성화합니다.' : '클린봇 기능을 활성화합니다.',
+      duration: 3000,
+    });
+    setShowAbuseMessage((prev) => !prev);
   };
 
   useEffect(() => {
@@ -116,8 +132,18 @@ function ChattingList() {
         )}
       </div>
 
+      <button
+        className='fixed z-50 flex h-10 w-10 -translate-x-4 translate-y-14 items-center justify-center self-end rounded-full border bg-white p-2 shadow-md'
+        onClick={toggleShowAbuseMessage}
+      >
+        <RiRobot2Line size={32} />
+        {!showAbuseMessage && (
+          <span className='pointer-events-none absolute left-[-5%] top-1/2 h-px w-[110%] rotate-45 transform bg-[rgba(0,0,0,0.2)]' />
+        )}
+      </button>
+
       <div
-        className='inline-flex h-full w-full flex-col items-start justify-start overflow-y-auto overflow-x-hidden break-words p-2.5'
+        className='relative inline-flex h-full w-full flex-col items-start justify-start overflow-y-auto overflow-x-hidden break-words p-2.5'
         ref={messagesEndRef}
       >
         <AnimatePresence>
@@ -134,7 +160,7 @@ function ChattingList() {
           )}
         </AnimatePresence>
         {chatting.map((chat) => (
-          <ChattingMessage key={chat.chattingId} chat={chat} />
+          <ChattingMessage showAbuseMessage={showAbuseMessage} key={chat.chattingId} chat={chat} />
         ))}
       </div>
 
