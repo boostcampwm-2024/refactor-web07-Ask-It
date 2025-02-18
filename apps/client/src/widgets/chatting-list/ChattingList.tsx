@@ -132,19 +132,20 @@ function ChattingList() {
         )}
       </div>
 
+      <button
+        className='fixed z-50 flex h-10 w-10 -translate-x-4 translate-y-14 items-center justify-center self-end rounded-full border bg-white p-2 shadow-md'
+        onClick={toggleShowAbuseMessage}
+      >
+        <RiRobot2Line size={32} />
+        {!showAbuseMessage && (
+          <span className='pointer-events-none absolute left-[-5%] top-1/2 h-px w-[110%] rotate-45 transform bg-[rgba(0,0,0,0.2)]' />
+        )}
+      </button>
+
       <div
         className='relative inline-flex h-full w-full flex-col items-start justify-start overflow-y-auto overflow-x-hidden break-words p-2.5'
         ref={messagesEndRef}
       >
-        <button
-          className='absolute right-4 flex h-10 w-10 items-center justify-center rounded-full border p-2 shadow-md'
-          onClick={toggleShowAbuseMessage}
-        >
-          <RiRobot2Line size={32} />
-          {!showAbuseMessage && (
-            <span className='pointer-events-none absolute left-[-5%] top-1/2 h-px w-[110%] rotate-45 transform bg-[rgba(0,0,0,0.2)]' />
-          )}
-        </button>
         <AnimatePresence>
           {isLoading && (
             <motion.div
@@ -159,7 +160,7 @@ function ChattingList() {
           )}
         </AnimatePresence>
         {chatting.map((chat) => (
-          <ChattingMessage key={chat.chattingId} chat={chat} />
+          <ChattingMessage showAbuseMessage={showAbuseMessage} key={chat.chattingId} chat={chat} />
         ))}
       </div>
 
