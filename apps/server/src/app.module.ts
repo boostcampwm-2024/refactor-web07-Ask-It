@@ -1,7 +1,6 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { APP_FILTER } from '@nestjs/core';
-import { ScheduleModule } from '@nestjs/schedule';
 
 import { AiModule } from '@ai/ai.module';
 import { AuthModule } from '@auth/auth.module';
@@ -16,7 +15,6 @@ import { QuestionsModule } from '@questions/questions.module';
 import { RepliesModule } from '@replies/replies.module';
 import { SessionsModule } from '@sessions/sessions.module';
 import { SessionsAuthModule } from '@sessions-auth/sessions-auth.module';
-import { SocketModule } from '@socket/socket.module';
 import { UploadModule } from '@upload/upload.module';
 import { UsersModule } from '@users/users.module';
 
@@ -27,7 +25,6 @@ import { UsersModule } from '@users/users.module';
       isGlobal: true,
       envFilePath: '.env',
     }),
-    ScheduleModule.forRoot(),
     UsersModule,
     PrismaModule,
     SessionsModule,
@@ -36,7 +33,6 @@ import { UsersModule } from '@users/users.module';
     RepliesModule,
     AuthModule,
     UploadModule,
-    SocketModule,
     ChatsModule,
     LoggerModule,
     AiModule,
