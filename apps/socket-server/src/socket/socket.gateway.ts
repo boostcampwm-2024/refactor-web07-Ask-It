@@ -1,6 +1,3 @@
-import { ChatsService } from '@chats/chats.service';
-import { SessionTokenValidationGuard } from '@common/guards/session-token-validation.guard';
-import { LoggerService } from '@logger/logger.service';
 import {
   ConnectedSocket,
   MessageBody,
@@ -10,8 +7,12 @@ import {
   WebSocketGateway,
   WebSocketServer,
 } from '@nestjs/websockets';
-import { SOCKET_EVENTS } from '@socket/socket.constant';
 import { Server, Socket } from 'socket.io';
+
+import { ChatsService } from '@chats/chats.service';
+import { SessionTokenValidationGuard } from '@common/guards/session-token-validation.guard';
+import { LoggerService } from '@logger/logger.service';
+import { SOCKET_EVENTS } from '@socket/socket.constant';
 
 interface Client {
   sessionId: string;

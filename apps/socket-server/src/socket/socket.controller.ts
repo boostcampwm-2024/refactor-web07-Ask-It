@@ -1,8 +1,9 @@
 import { Body, Controller, Post } from '@nestjs/common';
-import { BroadcastEventDto } from '@socket/dto/broadcast-event.dto';
-import { SocketGateway } from '@socket/socket.gateway';
 
 import { AbuseChattingDto } from './dto/abuse-chatting-event.dto';
+
+import { BroadcastEventDto } from '@socket/dto/broadcast-event.dto';
+import { SocketGateway } from '@socket/socket.gateway';
 
 @Controller('socket')
 export class SocketController {
