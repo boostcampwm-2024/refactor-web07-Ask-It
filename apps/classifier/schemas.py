@@ -1,27 +1,29 @@
 from pydantic import BaseModel
+from typing import List
 
 
 class SlangPredictionRequest(BaseModel):
-    input: str
+    inputs: List[str]
 
     class Config:
         json_schema_extra = {
             "example": {
-                "input": "X같네",
+                "inputs": ["X같네"],
             }
         }
 
 
-class SlangPredictionResponse(BaseModel):
+class SlangPredictionItem(BaseModel):
     predicted: str
     probability: float
 
+
+class SlangPredictionResponse(BaseModel):
+    predictions: List[SlangPredictionItem]
+
     class Config:
         json_schema_extra = {
-            "example": {
-                "predicted": "욕설",
-                "probability": 0.99,
-            }
+            "example": {"predictions": [{"predicted": "욕설", "probability": 0.99}]}
         }
 
 
