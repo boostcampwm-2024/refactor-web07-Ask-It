@@ -133,7 +133,7 @@ function ChattingList() {
       </div>
 
       <button
-        className='fixed z-50 flex h-10 w-10 -translate-x-4 translate-y-14 items-center justify-center self-end rounded-full border bg-white p-2 shadow-md'
+        className='fixed z-10 flex h-10 w-10 -translate-x-4 translate-y-14 items-center justify-center self-end rounded-full border bg-white p-2 shadow-md'
         onClick={toggleShowAbuseMessage}
       >
         <RiRobot2Line size={32} />
