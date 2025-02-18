@@ -23,7 +23,7 @@ function CreateReplyModal({ question, reply }: Readonly<CreateReplyModalProps>) 
   const {
     supportType,
     supportResult,
-    requestEnable,
+    isPending,
     setSupportType,
     replyImprovement,
     retryReplyImprovement,
@@ -31,12 +31,17 @@ function CreateReplyModal({ question, reply }: Readonly<CreateReplyModalProps>) 
     reject,
   } = useReplyWritingSupport({ questionBody: question?.body ?? '', body, handleAccept: setBody });
 
+  const [isAnimationBlocked, setIsAnimationBlocked] = useState(false);
+  const [isAnimationComplete, setIsAnimationComplete] = useState(true);
+
   const [contentType, setContentType] = useState<ContentType>('reply');
 
   const bodyLength = getContentBodyLength(supportResult ?? body);
   const isValidLength = isValidBodyLength(bodyLength);
 
-  const buttonEnabled = !submitDisabled && isValidLength && contentType !== 'question';
+  console.log(!submitDisabled, isValidLength, contentType !== 'question', isAnimationComplete);
+
+  const buttonEnabled = !submitDisabled && isValidLength && contentType !== 'question' && isAnimationComplete;
 
   const handleCreateOrUpdate = () => {
     if (buttonEnabled && isValidLength) handleSubmit();
@@ -45,12 +50,14 @@ function CreateReplyModal({ question, reply }: Readonly<CreateReplyModalProps>) 
   const handleReplyImprovement = () => {
     if (buttonEnabled && isValidLength && question && sessionId && token) {
       setSupportType('IMPROVE_REPLY');
+      setIsAnimationComplete(false);
       replyImprovement({ token, sessionId, body, originalQuestion: question.body });
     }
   };
 
   const handleRetry = (requirements: string) => {
     if (sessionId && token && question && supportResult && supportType) {
+      setIsAnimationComplete(false);
       retryReplyImprovement({
         token,
         sessionId,
@@ -66,12 +73,17 @@ function CreateReplyModal({ question, reply }: Readonly<CreateReplyModalProps>) 
     <div className='relative flex h-[20rem] w-[40rem] flex-col rounded-lg bg-gray-50 p-4'>
       <div className='flex h-[15rem] flex-1 rounded border bg-white'>
         <ReplyContentView
+          isAnimationBlocked={isAnimationBlocked}
           contentType={contentType}
           questionBody={question?.body ?? '질문을 찾을 수 없습니다.'}
           replyBody={body}
           onReplyBodyChange={setBody}
           supportResult={supportResult}
-          isWritingPending={!requestEnable}
+          isWritingPending={isPending && supportResult === null}
+          onAnimationComplete={() => {
+            setTimeout(() => setIsAnimationBlocked(false), 200);
+            setIsAnimationComplete(true);
+          }}
         />
         <CreateReplyModalSide bodyLength={bodyLength} contentType={contentType} setContentType={setContentType} />
       </div>
@@ -82,9 +94,18 @@ function CreateReplyModal({ question, reply }: Readonly<CreateReplyModalProps>) 
         supportResult={supportResult}
         handleCreateOrUpdate={handleCreateOrUpdate}
         handleReplyImprovement={handleReplyImprovement}
-        handleRetry={handleRetry}
-        accept={accept}
-        reject={reject}
+        handleRetry={(requirements) => {
+          setIsAnimationBlocked(false);
+          handleRetry(requirements);
+        }}
+        accept={() => {
+          setIsAnimationBlocked(false);
+          accept();
+        }}
+        reject={() => {
+          setIsAnimationBlocked(false);
+          reject();
+        }}
       />
     </div>
   );

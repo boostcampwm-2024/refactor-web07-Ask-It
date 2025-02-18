@@ -1,9 +1,14 @@
-import { useMutation } from '@tanstack/react-query';
 import { useState } from 'react';
 
 import { AIRequestType, postAIHistory } from '@/features/ai-history';
-import { postRetryReplyImprovement } from '@/features/create-update-reply/api/improve-reply-retry.api';
-import { postReplyImprovement } from '@/features/create-update-reply/api/improve-reply.api';
+import {
+  postRetryReplyImprovement,
+  RetryReplyImprovementRequest,
+} from '@/features/create-update-reply/api/improve-reply-retry.api';
+import {
+  postReplyImprovementStream,
+  ReplyImprovementRequest,
+} from '@/features/create-update-reply/api/improve-reply.api';
 
 export const useReplyWritingSupport = ({
   questionBody,
@@ -17,19 +22,34 @@ export const useReplyWritingSupport = ({
   const [supportResult, setSupportResult] = useState<string | null>(null);
   const [supportType, setSupportType] = useState<AIRequestType | null>(null);
 
-  const { mutate: replyImprovement, isPending: isReplyImprovementInProgress } = useMutation({
-    mutationFn: postReplyImprovement,
-    onSuccess: (data) => {
-      setSupportResult(data.result.reply);
-    },
-  });
+  const [isPending, setIsPending] = useState(false);
 
-  const { mutate: retryReplyImprovement, isPending: isRetryReplyImprovementInProgress } = useMutation({
-    mutationFn: postRetryReplyImprovement,
-    onSuccess: (data) => {
-      setSupportResult(data.result.reply);
-    },
-  });
+  const replyImprovement = (body: ReplyImprovementRequest) => {
+    setIsPending(true);
+    postReplyImprovementStream(
+      body,
+      ({ content }) => {
+        setSupportResult((prev) => (prev ?? '') + content);
+      },
+      () => {
+        setIsPending(false);
+      },
+    );
+  };
+
+  const retryReplyImprovement = (body: RetryReplyImprovementRequest) => {
+    setSupportResult(null);
+    setIsPending(true);
+    postRetryReplyImprovement(
+      body,
+      ({ content }) => {
+        setSupportResult((prev) => (prev ?? '') + content);
+      },
+      () => {
+        setIsPending(false);
+      },
+    );
+  };
 
   const request = `# Q)\n${questionBody}\n\n# A)\n${body}`;
 
@@ -58,8 +78,6 @@ export const useReplyWritingSupport = ({
     }
   };
 
-  const requestEnable = !isReplyImprovementInProgress && !isRetryReplyImprovementInProgress;
-
   return {
     replyImprovement,
     retryReplyImprovement,
@@ -69,6 +87,6 @@ export const useReplyWritingSupport = ({
     setSupportType,
     accept,
     reject,
-    requestEnable,
+    isPending,
   };
 };
