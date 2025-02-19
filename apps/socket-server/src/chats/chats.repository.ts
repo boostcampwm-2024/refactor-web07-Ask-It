@@ -1,8 +1,8 @@
 import { Injectable } from '@nestjs/common';
+import { AbuseState } from '@prisma/client';
+import { PrismaService } from '@prisma-alias/prisma.service';
 
 import { ChatSaveDto } from './chats.service';
-
-import { PrismaService } from '@prisma-alias/prisma.service';
 
 @Injectable()
 export class ChatsRepository {
@@ -19,6 +19,14 @@ export class ChatsRepository {
       },
     });
   }
+
+  async update(chattingId: number, abuse: AbuseState) {
+    await this.prisma.chatting.update({
+      where: { chattingId },
+      data: { abuse },
+    });
+  }
+
   async getChatsForInfiniteScroll(sessionId: string, count: number, chatId?: number) {
     return await this.prisma.chatting.findMany({
       where: {
@@ -34,6 +42,16 @@ export class ChatsRepository {
       },
       orderBy: {
         chattingId: 'desc',
+      },
+      take: count,
+    });
+  }
+
+  async getChatsForFilter(count: number, chatId: number) {
+    return await this.prisma.chatting.findMany({
+      where: {
+        chattingId: { gt: chatId },
+        abuse: AbuseState.PENDING,
       },
       take: count,
     });
