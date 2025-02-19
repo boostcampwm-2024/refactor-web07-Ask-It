@@ -19,4 +19,5 @@ export const SOCKET_EVENTS = {
 
   HOST_CHANGED: 'hostChanged',
   SESSION_ENDED: 'sessionEnded',
+  CHATTING_FILTERED: 'chattingFiltered',
 } as const;
