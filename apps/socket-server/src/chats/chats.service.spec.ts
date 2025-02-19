@@ -1,4 +1,3 @@
-import { LoggerService } from '@logger/logger.service';
 import { Test, TestingModule } from '@nestjs/testing';
 import { AbuseState } from '@prisma/client';
 
@@ -6,6 +5,8 @@ import { ChatEvents } from './chat.event';
 import { ChatsRepository } from './chats.repository';
 import { ChatSaveDto, ChatsService } from './chats.service';
 import { MOCK_SAVED_CHAT, MOCK_SAVED_CHAT_NO_NICKNAME } from './test-chats.mock';
+
+import { LoggerService } from '@logger/logger.service';
 
 describe('ChatsService', () => {
   let service: ChatsService;

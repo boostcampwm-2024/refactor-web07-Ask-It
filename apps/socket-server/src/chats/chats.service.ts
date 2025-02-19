@@ -1,10 +1,11 @@
-import { LoggerService } from '@logger/logger.service';
 import { Injectable } from '@nestjs/common';
 import { Cron, CronExpression } from '@nestjs/schedule';
 import { AbuseState, Chatting } from '@prisma/client';
 
 import { ChatEvents } from './chat.event';
 import { ChatsRepository } from './chats.repository';
+
+import { LoggerService } from '@logger/logger.service';
 
 export interface ChatSaveDto {
   sessionId: string;

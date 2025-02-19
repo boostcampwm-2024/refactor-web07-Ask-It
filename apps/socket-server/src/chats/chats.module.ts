@@ -1,11 +1,12 @@
-import { LoggerModule } from '@logger/logger.module';
 import { Module } from '@nestjs/common';
-import { PrismaModule } from '@prisma-alias/prisma.module';
 
 import { ChatEvents } from './chat.event';
 import { ChatsController } from './chats.controller';
 import { ChatsRepository } from './chats.repository';
 import { ChatsService } from './chats.service';
+
+import { LoggerModule } from '@logger/logger.module';
+import { PrismaModule } from '@prisma-alias/prisma.module';
 
 @Module({
   imports: [PrismaModule, LoggerModule],

@@ -1,8 +1,9 @@
 import { Injectable } from '@nestjs/common';
 import { AbuseState } from '@prisma/client';
-import { PrismaService } from '@prisma-alias/prisma.service';
 
 import { ChatSaveDto } from './chats.service';
+
+import { PrismaService } from '@prisma-alias/prisma.service';
 
 @Injectable()
 export class ChatsRepository {
