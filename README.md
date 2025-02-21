@@ -36,5 +36,5 @@
 
 ## 시스템 아키텍처
 
-![architecture](https://github.com/user-attachments/assets/837528b4-1aac-491f-a964-5b0e9953958f)
+![architecture](https://github.com/user-attachments/assets/832bff13-48d3-4d01-9e60-5bca00ca28b9)
 
