@@ -10,6 +10,8 @@ import {
   ReplyImprovementRequest,
 } from '@/features/create-update-reply/api/improve-reply.api';
 
+import { useToastStore } from '@/shared/ui/toast';
+
 export const useReplyWritingSupport = ({
   questionBody,
   body,
@@ -24,7 +26,9 @@ export const useReplyWritingSupport = ({
 
   const [isPending, setIsPending] = useState(false);
 
-  const replyImprovement = (body: ReplyImprovementRequest) => {
+  const addToast = useToastStore((state) => state.addToast);
+
+  const replyImprovement = (body: ReplyImprovementRequest, onComplete: () => void) => {
     setIsPending(true);
     postReplyImprovementStream(
       body,
@@ -32,12 +36,22 @@ export const useReplyWritingSupport = ({
         setSupportResult((prev) => (prev ?? '') + content);
       },
       () => {
+        onComplete();
         setIsPending(false);
+      },
+      () => {
+        onComplete();
+        setIsPending(false);
+        addToast({
+          type: 'ERROR',
+          message: '3초 뒤에 다시 시도해주세요.',
+          duration: 3000,
+        });
       },
     );
   };
 
-  const retryReplyImprovement = (body: RetryReplyImprovementRequest) => {
+  const retryReplyImprovement = (body: RetryReplyImprovementRequest, onComplete: () => void) => {
     setSupportResult(null);
     setIsPending(true);
     postRetryReplyImprovement(
@@ -46,7 +60,17 @@ export const useReplyWritingSupport = ({
         setSupportResult((prev) => (prev ?? '') + content);
       },
       () => {
+        onComplete();
         setIsPending(false);
+      },
+      () => {
+        onComplete();
+        setIsPending(false);
+        addToast({
+          type: 'ERROR',
+          message: '3초 뒤에 다시 시도해주세요.',
+          duration: 3000,
+        });
       },
     );
   };

@@ -131,7 +131,11 @@ export default function CreateQuestionModalFooter({
             <div className='text-sm font-bold text-white'>질문 개선하기</div>
           </Button>
           <div className='flex flex-row gap-2'>
-            <Button className='bg-gray-500' onClick={closeModal}>
+            <Button
+              className={`${buttonEnabled ? 'bg-gray-500' : 'cursor-not-allowed bg-gray-300'}`}
+              onClick={closeModal}
+              disabled={!buttonEnabled}
+            >
               <div className='text-sm font-bold text-white'>취소하기</div>
             </Button>
             <Button
