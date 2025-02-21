@@ -49,21 +49,24 @@ function CreateReplyModal({ question, reply }: Readonly<CreateReplyModalProps>) 
     if (buttonEnabled && isValidLength && question && sessionId && token) {
       setSupportType('IMPROVE_REPLY');
       setIsAnimationComplete(false);
-      replyImprovement({ token, sessionId, body, originalQuestion: question.body });
+      replyImprovement({ token, sessionId, body, originalQuestion: question.body }, () => setIsAnimationComplete(true));
     }
   };
 
   const handleRetry = (requirements: string) => {
     if (sessionId && token && question && supportResult && supportType) {
       setIsAnimationComplete(false);
-      retryReplyImprovement({
-        token,
-        sessionId,
-        originalQuestion: question.body,
-        original: body,
-        received: supportResult,
-        retryMessage: requirements,
-      });
+      retryReplyImprovement(
+        {
+          token,
+          sessionId,
+          originalQuestion: question.body,
+          original: body,
+          received: supportResult,
+          retryMessage: requirements,
+        },
+        () => setIsAnimationComplete(true),
+      );
     }
   };
 

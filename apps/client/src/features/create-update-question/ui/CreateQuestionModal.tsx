@@ -50,20 +50,23 @@ function CreateQuestionModal({ question }: Readonly<CreateQuestionModalProps>) {
     if (buttonEnabled && isValidLength && sessionId && token) {
       setSupportType('IMPROVE_QUESTION');
       setIsAnimationComplete(false);
-      questionImprovement({ token, sessionId, body });
+      questionImprovement({ token, sessionId, body }, () => setIsAnimationComplete(true));
     }
   };
 
   const handleRetry = (requirements: string) => {
     if (sessionId && token && supportResult && supportType) {
       setIsAnimationComplete(false);
-      retryQuestionImprovement({
-        token,
-        sessionId,
-        original: body,
-        received: supportResult,
-        retryMessage: requirements,
-      });
+      retryQuestionImprovement(
+        {
+          token,
+          sessionId,
+          original: body,
+          received: supportResult,
+          retryMessage: requirements,
+        },
+        () => setIsAnimationComplete(true),
+      );
     }
   };
 

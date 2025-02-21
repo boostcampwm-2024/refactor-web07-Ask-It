@@ -21,6 +21,12 @@ export const postRetryQuestionImprovement = async (
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(RetryImproveQuestionRequestSchema.parse(body)),
   });
+
+  if (response.status === 403) {
+    if (onError) onError(new Error('Forbidden'));
+    return;
+  }
+
   if (!response.body) throw new Error('ReadableStream not supported');
 
   const reader = response.body.getReader();
