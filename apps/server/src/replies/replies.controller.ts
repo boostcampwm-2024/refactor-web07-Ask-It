@@ -7,7 +7,6 @@ import {
   Patch,
   Post,
   Query,
-  Req,
   UseGuards,
   UseInterceptors,
 } from '@nestjs/common';
@@ -24,9 +23,12 @@ import { DeleteReplySwagger } from './swagger/delete-reply.swagger';
 import { ToggleReplyLikeSwagger } from './swagger/toggle-reply.swagger';
 import { UpdateReplySwagger } from './swagger/update-reply.swagger';
 
+import { RequirePermission } from '@common/decorators/require-permission.decorator';
+import { PermissionOrOwnershipGuard } from '@common/guards/permission-or-ownership.guard';
 import { SessionTokenValidationGuard } from '@common/guards/session-token-validation.guard';
 import { TransformInterceptor } from '@common/interceptors/transform.interceptor';
 import { requestSocket } from '@common/request-socket';
+import { Permissions } from '@common/roles/permissions';
 import { QuestionExistenceGuard } from '@questions/guards/question-existence.guard';
 import { SOCKET_EVENTS } from '@socket/socket.constant';
 import { BaseDto } from '@src/common/base.dto';
@@ -67,10 +69,11 @@ export class RepliesController {
 
   @Delete(':replyId')
   @DeleteReplySwagger()
-  @UseGuards(SessionTokenValidationGuard, ReplyExistenceGuard)
-  async delete(@Param('replyId', ParseIntPipe) replyId: number, @Query() data: BaseDto, @Req() request: Request) {
+  @RequirePermission(Permissions.DELETE_REPLY)
+  @UseGuards(SessionTokenValidationGuard, ReplyExistenceGuard, PermissionOrOwnershipGuard)
+  async delete(@Param('replyId', ParseIntPipe) replyId: number, @Query() data: BaseDto) {
     const { sessionId, token } = data;
-    const { questionId } = await this.repliesService.deleteReply(replyId, token, request['reply']);
+    const { questionId } = await this.repliesService.deleteReply(replyId);
     const resultForOther = { replyId, questionId };
     await requestSocket({ sessionId, token, event: SOCKET_EVENTS.REPLY_DELETED, content: resultForOther });
     return {};

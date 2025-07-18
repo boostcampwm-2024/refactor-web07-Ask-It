@@ -6,8 +6,6 @@ import { CreateQuestionDto } from './dto/create-question.dto';
 import { GetQuestionDto } from './dto/get-question.dto';
 import { QuestionsRepository } from './questions.repository';
 
-import { BaseDto } from '@common/base.dto';
-import { Permissions } from '@common/roles/permissions';
 import {
   UpdateQuestionBodyDto,
   UpdateQuestionClosedDto,
@@ -134,41 +132,18 @@ export class QuestionsService {
     return await this.questionRepository.updateBody(questionId, body);
   }
 
-  async deleteQuestion(questionId: number, question: Question, { token }: BaseDto) {
-    const { role } = await this.sessionAuthRepository.findByTokenWithPermissions(token);
-    const granted = role.permissions.some(({ permissionId }) => permissionId === Permissions.DELETE_QUESTION);
-
-    if (!granted) {
-      if (question.createUserToken !== token) {
-        throw new ForbiddenException('권한이 없습니다.');
-      }
-      const isReplied = await this.repliesRepository.findReplyByQuestionId(questionId);
-      if (isReplied) {
-        throw new ForbiddenException('답변이 달린 질문은 삭제할 수 없습니다.');
-      }
-      if (question.closed) {
-        throw new ForbiddenException('이미 완료된 답변은 삭제할 수 없습니다.');
-      }
-    }
+  async deleteQuestion(questionId: number) {
     return await this.questionRepository.deleteQuestion(questionId);
   }
 
   async updateQuestionPinned(questionId: number, updateQuestionPinnedDto: UpdateQuestionPinnedDto) {
-    const { token, pinned } = updateQuestionPinnedDto;
-    const { role } = await this.sessionAuthRepository.findByTokenWithPermissions(token);
-    const granted = role.permissions.some(({ permissionId }) => permissionId === Permissions.PIN_QUESTION);
-    if (!granted) throw new ForbiddenException('호스트만 이 작업을 수행할 수 있습니다.');
-
+    const { pinned } = updateQuestionPinnedDto;
     return await this.questionRepository.updatePinned(questionId, pinned);
   }
 
   async updateQuestionClosed(questionId: number, updateQuestionClosedDto: UpdateQuestionClosedDto) {
-    const { token, closed } = updateQuestionClosedDto;
+    const { closed } = updateQuestionClosedDto;
     if (!closed) throw new ForbiddenException('이미 완료된 답변입니다.');
-
-    const { role } = await this.sessionAuthRepository.findByTokenWithPermissions(token);
-    const granted = role.permissions.some(({ permissionId }) => permissionId === Permissions.CLOSE_QUESTION);
-    if (!granted) throw new ForbiddenException('호스트만 이 작업을 수행할 수 있습니다.');
 
     return await this.questionRepository.updateClosed(questionId, closed);
   }
