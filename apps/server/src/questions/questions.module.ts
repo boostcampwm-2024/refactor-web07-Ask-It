@@ -4,6 +4,7 @@ import { QuestionsController } from './questions.controller';
 import { QuestionsRepository } from './questions.repository';
 import { QuestionsService } from './questions.service';
 
+import { PermissionModule } from '@common/guards/permission.module';
 import { SessionTokenModule } from '@common/guards/session-token.module';
 import { PrismaModule } from '@prisma-alias/prisma.module';
 import { QuestionExistenceGuard } from '@questions/guards/question-existence.guard';
@@ -11,7 +12,7 @@ import { QuestionOwnershipGuard } from '@questions/guards/question-ownership.gua
 import { RepliesRepository } from '@replies/replies.repository';
 
 @Module({
-  imports: [PrismaModule, SessionTokenModule],
+  imports: [PrismaModule, SessionTokenModule, PermissionModule],
   controllers: [QuestionsController],
   providers: [QuestionsService, QuestionsRepository, QuestionExistenceGuard, QuestionOwnershipGuard, RepliesRepository],
   exports: [QuestionExistenceGuard, QuestionsRepository],

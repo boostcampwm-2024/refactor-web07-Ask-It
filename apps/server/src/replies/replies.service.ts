@@ -1,11 +1,9 @@
-import { ForbiddenException, Injectable } from '@nestjs/common';
-import { Reply } from '@prisma/client';
+import { Injectable } from '@nestjs/common';
 
 import { CreateReplyDto } from './dto/create-reply.dto';
 import { UpdateReplyBodyDto } from './dto/update-reply.dto';
 import { RepliesRepository } from './replies.repository';
 
-import { Permissions } from '@common/roles/permissions';
 import { Roles } from '@common/roles/roles';
 import { SessionsAuthRepository } from '@sessions-auth/sessions-auth.repository';
 
@@ -38,12 +36,7 @@ export class RepliesService {
     return await this.repliesRepository.updateBody(replyId, body);
   }
 
-  async deleteReply(replyId: number, token: string, reply: Reply) {
-    const { role } = await this.sessionAuthRepository.findByTokenWithPermissions(token);
-    const granted = role.permissions.some(({ permissionId }) => permissionId === Permissions.DELETE_REPLY);
-
-    if (!granted && reply.createUserToken !== token) throw new ForbiddenException('권한이 없습니다.');
-
+  async deleteReply(replyId: number) {
     return await this.repliesRepository.deleteReply(replyId);
   }
 

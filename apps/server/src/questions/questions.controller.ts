@@ -23,9 +23,13 @@ import { GetQuestionSwagger } from './swagger/get-question.swagger';
 import { ToggleQuestionLikeSwagger } from './swagger/toggle-question.swagger';
 
 import { BaseDto } from '@common/base.dto';
+import { RequirePermission } from '@common/decorators/require-permission.decorator';
+import { PermissionOrOwnershipGuard } from '@common/guards/permission-or-ownership.guard';
+import { PermissionGuard } from '@common/guards/permission.guard';
 import { SessionTokenValidationGuard } from '@common/guards/session-token-validation.guard';
 import { TransformInterceptor } from '@common/interceptors/transform.interceptor';
 import { requestSocket } from '@common/request-socket';
+import { Permissions } from '@common/roles/permissions';
 import {
   UpdateQuestionBodyDto,
   UpdateQuestionClosedDto,
@@ -92,10 +96,11 @@ export class QuestionsController {
 
   @Delete(':questionId')
   @DeleteQuestionSwagger()
-  @UseGuards(SessionTokenValidationGuard, QuestionExistenceGuard)
-  async deleteQuestion(@Param('questionId', ParseIntPipe) questionId: number, @Query() data: BaseDto, @Req() req: any) {
+  @RequirePermission(Permissions.DELETE_QUESTION)
+  @UseGuards(SessionTokenValidationGuard, QuestionExistenceGuard, PermissionOrOwnershipGuard)
+  async deleteQuestion(@Param('questionId', ParseIntPipe) questionId: number, @Query() data: BaseDto) {
     const { sessionId, token } = data;
-    await this.questionsService.deleteQuestion(questionId, req.question, data);
+    await this.questionsService.deleteQuestion(questionId);
     const resultForOther = { questionId };
     const event = SOCKET_EVENTS.QUESTION_DELETED;
     await requestSocket({ sessionId, token, event, content: resultForOther });
@@ -105,7 +110,8 @@ export class QuestionsController {
   @Patch(':questionId/pinned')
   @UpdateQuestionPinnedSwagger()
   @ApiBody({ type: UpdateQuestionPinnedDto })
-  @UseGuards(SessionTokenValidationGuard, QuestionExistenceGuard)
+  @RequirePermission(Permissions.PIN_QUESTION)
+  @UseGuards(SessionTokenValidationGuard, QuestionExistenceGuard, PermissionGuard)
   async updateQuestionPinned(
     @Param('questionId', ParseIntPipe) questionId: number,
     @Body() updateQuestionPinnedDto: UpdateQuestionPinnedDto,
@@ -121,7 +127,8 @@ export class QuestionsController {
   @Patch(':questionId/closed')
   @UpdateQuestionClosedSwagger()
   @ApiBody({ type: UpdateQuestionClosedDto })
-  @UseGuards(SessionTokenValidationGuard, QuestionExistenceGuard)
+  @RequirePermission(Permissions.CLOSE_QUESTION)
+  @UseGuards(SessionTokenValidationGuard, QuestionExistenceGuard, PermissionGuard)
   async updateQuestionClosed(
     @Param('questionId', ParseIntPipe) questionId: number,
     @Body() updateQuestionClosedDto: UpdateQuestionClosedDto,

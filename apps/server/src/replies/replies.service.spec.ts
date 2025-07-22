@@ -1,22 +1,10 @@
-import { ForbiddenException } from '@nestjs/common';
 import { Test, TestingModule } from '@nestjs/testing';
-import { Reply } from '@prisma/client';
 
 import { CreateReplyDto } from './dto/create-reply.dto';
 import { UpdateReplyBodyDto } from './dto/update-reply.dto';
 import { RepliesRepository } from './replies.repository';
 import { RepliesService } from './replies.service';
-import {
-  MOCK_CREATED_REPLY,
-  MOCK_DATE,
-  MOCK_REPLY_LIKE,
-  MOCK_REPLY_WITH_ENTITY,
-  MOCK_SESSION_AUTH_NO_PERM,
-  MOCK_SESSION_AUTH_OTHER,
-  MOCK_SESSION_AUTH_OWNER,
-  MOCK_SESSION_AUTH_WITH_DELETE,
-  MOCK_UPDATED_REPLY,
-} from './test-replies-service.mock';
+import { MOCK_DATE, MOCK_REPLY_LIKE, MOCK_REPLY_WITH_ENTITY, MOCK_UPDATED_REPLY } from './test-replies-service.mock';
 
 import { SessionsRepository } from '@sessions/sessions.repository';
 import { SessionsAuthRepository } from '@sessions-auth/sessions-auth.repository';
@@ -24,7 +12,6 @@ import { SessionsAuthRepository } from '@sessions-auth/sessions-auth.repository'
 describe('RepliesService', () => {
   let service: RepliesService;
   let repliesRepository: jest.Mocked<RepliesRepository>;
-  let sessionAuthRepository: jest.Mocked<SessionsAuthRepository>;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
@@ -61,7 +48,6 @@ describe('RepliesService', () => {
 
     service = module.get<RepliesService>(RepliesService);
     repliesRepository = module.get(RepliesRepository);
-    sessionAuthRepository = module.get(SessionsAuthRepository);
   });
 
   it('서비스가 정의되어 있어야 한다', () => {
@@ -116,47 +102,24 @@ describe('RepliesService', () => {
   });
 
   describe('deleteReply', () => {
-    const replyId = 1;
-    const sampleReply: Reply = {
-      replyId,
-      body: 'Test Body',
-      createUserToken: 'ownerToken',
-      createdAt: new Date(),
-      deleted: false,
-      questionId: 1,
-      sessionId: '123',
-    };
-
-    it('DELETE_REPLY 권한이 있으면 삭제 가능', async () => {
-      sessionAuthRepository.findByTokenWithPermissions.mockResolvedValue(MOCK_SESSION_AUTH_WITH_DELETE as any);
-      repliesRepository.deleteReply.mockResolvedValue(undefined);
-
-      await service.deleteReply(replyId, 'hasDeleteToken', sampleReply);
-
-      expect(sessionAuthRepository.findByTokenWithPermissions).toHaveBeenCalledWith('hasDeleteToken');
-      expect(repliesRepository.deleteReply).toHaveBeenCalledWith(replyId);
-    });
-
-    it('권한 없어도 소유자 토큰이면 삭제 가능', async () => {
-      sessionAuthRepository.findByTokenWithPermissions.mockResolvedValue(MOCK_SESSION_AUTH_OWNER as any);
-      repliesRepository.deleteReply.mockResolvedValue(undefined);
-
-      await service.deleteReply(replyId, 'token', {
-        ...sampleReply,
+    it('답글을 삭제하고 삭제된 답글 정보를 반환해야 한다', async () => {
+      const replyId = 1;
+      const mockDeletedReply = {
+        replyId: 1,
         createUserToken: 'token',
-      });
+        sessionId: 'session123',
+        questionId: 1,
+        body: 'Test reply',
+        createdAt: new Date(),
+        deleted: true,
+      };
 
-      expect(sessionAuthRepository.findByTokenWithPermissions).toHaveBeenCalledWith('token');
+      repliesRepository.deleteReply.mockResolvedValue(mockDeletedReply);
+
+      const result = await service.deleteReply(replyId);
+
       expect(repliesRepository.deleteReply).toHaveBeenCalledWith(replyId);
-    });
-
-    it('권한도 없고 소유자도 아니면 ForbiddenException', async () => {
-      sessionAuthRepository.findByTokenWithPermissions.mockResolvedValue(MOCK_SESSION_AUTH_NO_PERM as any);
-
-      await expect(service.deleteReply(replyId, 'noPermToken', sampleReply)).rejects.toThrow(ForbiddenException);
-
-      expect(sessionAuthRepository.findByTokenWithPermissions).toHaveBeenCalledWith('noPermToken');
-      expect(repliesRepository.deleteReply).not.toHaveBeenCalled();
+      expect(result).toEqual(mockDeletedReply);
     });
   });
 

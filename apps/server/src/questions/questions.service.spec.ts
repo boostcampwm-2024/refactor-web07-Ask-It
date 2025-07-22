@@ -10,8 +10,6 @@ import {
   MOCK_HOST_TOKENS,
   MOCK_QUESTION,
   MOCK_SESSION,
-  MOCK_SESSION_AUTH_HOST,
-  MOCK_SESSION_AUTH_NON_HOST,
 } from './test-questions-service.mock';
 
 import { RepliesRepository } from '@replies/replies.repository';
@@ -179,21 +177,13 @@ describe('QuestionsService', () => {
   describe('deleteQuestion', () => {
     const mockQuestion = { ...MOCK_QUESTION };
 
-    it('호스트 사용자가 질문을 삭제할 수 있어야 한다', async () => {
-      sessionsAuthRepository.findByTokenWithPermissions.mockResolvedValue(MOCK_SESSION_AUTH_HOST);
+    it('질문을 삭제하고 삭제된 질문을 반환해야 한다', async () => {
       questionsRepository.deleteQuestion.mockResolvedValue(mockQuestion);
 
-      await service.deleteQuestion(1, mockQuestion, { token: 'host-token', sessionId: 'test-session' });
-      expect(sessionsAuthRepository.findByTokenWithPermissions).toHaveBeenCalledWith('host-token');
+      const result = await service.deleteQuestion(1);
+
       expect(questionsRepository.deleteQuestion).toHaveBeenCalledWith(1);
-    });
-
-    it('호스트가 아닌 사용자가 질문을 삭제하려고 하면 ForbiddenException을 발생시켜야 한다', async () => {
-      sessionsAuthRepository.findByTokenWithPermissions.mockResolvedValue(MOCK_SESSION_AUTH_NON_HOST);
-
-      await expect(
-        service.deleteQuestion(1, mockQuestion, { token: 'wrong-token', sessionId: 'test-session' }),
-      ).rejects.toThrow(ForbiddenException);
+      expect(result).toEqual(mockQuestion);
     });
   });
 
@@ -222,11 +212,9 @@ describe('QuestionsService', () => {
   });
 
   describe('updateQuestionPinned', () => {
-    it('호스트 사용자가 질문을 고정할 수 있어야 한다', async () => {
-      const updateDto = { token: 'host-token', sessionId: 'test-session', pinned: true };
-
-      sessionsAuthRepository.findByTokenWithPermissions.mockResolvedValue(MOCK_SESSION_AUTH_HOST);
-      questionsRepository.updatePinned.mockResolvedValue({
+    it('질문의 고정 상태를 업데이트해야 한다', async () => {
+      const updateDto = { token: 'token', sessionId: 'test-session', pinned: true };
+      const mockUpdatedQuestion = {
         questionId: 1,
         pinned: true,
         createUserToken: 'test-token',
@@ -234,20 +222,14 @@ describe('QuestionsService', () => {
         body: 'test-body',
         closed: false,
         createdAt: MOCK_DATE,
-      });
+      };
 
-      await service.updateQuestionPinned(1, updateDto);
+      questionsRepository.updatePinned.mockResolvedValue(mockUpdatedQuestion);
 
-      expect(sessionsAuthRepository.findByTokenWithPermissions).toHaveBeenCalledWith(updateDto.token);
+      const result = await service.updateQuestionPinned(1, updateDto);
+
       expect(questionsRepository.updatePinned).toHaveBeenCalledWith(1, true);
-    });
-
-    it('호스트가 아닌 사용자가 고정 상태를 변경하려 하면 ForbiddenException을 발생시켜야 한다', async () => {
-      const updateDto = { token: 'non-host-token', sessionId: 'test-session', pinned: true };
-
-      sessionsAuthRepository.findByTokenWithPermissions.mockResolvedValue(MOCK_SESSION_AUTH_NON_HOST);
-
-      await expect(service.updateQuestionPinned(1, updateDto)).rejects.toThrow(ForbiddenException);
+      expect(result).toEqual(mockUpdatedQuestion);
     });
   });
 });
