@@ -21,11 +21,7 @@ export class OwnershipGuard implements CanActivate {
       throw new ForbiddenException('사용자 토큰이 필요합니다.');
     }
 
-    let resource;
-    if (requireOwnership === 'question') 
-      resource = request.question;
-    else if (requireOwnership === 'reply') 
-      resource = request.reply;
+    const resource = request[requireOwnership];
 
     if (!resource) {
       throw new ForbiddenException('리소스 정보를 찾을 수 없습니다.');
