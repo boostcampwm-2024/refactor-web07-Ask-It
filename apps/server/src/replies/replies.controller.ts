@@ -59,7 +59,7 @@ export class RepliesController {
   @Patch(':replyId/body')
   @UpdateReplySwagger()
   @ApiBody({ type: UpdateReplyBodyDto })
-  @RequireOwnership()
+  @RequireOwnership('reply')
   @UseGuards(SessionTokenValidationGuard, ReplyExistenceGuard, OwnershipGuard)
   async update(@Param('replyId', ParseIntPipe) replyId: number, @Body() updateReplyBodyDto: UpdateReplyBodyDto) {
     const updatedReply = await this.repliesService.updateBody(replyId, updateReplyBodyDto);

@@ -77,7 +77,7 @@ export class QuestionsController {
   @Patch(':questionId/body')
   @UpdateQuestionBodySwagger()
   @ApiBody({ type: UpdateQuestionBodyDto })
-  @RequireOwnership()
+  @RequireOwnership('question')
   @UseGuards(SessionTokenValidationGuard, QuestionExistenceGuard, OwnershipGuard)
   async updateQuestionBody(
     @Param('questionId', ParseIntPipe) questionId: number,

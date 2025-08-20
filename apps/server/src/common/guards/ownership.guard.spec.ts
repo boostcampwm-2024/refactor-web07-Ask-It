@@ -51,8 +51,23 @@ describe('OwnershipGuard', () => {
     expect(result).toBe(true);
   });
 
+  it('잘못된 소유권 요청을 요청하면 ForbiddenException을 발생시켜야 한다', async () => {
+    reflector.get.mockReturnValue('puhaha');
+    const context = {
+      ...mockExecutionContext,
+      switchToHttp: jest.fn().mockReturnValue({
+        getRequest: jest.fn().mockReturnValue({
+          body: { token: 'owner-token' },
+          question: { createUserToken: 'owner-token' },
+        }),
+      }),
+    };
+
+    await expect(guard.canActivate(context)).rejects.toThrow(ForbiddenException);
+  });
+
   it('토큰이 없으면 ForbiddenException을 발생시켜야 한다', async () => {
-    reflector.get.mockReturnValue(true);
+    reflector.get.mockReturnValue('question');
     const context = {
       ...mockExecutionContext,
       switchToHttp: jest.fn().mockReturnValue({
@@ -67,7 +82,7 @@ describe('OwnershipGuard', () => {
   });
 
   it('리소스 정보가 없으면 ForbiddenException을 발생시켜야 한다', async () => {
-    reflector.get.mockReturnValue(true);
+    reflector.get.mockReturnValue('question');
     const context = {
       ...mockExecutionContext,
       switchToHttp: jest.fn().mockReturnValue({
@@ -82,7 +97,7 @@ describe('OwnershipGuard', () => {
   });
 
   it('소유자가 아니면 ForbiddenException을 발생시켜야 한다', async () => {
-    reflector.get.mockReturnValue(true);
+    reflector.get.mockReturnValue('question');
     const context = {
       ...mockExecutionContext,
       switchToHttp: jest.fn().mockReturnValue({
@@ -97,7 +112,7 @@ describe('OwnershipGuard', () => {
   });
 
   it('리소스 소유자면 true를 반환해야 한다', async () => {
-    reflector.get.mockReturnValue(true);
+    reflector.get.mockReturnValue('question');
     const context = {
       ...mockExecutionContext,
       switchToHttp: jest.fn().mockReturnValue({
