@@ -22,6 +22,7 @@ import { DeleteReplySwagger } from './swagger/delete-reply.swagger';
 import { ToggleReplyLikeSwagger } from './swagger/toggle-reply.swagger';
 import { UpdateReplySwagger } from './swagger/update-reply.swagger';
 
+import { BaseDto } from '@common/base.dto';
 import { RequireOwnership } from '@common/decorators/require-ownership.decorator';
 import { RequirePermission } from '@common/decorators/require-permission.decorator';
 import { OwnershipGuard } from '@common/guards/ownership.guard';
@@ -32,7 +33,6 @@ import { requestSocket } from '@common/request-socket';
 import { Permissions } from '@common/roles/permissions';
 import { QuestionExistenceGuard } from '@questions/guards/question-existence.guard';
 import { SOCKET_EVENTS } from '@socket/socket.constant';
-import { BaseDto } from '@src/common/base.dto';
 
 @ApiTags('Replies')
 @UseInterceptors(TransformInterceptor)

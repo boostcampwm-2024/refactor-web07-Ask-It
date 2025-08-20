@@ -23,7 +23,9 @@ import { GetQuestionSwagger } from './swagger/get-question.swagger';
 import { ToggleQuestionLikeSwagger } from './swagger/toggle-question.swagger';
 
 import { BaseDto } from '@common/base.dto';
+import { RequireOwnership } from '@common/decorators/require-ownership.decorator';
 import { RequirePermission } from '@common/decorators/require-permission.decorator';
+import { OwnershipGuard } from '@common/guards/ownership.guard';
 import { PermissionOrOwnershipGuard } from '@common/guards/permission-or-ownership.guard';
 import { PermissionGuard } from '@common/guards/permission.guard';
 import { SessionTokenValidationGuard } from '@common/guards/session-token-validation.guard';
@@ -43,8 +45,6 @@ import {
   UpdateQuestionPinnedSwagger,
 } from '@questions/swagger/update-question.swagger';
 import { SOCKET_EVENTS } from '@socket/socket.constant';
-import { RequireOwnership } from '@src/common/decorators/require-ownership.decorator';
-import { OwnershipGuard } from '@src/common/guards/ownership.guard';
 
 @ApiTags('Questions')
 @UseInterceptors(TransformInterceptor)
