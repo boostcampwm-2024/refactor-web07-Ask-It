@@ -36,7 +36,6 @@ import {
   UpdateQuestionPinnedDto,
 } from '@questions/dto/update-question.dto';
 import { QuestionExistenceGuard } from '@questions/guards/question-existence.guard';
-import { QuestionOwnershipGuard } from '@questions/guards/question-ownership.guard';
 import { DeleteQuestionSwagger } from '@questions/swagger/delete-question.swagger';
 import {
   UpdateQuestionBodySwagger,
@@ -44,6 +43,8 @@ import {
   UpdateQuestionPinnedSwagger,
 } from '@questions/swagger/update-question.swagger';
 import { SOCKET_EVENTS } from '@socket/socket.constant';
+import { RequireOwnership } from '@src/common/decorators/require-ownership.decorator';
+import { OwnershipGuard } from '@src/common/guards/ownership.guard';
 
 @ApiTags('Questions')
 @UseInterceptors(TransformInterceptor)
@@ -76,7 +77,8 @@ export class QuestionsController {
   @Patch(':questionId/body')
   @UpdateQuestionBodySwagger()
   @ApiBody({ type: UpdateQuestionBodyDto })
-  @UseGuards(SessionTokenValidationGuard, QuestionExistenceGuard, QuestionOwnershipGuard)
+  @RequireOwnership()
+  @UseGuards(SessionTokenValidationGuard, QuestionExistenceGuard, OwnershipGuard)
   async updateQuestionBody(
     @Param('questionId', ParseIntPipe) questionId: number,
     @Body() updateQuestionBodyDto: UpdateQuestionBodyDto,
