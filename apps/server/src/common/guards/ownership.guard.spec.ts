@@ -52,7 +52,7 @@ describe('OwnershipGuard', () => {
   });
 
   it('토큰이 없으면 ForbiddenException을 발생시켜야 한다', async () => {
-   reflector.get.mockReturnValue(true);
+    reflector.get.mockReturnValue(true);
     const context = {
       ...mockExecutionContext,
       switchToHttp: jest.fn().mockReturnValue({
