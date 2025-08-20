@@ -10,4 +10,4 @@ COPY . .
 
 EXPOSE 4000
 
-CMD ["sh", "-c", "pnpx prisma generate && pnpm run build && pnpm run start:prod:ws"]
+CMD ["sh", "-c", "pnpm run db:generate && pnpm run db:migrate && pnpm run build && pnpm run start:prod:ws"]
