@@ -16,14 +16,16 @@ import { CreateReplyDto } from './dto/create-reply.dto';
 import { ToggleReplyLikeDto } from './dto/toggle-reply-like.dto';
 import { UpdateReplyBodyDto } from './dto/update-reply.dto';
 import { ReplyExistenceGuard } from './guards/reply-existence.guard';
-import { ReplyOwnershipGuard } from './guards/reply-ownership.guard';
 import { RepliesService } from './replies.service';
 import { CreateReplySwagger } from './swagger/create-reply.swagger';
 import { DeleteReplySwagger } from './swagger/delete-reply.swagger';
 import { ToggleReplyLikeSwagger } from './swagger/toggle-reply.swagger';
 import { UpdateReplySwagger } from './swagger/update-reply.swagger';
 
+import { BaseDto } from '@common/base.dto';
+import { RequireOwnership } from '@common/decorators/require-ownership.decorator';
 import { RequirePermission } from '@common/decorators/require-permission.decorator';
+import { OwnershipGuard } from '@common/guards/ownership.guard';
 import { PermissionOrOwnershipGuard } from '@common/guards/permission-or-ownership.guard';
 import { SessionTokenValidationGuard } from '@common/guards/session-token-validation.guard';
 import { TransformInterceptor } from '@common/interceptors/transform.interceptor';
@@ -31,7 +33,6 @@ import { requestSocket } from '@common/request-socket';
 import { Permissions } from '@common/roles/permissions';
 import { QuestionExistenceGuard } from '@questions/guards/question-existence.guard';
 import { SOCKET_EVENTS } from '@socket/socket.constant';
-import { BaseDto } from '@src/common/base.dto';
 
 @ApiTags('Replies')
 @UseInterceptors(TransformInterceptor)
@@ -58,7 +59,8 @@ export class RepliesController {
   @Patch(':replyId/body')
   @UpdateReplySwagger()
   @ApiBody({ type: UpdateReplyBodyDto })
-  @UseGuards(SessionTokenValidationGuard, ReplyExistenceGuard, ReplyOwnershipGuard)
+  @RequireOwnership('reply')
+  @UseGuards(SessionTokenValidationGuard, ReplyExistenceGuard, OwnershipGuard)
   async update(@Param('replyId', ParseIntPipe) replyId: number, @Body() updateReplyBodyDto: UpdateReplyBodyDto) {
     const updatedReply = await this.repliesService.updateBody(replyId, updateReplyBodyDto);
     const { sessionId, token } = updateReplyBodyDto;

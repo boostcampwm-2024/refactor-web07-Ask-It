@@ -8,7 +8,7 @@ export class OwnershipGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
 
   async canActivate(context: ExecutionContext): Promise<boolean> {
-    const requireOwnership = this.reflector.get<boolean>(OWNERSHIP_KEY, context.getHandler());
+    const requireOwnership = this.reflector.get<string>(OWNERSHIP_KEY, context.getHandler());
 
     if (!requireOwnership) {
       return true;
@@ -21,7 +21,7 @@ export class OwnershipGuard implements CanActivate {
       throw new ForbiddenException('사용자 토큰이 필요합니다.');
     }
 
-    const resource = request.question || request.reply;
+    const resource = request[requireOwnership];
 
     if (!resource) {
       throw new ForbiddenException('리소스 정보를 찾을 수 없습니다.');

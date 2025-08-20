@@ -23,7 +23,9 @@ import { GetQuestionSwagger } from './swagger/get-question.swagger';
 import { ToggleQuestionLikeSwagger } from './swagger/toggle-question.swagger';
 
 import { BaseDto } from '@common/base.dto';
+import { RequireOwnership } from '@common/decorators/require-ownership.decorator';
 import { RequirePermission } from '@common/decorators/require-permission.decorator';
+import { OwnershipGuard } from '@common/guards/ownership.guard';
 import { PermissionOrOwnershipGuard } from '@common/guards/permission-or-ownership.guard';
 import { PermissionGuard } from '@common/guards/permission.guard';
 import { SessionTokenValidationGuard } from '@common/guards/session-token-validation.guard';
@@ -36,7 +38,6 @@ import {
   UpdateQuestionPinnedDto,
 } from '@questions/dto/update-question.dto';
 import { QuestionExistenceGuard } from '@questions/guards/question-existence.guard';
-import { QuestionOwnershipGuard } from '@questions/guards/question-ownership.guard';
 import { DeleteQuestionSwagger } from '@questions/swagger/delete-question.swagger';
 import {
   UpdateQuestionBodySwagger,
@@ -76,7 +77,8 @@ export class QuestionsController {
   @Patch(':questionId/body')
   @UpdateQuestionBodySwagger()
   @ApiBody({ type: UpdateQuestionBodyDto })
-  @UseGuards(SessionTokenValidationGuard, QuestionExistenceGuard, QuestionOwnershipGuard)
+  @RequireOwnership('question')
+  @UseGuards(SessionTokenValidationGuard, QuestionExistenceGuard, OwnershipGuard)
   async updateQuestionBody(
     @Param('questionId', ParseIntPipe) questionId: number,
     @Body() updateQuestionBodyDto: UpdateQuestionBodyDto,

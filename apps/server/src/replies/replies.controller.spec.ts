@@ -3,10 +3,10 @@ import { Test, TestingModule } from '@nestjs/testing';
 import * as request from 'supertest';
 
 import { ReplyExistenceGuard } from './guards/reply-existence.guard';
-import { ReplyOwnershipGuard } from './guards/reply-ownership.guard';
 import { RepliesController } from './replies.controller';
 import { RepliesService } from './replies.service';
 
+import { OwnershipGuard } from '@common/guards/ownership.guard';
 import { PermissionOrOwnershipGuard } from '@common/guards/permission-or-ownership.guard';
 import { SessionTokenValidationGuard } from '@common/guards/session-token-validation.guard';
 import { TransformInterceptor } from '@common/interceptors/transform.interceptor';
@@ -23,7 +23,7 @@ describe('RepliesController 통합 테스트', () => {
   let sessionTokenValidationGuard: jest.Mocked<SessionTokenValidationGuard>;
   let questionExistenceGuard: jest.Mocked<QuestionExistenceGuard>;
   let replyExistenceGuard: jest.Mocked<ReplyExistenceGuard>;
-  let replyOwnershipGuard: jest.Mocked<ReplyOwnershipGuard>;
+  let ownershipGuard: jest.Mocked<OwnershipGuard>;
   let permissionOrOwnershipGuard: jest.Mocked<PermissionOrOwnershipGuard>;
 
   beforeEach(async () => {
@@ -55,7 +55,7 @@ describe('RepliesController 통합 테스트', () => {
       .useValue({
         canActivate: jest.fn(),
       })
-      .overrideGuard(ReplyOwnershipGuard)
+      .overrideGuard(OwnershipGuard)
       .useValue({
         canActivate: jest.fn(),
       })
@@ -76,7 +76,7 @@ describe('RepliesController 통합 테스트', () => {
     sessionTokenValidationGuard = moduleFixture.get(SessionTokenValidationGuard);
     questionExistenceGuard = moduleFixture.get(QuestionExistenceGuard);
     replyExistenceGuard = moduleFixture.get(ReplyExistenceGuard);
-    replyOwnershipGuard = moduleFixture.get(ReplyOwnershipGuard);
+    ownershipGuard = moduleFixture.get(OwnershipGuard);
     permissionOrOwnershipGuard = moduleFixture.get(PermissionOrOwnershipGuard);
   });
 
@@ -163,7 +163,7 @@ describe('RepliesController 통합 테스트', () => {
       // 가드들이 모두 통과하도록 설정
       sessionTokenValidationGuard.canActivate.mockResolvedValue(true);
       replyExistenceGuard.canActivate.mockResolvedValue(true);
-      replyOwnershipGuard.canActivate.mockResolvedValue(true);
+      ownershipGuard.canActivate.mockResolvedValue(true);
 
       repliesService.updateBody.mockResolvedValue(mockUpdatedReply);
 
@@ -187,7 +187,7 @@ describe('RepliesController 통합 테스트', () => {
     it('답글 소유자가 아니면 403 에러', async () => {
       sessionTokenValidationGuard.canActivate.mockResolvedValue(true);
       replyExistenceGuard.canActivate.mockResolvedValue(true);
-      replyOwnershipGuard.canActivate.mockRejectedValue(new ForbiddenException('권한이 없습니다'));
+      ownershipGuard.canActivate.mockRejectedValue(new ForbiddenException('권한이 없습니다.'));
 
       await request(app.getHttpServer())
         .patch('/replies/1/body')
