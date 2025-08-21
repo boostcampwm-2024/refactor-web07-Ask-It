@@ -10,4 +10,4 @@ COPY . .
 
 EXPOSE 3000
 
-CMD ["sh", "-c", "pnpx prisma generate && pnpx prisma migrate deploy && pnpm run build && pnpm run start:prod:http"]
+CMD ["sh", "-c", "pnpm run db:generate && pnpm run db:migrate && pnpm run build && pnpm run start:prod:http"]
